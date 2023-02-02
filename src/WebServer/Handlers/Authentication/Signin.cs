@@ -26,7 +26,7 @@ public class Signin
     public static async Task Post(
         [FromBody] SigninRequest model,
         HttpContext ctx,
-        Application.Services.IAuthenticationService authService,
+        Application.Common.Services.IAuthenticationService authService,
         IPasswordHasher<User> hasher,
         CancellationToken ct
     )

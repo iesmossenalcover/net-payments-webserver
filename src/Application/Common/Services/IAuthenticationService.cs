@@ -1,6 +1,6 @@
 using Domain.Authentication;
 
-namespace Application.Services;
+namespace Application.Common.Services;
 
 public interface IAuthenticationService
 {

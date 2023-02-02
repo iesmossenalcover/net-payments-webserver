@@ -12,8 +12,8 @@ public class Identity
 {
     public static async Task Get(
         HttpContext ctx,
-        Application.Services.IAuthenticationService authService,
-        Application.Services.ICurrentRequestService currentRequestService,
+        Application.Common.Services.IAuthenticationService authService,
+        Application.Common.Services.ICurrentRequestService currentRequestService,
         CancellationToken ct)
     {
         long? userId = currentRequestService.UserId;

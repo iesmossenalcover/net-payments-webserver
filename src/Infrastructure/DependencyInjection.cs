@@ -18,7 +18,7 @@ namespace Infrastructure
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
 
             // Better approach
-            services.AddScoped<Application.Services.IAuthenticationService, Infrastructure.AuthenticationService>();
+            services.AddScoped<Application.Common.Services.IAuthenticationService, Infrastructure.AuthenticationService>();
 
             return services;
         }

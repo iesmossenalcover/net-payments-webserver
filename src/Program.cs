@@ -2,6 +2,9 @@ using WebServer.Handlers;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using MediatR;
+using System.Reflection;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,11 +47,19 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add MediatR service
+// The first method call will scan our Application 
+/// assembly and add all our Commands, Queries, and their respective handlers to the DI container.
+builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+// Register validation pipeline for mediatR
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Application.Common.Behaviors.RequestValidationBehavior<,>));
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
 // App Services
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton<IPasswordHasher<Domain.Authentication.User>, PasswordHasher<Domain.Authentication.User>>();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddScoped<Application.Services.ICurrentRequestService, WebServer.Services.CurrentRequestService>();
+builder.Services.AddSingleton<IPasswordHasher<Domain.Authentication.User>, PasswordHasher<Domain.Authentication.User>>();
+builder.Services.AddScoped<Application.Common.Services.ICurrentRequestService, WebServer.Services.CurrentRequestService>();
 
 var app = builder.Build();
 
@@ -62,6 +73,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add ValidationHandler
+app.UseMiddleware<WebServer.Middleware.ValidationExceptionHandlerMiddleware>();
 
 app.MapRoutes();
 
