@@ -14,13 +14,17 @@ namespace Infrastructure
         #region sets
         public DbSet<Domain.Authentication.User> Users { get; set; } = default!;
         public DbSet<Domain.Authentication.UserClaim> UserClaims { get; set; } = default!;
+
+        public DbSet<Domain.People.Person> People { get; set; } = default!;
+        public DbSet<Domain.People.Teacher> Teachers { get; set; } = default!;
+        public DbSet<Domain.People.Student> Students { get; set; } = default!;
+        public DbSet<Domain.People.Group> Groups { get; set; } = default!;
+        public DbSet<Domain.People.Group> Courses { get; set; } = default!;
+        public DbSet<Domain.People.PersonGroupCourse> PersonGroupCourses { get; set; } = default!;
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
-            // Auths
             base.OnModelCreating(modelBuilder);
 
             // Auths
@@ -44,6 +48,75 @@ namespace Infrastructure
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Authentication.UserClaim>()
                 .HasOne(x => x.User).WithMany(x => x.UserClaims);
+
+            // People
+            modelBuilder.Entity<Domain.People.Person>()
+                .ToTable("person", "people")
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Domain.People.Person>()
+                .HasIndex(x => x.DocumentId).IsUnique();
+            modelBuilder.Entity<Domain.People.Person>()
+                .HasIndex(x => x.Name);
+            modelBuilder.Entity<Domain.People.Person>()
+                .Property(x => x.ContactMail).HasMaxLength(100);
+            modelBuilder.Entity<Domain.People.Person>()
+                .Property(x => x.DocumentId).HasMaxLength(50);
+            modelBuilder.Entity<Domain.People.Person>()
+                .Property(x => x.ContactPhone).HasMaxLength(15);
+
+            modelBuilder.Entity<Domain.People.Teacher>()
+                .ToTable("teacher", "people")
+                .Property(x => x.Id).ValueGeneratedOnAdd();;
+            modelBuilder.Entity<Domain.People.Teacher>()
+                .HasIndex(x => x.PersonId).IsUnique();
+            modelBuilder.Entity<Domain.People.Teacher>()
+                .HasOne(x => x.Person);
+
+            modelBuilder.Entity<Domain.People.Student>()
+                .ToTable("student", "people")
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Domain.People.Student>()
+                .HasIndex(x => x.PersonId).IsUnique();
+            modelBuilder.Entity<Domain.People.Student>()
+                .HasOne(x => x.Person);
+
+            modelBuilder.Entity<Domain.People.Student>()
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Domain.People.Student>()
+                .HasIndex(x => x.AcademicRecordNumber).IsUnique();
+            modelBuilder.Entity<Domain.People.Group>()
+                .ToTable("group", "people")
+                .HasIndex(x => x.Name).IsUnique();                
+            modelBuilder.Entity<Domain.People.Group>()
+                .Property(x => x.Name).HasMaxLength(50);
+            modelBuilder.Entity<Domain.People.Group>()
+                .Property(x => x.Name).HasMaxLength(50);
+
+            modelBuilder.Entity<Domain.People.Course>()
+                .ToTable("course", "people")
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Domain.People.Course>()
+                .HasIndex(x => x.Name).IsUnique();
+            modelBuilder.Entity<Domain.People.Course>()
+                .HasIndex(x => x.Active);
+            modelBuilder.Entity<Domain.People.Course>()
+                .HasIndex(x => x.StartDate).IsDescending();
+            modelBuilder.Entity<Domain.People.Course>()
+                .Property(x => x.Name).HasMaxLength(50);
+
+            modelBuilder.Entity<Domain.People.PersonGroupCourse>()
+                .ToTable("person_group_course", "people")
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Domain.People.PersonGroupCourse>()
+                .HasIndex(x => new { x.PersonId, x.GroupId, x.CourseId }).IsUnique();
+                
+            modelBuilder.Entity<Domain.People.PersonGroupCourse>()
+                .HasOne(x => x.Person);
+            modelBuilder.Entity<Domain.People.PersonGroupCourse>()
+                .HasOne(x => x.Group);
+            modelBuilder.Entity<Domain.People.PersonGroupCourse>()
+                .HasOne(x => x.Course);
         }
     }
 }
