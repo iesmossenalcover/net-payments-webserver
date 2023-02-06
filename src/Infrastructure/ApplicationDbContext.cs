@@ -21,32 +21,29 @@ namespace Infrastructure
             base.OnModelCreating(modelBuilder);
 
             // Auths
+            base.OnModelCreating(modelBuilder);
+
+            // Auths
             modelBuilder.Entity<Domain.Authentication.User>()
                 .ToTable("user", "authentication")
                 .HasIndex(x => x.Username).IsUnique();
+            
+            modelBuilder.Entity<Domain.Authentication.User>()
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Domain.Authentication.User>()
+                .Property(x => x.Username)
+                .HasMaxLength(100);
 
             modelBuilder.Entity<Domain.Authentication.UserClaim>()
-                .ToTable("user_claim", "authentication");
-
-            // modelBuilder.Entity<Domain.Restaurants.Entities.RestaurantLanguage>()
-            //     .ToTable("restaurant_language", "restaurants")
-            //     .HasKey(rl => new { rl.RestaurantId, rl.LanguageId });
-
-            // modelBuilder.Entity<Domain.Products.Entities.ProductInfo>()
-            //     .ToTable("product_info", "products");
-            // modelBuilder.Entity<Domain.Products.Entities.ProductInfo>().HasIndex(x => x.NormalizedName);
-            // modelBuilder.Entity<Domain.Products.Entities.ProductInfo>().HasIndex(x => x.SlugName);
-            // modelBuilder.Entity<Domain.Products.Entities.ProductInfo>().HasIndex(x => x.ProductId);
-            // modelBuilder.Entity<Domain.Products.Entities.ProductInfo>().HasIndex(x => new { x.SlugName, x.ProductId, x.LanguageId });
-            // modelBuilder.Entity<Domain.Products.Entities.ProductInfo>().HasIndex(x => new { x.SlugName, x.ProductId, x.LanguageId, x.Deleted }).IsUnique();
-            // modelBuilder.Entity<Domain.Products.Entities.ProductCategory>()
-            //     .ToTable("product_category", "products")
-            //     .HasKey(pc => new { pc.ProductId, pc.CategoryId });
-            // modelBuilder.Entity<Domain.Products.Entities.ProductAllergen>()
-            //     .ToTable("product_allergen", "products")
-            //     .HasKey(pa => new { pa.ProductId, pa.AllergenId });
-
-            // modelBuilder.ToSnakeCase();
+                .ToTable("user_claim", "authentication")
+                .HasKey(pc => new { pc.Type, pc.UserId });
+            modelBuilder.Entity<Domain.Authentication.UserClaim>()
+                .ToTable("user_claim", "authentication")
+                .HasIndex(x => x.UserId);
+            modelBuilder.Entity<Domain.Authentication.UserClaim>()
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Domain.Authentication.UserClaim>()
+                .HasOne(x => x.User).WithMany(x => x.UserClaims);
         }
     }
 }
