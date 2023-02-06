@@ -19,8 +19,14 @@ namespace Infrastructure
         public DbSet<Domain.People.Teacher> Teachers { get; set; } = default!;
         public DbSet<Domain.People.Student> Students { get; set; } = default!;
         public DbSet<Domain.People.Group> Groups { get; set; } = default!;
-        public DbSet<Domain.People.Group> Courses { get; set; } = default!;
+        public DbSet<Domain.People.Course> Courses { get; set; } = default!;
         public DbSet<Domain.People.PersonGroupCourse> PersonGroupCourses { get; set; } = default!;
+
+        public DbSet<Domain.Events.Event> Events { get; set; } = default!;
+        public DbSet<Domain.Events.EventPerson> EventPersons { get; set; } = default!;
+
+        public DbSet<Domain.Orders.Order> Orders { get; set; } = default!;
+        public DbSet<Domain.Orders.Item> Items { get; set; } = default!;
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
