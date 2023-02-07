@@ -17,14 +17,9 @@ public static class RegisterRoutes
             .WithName("identity")
             .WithOpenApi();
 
-
-        // Examples, remove in production
-        app.MapGet("/api/items", WebServer.Handlers.Items.GetItems)
-            .WithName("getitems")
-            .WithOpenApi();
-
-        app.MapPost("/api/items", WebServer.Handlers.Items.AddItem)
-            .WithName("setitem")
+        // Tasks
+        app.MapPost("/api/tasks/people", WebServer.Handlers.Tasks.UploadPeople)
+            .WithName("Upload people")
             .WithOpenApi();
     }
 }

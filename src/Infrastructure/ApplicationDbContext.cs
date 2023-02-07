@@ -138,6 +138,8 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Events.Event>()
                 .HasIndex(x => x.Code).IsUnique();
             modelBuilder.Entity<Domain.Events.Event>()
+                .Property(x => x.Code).HasMaxLength(20);
+            modelBuilder.Entity<Domain.Events.Event>()
                 .HasIndex(x => x.CreationDate).IsDescending();
             modelBuilder.Entity<Domain.Events.Event>()
                 .HasIndex(x => x.PublishDate).IsDescending();
@@ -173,7 +175,7 @@ namespace Infrastructure
                 .ToTable("order", "order")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Orders.Order>()
-                .HasIndex(x => x.CreationDate).IsDescending();
+                .HasIndex(x => x.Created).IsDescending();
 
 
 
