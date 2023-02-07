@@ -18,20 +18,11 @@ public record PeopleBatchUploadCommand(Stream file) : IRequest<long>;
 public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, long>
 {
     #region props
-    public static readonly Dictionary<string, Type> _columns = new Dictionary<string, Type>()
-    {
-        { "expedient", typeof(string) },
-        { "dni", typeof(string) },
-        { "nom", typeof(string) },
-        { "llinatge1", typeof(string) },
-        { "llinatge2", typeof(string) },
-        { "email_contacte", typeof(string) },
-        { "tel_contacte", typeof(string) },
-        { "prematricula", typeof(string) },
-        { "grup", typeof(string) },
-        { "amipa", typeof(string) },
-        { "assignatures", typeof(string) },
-    };
+    
+    /* csv structure
+    Expedient,Identitat,Nom,Llinatge1,Llinatge2,EmailContacte,TelContacte,Prematricula,Pagament,Grup,Amipa,Assignatures
+    1,42374617S,Belinda Elisabeth,Arias,Tarira,prova@ies.com,6741222554,1,0,1ESOC,0,
+    */
     
     private readonly ICsvParser _csvParser;
     private readonly IPeopleService _peopleService;
@@ -45,6 +36,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
     public async Task<long> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
     {
+        // Parse csv
         IEnumerable<PeopleObject>? rows = _csvParser.Parse<PeopleObject>(request.file);
         request.file.Dispose();
 
@@ -53,8 +45,13 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             throw new Exception("return bad request");
         }
 
-        var sudents = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
-        // program logic
+        // Process groups
+        // Process students
+        IEnumerable<Student> students = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
+        // persons
+        // Process PersonGroupCourse
+
+        // Persist in one transaction
         return 1;
     }
 
@@ -116,6 +113,4 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         s.SubjectsInfo = po.Assignatures;
         return s;
     }
-
-    public record UploadPeopleTransaction(IEnumerable<Student> students);
 }

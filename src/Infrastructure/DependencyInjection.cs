@@ -19,8 +19,8 @@ namespace Infrastructure
 
             // Better approach
             services.AddScoped<Application.Common.Services.IAuthenticationService, Infrastructure.AuthenticationService>();
+            services.AddScoped<Application.Common.Services.IPeopleService, Infrastructure.PeopleService>();
             services.AddSingleton<Application.Common.Services.ICsvParser, Infrastructure.CsvParser>();
-            services.AddSingleton<Application.Common.Services.IPeopleService, Infrastructure.PeopleService>();
 
             return services;
         }
