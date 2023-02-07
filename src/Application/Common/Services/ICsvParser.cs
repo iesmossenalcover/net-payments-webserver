@@ -4,5 +4,5 @@ namespace Application.Common.Services;
 
 public interface ICsvParser
 {
-    DataTable? Parse(Stream stream, IDictionary<string, Type> columns);
+    IList<T>? Parse<T>(Stream stream);
 }

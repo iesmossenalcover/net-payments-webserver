@@ -1,6 +1,7 @@
 using System.Data;
 using Application.Common.Services;
 using Domain.People;
+using Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
 
@@ -24,21 +25,12 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         { "nom", typeof(string) },
         { "llinatge1", typeof(string) },
         { "llinatge2", typeof(string) },
+        { "email_contacte", typeof(string) },
+        { "tel_contacte", typeof(string) },
         { "prematricula", typeof(string) },
         { "grup", typeof(string) },
         { "amipa", typeof(string) },
-        { "assig1", typeof(string) },
-        { "assig2", typeof(string) },
-        { "assig3", typeof(string) },
-        { "assig4", typeof(string) },
-        { "assig5", typeof(string) },
-        { "assig6", typeof(string) },
-        { "assig7", typeof(string) },
-        { "assig8", typeof(string) },
-        { "assig9", typeof(string) },
-        { "assig10", typeof(string) },
-        { "assig11", typeof(string) },
-        { "assig12", typeof(string) },
+        { "assignatures", typeof(string) },
     };
     
     private readonly ICsvParser _csvParser;
@@ -53,63 +45,76 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
     public async Task<long> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
     {
-        DataTable? dt = _csvParser.Parse(request.file, _columns);
-        if (dt == null)
-            throw new Exception("todo return bad error");
+        IEnumerable<PeopleObject>? rows = _csvParser.Parse<PeopleObject>(request.file);
+        request.file.Dispose();
 
-        var sudents = await ProcessStudents(dt, ct);
+        if (rows == null)
+        {
+            throw new Exception("return bad request");
+        }
 
+        var sudents = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
         // program logic
         return 1;
     }
 
-    private async Task<IEnumerable<Student>> ProcessStudents(DataTable dt, CancellationToken ct)
+    private async Task<IEnumerable<Student>> ProcessStudents(IEnumerable<PeopleObject> rows, CancellationToken ct)
     {
-        Dictionary<long, DataRow> studentRows = new Dictionary<long, DataRow>(dt.Rows.Count);
-        foreach (DataRow r in dt.Rows)
+        Dictionary<long, Student> students = new Dictionary<long, Student>(rows.Count());
+        foreach (PeopleObject po in rows)
         {
-            string? val = r["expedient"].ToString();
-            if (string.IsNullOrEmpty(val)) continue;
-            long expedient = long.Parse(val.Trim());
-            studentRows.Add(expedient, r);
+            Student? s = CreateStudentFromRow(po);
+            if (s == null)
+            {
+                throw new Exception("TODO: add mor info, invalid row");
+            }
+            students.Add(s.AcademicRecordNumber, s);
         }
 
-        IEnumerable<long> expedients = studentRows.Select(x => x.Key);
+        IEnumerable<long> expedients = students.Select(x => x.Key);
         IEnumerable<Student> existingStudents = await _peopleService.GetManyStudentsAsync(expedients, true, ct);
         foreach (var s in existingStudents)
         {
-            if (studentRows.ContainsKey(s.AcademicRecordNumber))
+            if (students.ContainsKey(s.AcademicRecordNumber))
             {
                 // update student
-                UpdateStudentFromDt(s, studentRows[s.AcademicRecordNumber]);
-                studentRows.Remove(s.AcademicRecordNumber);
+                UpdateStudentFields(s, students[s.AcademicRecordNumber]);
+                students.Remove(s.AcademicRecordNumber);
             }
         }
 
-        // Here in the dict we have new users to be added
-        IEnumerable<Student> studentsToAdd = studentRows.Select(x => CreateStudentFromDt(x.Key, x.Value));
-
-        return existingStudents.Concat(studentsToAdd);
+        return existingStudents.Concat(students.Select(x => x.Value));
 
     }
 
-    private Student CreateStudentFromDt(long academincRecordNumber, DataRow row)
+    private void UpdateStudentFields(Student s, Student newStudent)
+    {
+        s.SubjectsInfo = newStudent.SubjectsInfo;
+        s.Person.DocumentId = newStudent.Person.DocumentId;
+        s.Person.Name = newStudent.Person.Name;
+        s.Person.Surname1 = newStudent.Person.Surname1;
+        s.Person.Surname2 = newStudent.Person.Surname2;
+        s.Person.ContactMail = newStudent.Person.ContactMail;
+        s.Person.ContactPhone = newStudent.Person.ContactPhone;
+    }
+
+    private Student? CreateStudentFromRow(PeopleObject po)
     {
         var s = new Student();
-        s.AcademicRecordNumber = academincRecordNumber;
-        UpdateStudentFromDt(s, row);
+        if (!po.Expedient.HasValue)
+        {
+             throw new Exception("this is not and student");
+        }
+        s.AcademicRecordNumber = po.Expedient.Value;
+        s.Person = new Person();
+        s.Person.DocumentId = po.Identitat;
+        s.Person.Name = po.Nom;
+        s.Person.Surname1 = po.Llinatge1;
+        s.Person.Surname2 =po.Llinatge2;
+        s.Person.ContactMail = po.EmailContacte;
+        s.Person.ContactPhone = po.TelContacte;
+        s.SubjectsInfo = po.Assignatures;
         return s;
-    }
-
-    private void UpdateStudentFromDt(Student s, DataRow row)
-    {
-        s.Person.Name = row["nom"].ToString() ?? "";
-        s.Person.DocumentId = row["dni"].ToString() ?? "";
-        s.Person.Surname1 = row["llinatge1"].ToString() ?? "";
-        s.Person.Surname2 = row["llinatge2"].ToString() ?? "";
-        s.Person.ContactMail = row["prematricula"].ToString() ?? "";
-        s.Person.ContactPhone = row["grup"].ToString() ?? "";
-        s.SubjectsInfo = row[""].ToString() ?? "";
     }
 
     public record UploadPeopleTransaction(IEnumerable<Student> students);
