@@ -60,7 +60,7 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 // App Services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddSingleton<IPasswordHasher<Domain.Authentication.User>, PasswordHasher<Domain.Authentication.User>>();
+builder.Services.AddSingleton<IPasswordHasher<Domain.Entities.Authentication.User>, PasswordHasher<Domain.Entities.Authentication.User>>();
 builder.Services.AddScoped<Application.Common.Services.ICurrentRequestService, WebServer.Services.CurrentRequestService>();
 
 var app = builder.Build();

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Domain.Authentication;
+using Domain.Entities.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace WebServer.Helpers;

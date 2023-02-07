@@ -1,5 +1,5 @@
 using Application.Common.Services;
-using Domain.Authentication;
+using Domain.Entities.Authentication;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure

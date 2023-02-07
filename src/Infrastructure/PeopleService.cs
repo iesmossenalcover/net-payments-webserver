@@ -1,5 +1,5 @@
 using Application.Common.Services;
-using Domain.People;
+using Domain.Entities.People;
 
 namespace Infrastructure;
 

@@ -1,5 +1,5 @@
 using WebServer.Helpers;
-using Domain.Authentication;
+using Domain.Entities.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;

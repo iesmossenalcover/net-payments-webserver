@@ -1,6 +1,6 @@
 using System.Data;
 using Application.Common.Services;
-using Domain.People;
+using Domain.Entities.People;
 using Domain.ValueObjects;
 using FluentValidation;
 using MediatR;

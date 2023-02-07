@@ -1,4 +1,4 @@
-using Domain.People;
+using Domain.Entities.People;
 
 namespace Application.Common.Services;
 

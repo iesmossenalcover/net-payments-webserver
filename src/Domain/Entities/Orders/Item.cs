@@ -1,4 +1,6 @@
-namespace Domain.Orders;
+using Domain.Entities.Orders;
+
+namespace Domain.Entities.Orders;
 
 public class Item
 {

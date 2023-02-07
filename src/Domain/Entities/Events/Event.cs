@@ -1,4 +1,4 @@
-namespace Domain.Events;
+namespace Domain.Entities.Events;
 
 public class Event
 {

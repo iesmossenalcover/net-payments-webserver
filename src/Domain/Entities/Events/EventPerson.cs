@@ -1,7 +1,7 @@
-using Domain.People;
-using Domain.Orders;
+using Domain.Entities.People;
+using Domain.Entities.Orders;
 
-namespace Domain.Events;
+namespace Domain.Entities.Events;
 
 public class EventPerson
 {

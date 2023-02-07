@@ -1,4 +1,4 @@
-namespace Domain.Authentication;
+namespace Domain.Entities.Authentication;
 
 public class User
 {

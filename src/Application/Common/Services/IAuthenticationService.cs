@@ -1,4 +1,4 @@
-using Domain.Authentication;
+using Domain.Entities.Authentication;
 
 namespace Application.Common.Services;
 
