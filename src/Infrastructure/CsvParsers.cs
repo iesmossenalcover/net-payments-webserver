@@ -7,12 +7,23 @@ namespace Infrastructure;
 
 public class CsvParser : ICsvParser
 {
-    public IList<T>? Parse<T>(Stream stream)
+    public CsvParserResult<T> Parse<T>(Stream stream)
     {
-        using (var reader = new StreamReader(stream))
-        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-        {
-            return csv.GetRecords<T>().ToList();
+        var result = new CsvParserResult<T>();
+		try
+		{
+            using (var reader = new StreamReader(stream))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                result.Values = csv.GetRecords<T>().ToList();
+                result.Ok = true;
+            }
         }
+		catch (CsvHelperException e)
+		{
+            result.Ok = false;
+            result.ErrorMessage = e.Message;
+		}
+        return result;
     }
 }

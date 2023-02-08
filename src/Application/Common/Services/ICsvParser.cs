@@ -4,5 +4,12 @@ namespace Application.Common.Services;
 
 public interface ICsvParser
 {
-    IList<T>? Parse<T>(Stream stream);
+    CsvParserResult<T> Parse<T>(Stream stream);
+}
+
+public class CsvParserResult<T>
+{
+    public bool Ok { get; set; }
+    public string? ErrorMessage { get; set; }
+    public IList<T>? Values { get; set; }
 }

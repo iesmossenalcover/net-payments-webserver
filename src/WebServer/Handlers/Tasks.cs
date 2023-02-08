@@ -7,26 +7,27 @@ public class Tasks
 {
     public async static Task<IResult> UploadPeople(HttpContext ctx, IMediator m)
     {
+        IFormFile? f = null;
         try
         {
             IFormFileCollection files = ctx.Request.Form.Files;
-            if (files.Count() == 1)
+            if (files.Count == 1)
             {
-                IFormFile? f = files.First();
-                if (f != null)
-                {
-                    Stream fileStream = f.OpenReadStream();
-                    await m.Send(new PeopleBatchUploadCommand(fileStream));
-                    fileStream.Close();
-                }
-
-                return Results.Ok();
+                f = files[0];
             }
-            return Results.BadRequest();
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             return Results.BadRequest();
         }
+
+        if (f == null)
+        {
+            return Results.BadRequest();
+        }
+        Stream fileStream = f.OpenReadStream();
+        var result = await m.Send(new PeopleBatchUploadCommand(fileStream));
+        fileStream.Close();
+        return Results.Ok(result);
     }
 }

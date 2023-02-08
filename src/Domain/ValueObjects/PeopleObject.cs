@@ -12,6 +12,5 @@ public class PeopleObject
     public int Prematricula { get; set; }
     public int Pagament { get; set; }
     public string? Grup { get; set; }
-    public int Amipa { get; set; }
     public string? Assignatures { get; set; }
 }

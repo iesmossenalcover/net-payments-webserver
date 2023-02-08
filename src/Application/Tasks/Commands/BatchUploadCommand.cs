@@ -8,14 +8,15 @@ using MediatR;
 namespace Application.Tasks.Commands;
 
 // Model we receive
-public record PeopleBatchUploadCommand(Stream file) : IRequest<long>;
+public record PeopleBatchUploadCommand(Stream File) : IRequest<BatchUploadVm>;
 
 // Validator for the model
 
 // Optionally define a view model
+public record BatchUploadVm(bool Ok, string? ErrorMessage = null);
 
 // Handler
-public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, long>
+public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, BatchUploadVm>
 {
     #region props
     
@@ -34,16 +35,20 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     }
     #endregion
 
-    public async Task<long> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
+    public async Task<BatchUploadVm> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
     {
-        // Parse csv
-        IEnumerable<PeopleObject>? rows = _csvParser.Parse<PeopleObject>(request.file);
-        request.file.Dispose();
+        // TODO: Add to default grup, if no group is present.
 
-        if (rows == null)
+        // Parse csv
+        var result = _csvParser.Parse<PeopleObject>(request.File);
+        request.File.Dispose();
+        
+        if (result.Values == null)
         {
-            throw new Exception("return bad request");
+            return new BatchUploadVm(false, result.ErrorMessage);
         }
+
+        IEnumerable<PeopleObject> rows = result.Values;
 
         // Process groups
         IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
@@ -56,7 +61,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
         await _peopleService.InsertAndUpdateTransactionAsync(groups.Values, people.Values, students.Values, presonGroupCourses.Values, ct);
 
-        return 1;
+        return new BatchUploadVm(true);
     }
 
     #region private methods
