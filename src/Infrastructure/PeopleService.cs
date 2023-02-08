@@ -66,7 +66,9 @@ public class PeopleService : IPeopleService
         _dbContext.Groups.AddRange(groups.Where(x => x.Id == 0));
         _dbContext.Groups.UpdateRange(groups.Where(x => x.Id > 0));
         _dbContext.People.AddRange(people.Where(x => x.Id == 0));
-        _dbContext.People.UpdateRange(people.Where(x => x.Id >= 0));
+        _dbContext.People.UpdateRange(people.Where(x => x.Id > 0));
+        _dbContext.Students.AddRange(students.Where(x => x.Id == 0));
+        _dbContext.Students.UpdateRange(students.Where(x => x.Id > 0));
         _dbContext.PersonGroupCourses.AddRange(personGroupCourses.Where(x => x.Id == 0));
         _dbContext.PersonGroupCourses.UpdateRange(personGroupCourses.Where(x => x.Id > 0));
         await _dbContext.SaveChangesAsync();

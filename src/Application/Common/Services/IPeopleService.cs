@@ -20,5 +20,5 @@ public interface IPeopleService
     public Task<IEnumerable<PersonGroupCourse>> GetCurrentCoursePersonGroupByPeopleIdsAsync(IEnumerable<long> peopleIds, CancellationToken ct);
 
     // Transactions
-    public Task InsertAndUpdateTransactionAsync(IEnumerable<Group> groups, IEnumerable<Person> persons, IEnumerable<Student> students, IEnumerable<PersonGroupCourse> personGroupCourses, CancellationToken ct);
+    public Task InsertAndUpdateTransactionAsync(IEnumerable<Group> groups, IEnumerable<Person> people, IEnumerable<Student> students, IEnumerable<PersonGroupCourse> personGroupCourses, CancellationToken ct);
 }

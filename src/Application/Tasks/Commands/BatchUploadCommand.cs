@@ -54,7 +54,8 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         // Process PersonGroupCourse
         IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, students, groups, rows, ct);
 
-        // Persist in one transaction
+        await _peopleService.InsertAndUpdateTransactionAsync(groups.Values, people.Values, students.Values, presonGroupCourses.Values, ct);
+
         return 1;
     }
 
@@ -72,15 +73,9 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             var personGroupCourse = (await _peopleService.GetCurrentCoursePersonGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
             foreach (var r in rows)
             {
-                Person p;
-                if (r.Expedient.HasValue)
-                {
-                    p = students[r.Expedient.Value].Person;
-                }
-                else
-                {
-                    p = people[r.Identitat];
-                }
+                Person p = r.Expedient.HasValue ? 
+                                students[r.Expedient.Value].Person : 
+                                people[r.Identitat];
 
                 if (string.IsNullOrEmpty(r.Grup))
                 {
@@ -88,21 +83,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                 }
                 else
                 {
-                    Group g;
-                    if (groups.ContainsKey(r.Grup))
-                    {
-                        // el grup ja existeix
-                        g = groups[r.Grup];
-                    }
-                    else
-                    {
-                        g = new Group()
-                        {
-                            Name = r.Grup,
-                            Created = DateTime.UtcNow,
-                        };
-                        groups.Add(r.Grup, g);
-                    }
+                    Group g = groups[r.Grup];
 
                     PersonGroupCourse pgc;
                     if (personGroupCourse.ContainsKey(p.DocumentId))
@@ -124,20 +105,13 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                         personGroupCourse.Add(p.DocumentId, pgc);
                     }
                 }
-                
-                if (string.IsNullOrEmpty(r.Grup))
-                if (r.Expedient.HasValue)
-                {
-                    var s = students[r.Expedient.Value];
-                    
-                }
             }
             return personGroupCourse;
         }
 
         private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<PeopleObject> rows, CancellationToken ct)
     {
-        IEnumerable<string> groupNames = rows.Select(x => x.Grup ?? string.Empty).Distinct();
+        IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.Grup)).Select(x => x.Grup ?? "").Distinct();
         IEnumerable<Group> existingGroups = await _peopleService.GetGroupsByNameAsync(groupNames, ct);
         IDictionary<string, Group> groups = existingGroups.ToDictionary(x => x.Name, x => x);
 
@@ -201,11 +175,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     private Student CreateStudentFromRow(PeopleObject po)
     {
         var s = new Student();
-        if (!po.Expedient.HasValue)
-        {
-             throw new Exception("this is not and student");
-        }
-        s.AcademicRecordNumber = po.Expedient.Value;
+        s.AcademicRecordNumber = po.Expedient ?? 0;
         s.Person = CreatePersonFromRow(po);
         s.SubjectsInfo = po.Assignatures;
         return s;
@@ -221,6 +191,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     {
         var s = new Person();
         s.Name = po.Nom;
+        s.DocumentId = po.Identitat;
         s.Surname1 = po.Llinatge1;
         s.Surname2 = po.Llinatge2;
         s.ContactMail = po.EmailContacte;
