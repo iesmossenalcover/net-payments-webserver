@@ -14,7 +14,33 @@ public class PeopleService : IPeopleService
         {
             _dbContext = dbContext;
         }
-        #endregion
+    #endregion
+
+    public Task<Course> GetCurrentCoursAsync(CancellationToken ct)
+    {
+        return _dbContext
+            .Courses
+            .FirstAsync(x => x.Active == true);
+    }
+
+    public async Task<IEnumerable<PersonGroupCourse>> GetCurrentCoursePersonGroupByPeopleIdsAsync(IEnumerable<long> peopleIds, CancellationToken ct)
+    {
+        return await _dbContext.PersonGroupCourses
+                        .Include(x => x.Person)
+                        .Include(x => x.Group)
+                        .Include(x => x.Course)
+                        .Where(x => x.Course.Active == true && peopleIds.Contains(x.PersonId)).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Group>> GetGroupsByNameAsync(IEnumerable<string> names, CancellationToken ct)
+    {
+        return await _dbContext.Groups.Where(x => names.Contains(x.Name)).ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<Person>> GetPeopleAsync(IEnumerable<string> documents, CancellationToken ct)
+    {
+        return await _dbContext.People.Where(x => documents.Contains(x.DocumentId)).ToListAsync(ct);
+    }
 
     public async Task<IEnumerable<Student>> GetManyStudentsAsync(IEnumerable<long> expidients, bool loadPeople, CancellationToken ct)
     {
@@ -30,10 +56,26 @@ public class PeopleService : IPeopleService
         return await query.ToListAsync();
     }
 
-    public async Task InsertOrUpdateManyStudentsAsync(IEnumerable<Student> students, CancellationToken ct)
+    public async Task InsertAndUpdateTransactionAsync(
+        IEnumerable<Group> groups,
+        IEnumerable<Person> people,
+        IEnumerable<Student> students,
+        IEnumerable<PersonGroupCourse> personGroupCourses,
+        CancellationToken ct)
     {
-        _dbContext.Students.UpdateRange(students.Where(x => x.Id > 0));
-        _dbContext.Students.AddRange(students.Where(x => x.Id == 0));
+        _dbContext.Groups.AddRange(groups.Where(x => x.Id == 0));
+        _dbContext.Groups.UpdateRange(groups.Where(x => x.Id > 0));
+        _dbContext.People.AddRange(people.Where(x => x.Id == 0));
+        _dbContext.People.UpdateRange(people.Where(x => x.Id >= 0));
+        _dbContext.PersonGroupCourses.AddRange(personGroupCourses.Where(x => x.Id == 0));
+        _dbContext.PersonGroupCourses.UpdateRange(personGroupCourses.Where(x => x.Id > 0));
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<Student> InsertStudentAsync(Student student)
+    {
+        _dbContext.Students.Add(student);
+        await _dbContext.SaveChangesAsync();
+        return student;
     }
 }

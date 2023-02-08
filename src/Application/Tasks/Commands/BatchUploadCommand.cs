@@ -46,56 +46,159 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         }
 
         // Process groups
+        IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
         // Process students
-        IEnumerable<Student> students = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
-        // persons
+        IDictionary<long, Student> students = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
+        // Teachers
+        IDictionary<string, Person> people = await ProcessPeople(rows.Where(x => !x.Expedient.HasValue), ct);
         // Process PersonGroupCourse
+        IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, students, groups, rows, ct);
 
         // Persist in one transaction
         return 1;
     }
 
-    private async Task<IEnumerable<Student>> ProcessStudents(IEnumerable<PeopleObject> rows, CancellationToken ct)
-    {
-        Dictionary<long, Student> students = new Dictionary<long, Student>(rows.Count());
-        foreach (PeopleObject po in rows)
+    #region private methods
+
+    private async Task<IDictionary<string, PersonGroupCourse>> ProcessPersonGroupCourse(
+            IDictionary<string, Person> people,
+            IDictionary<long, Student> students,
+            IDictionary<string, Group> groups,
+            IEnumerable<PeopleObject> rows,
+            CancellationToken ct)
         {
-            Student? s = CreateStudentFromRow(po);
-            if (s == null)
+            var course = await _peopleService.GetCurrentCoursAsync(ct);
+            var peopleIds = people.Select(x => x.Value.Id).Concat(students.Select(y => y.Value.PersonId));
+            var personGroupCourse = (await _peopleService.GetCurrentCoursePersonGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
+            foreach (var r in rows)
             {
-                throw new Exception("TODO: add mor info, invalid row");
+                Person p;
+                if (r.Expedient.HasValue)
+                {
+                    p = students[r.Expedient.Value].Person;
+                }
+                else
+                {
+                    p = people[r.Identitat];
+                }
+
+                if (string.IsNullOrEmpty(r.Grup))
+                {
+                    // no te grup a excel, hauriem d'eliminar l'associació
+                }
+                else
+                {
+                    Group g;
+                    if (groups.ContainsKey(r.Grup))
+                    {
+                        // el grup ja existeix
+                        g = groups[r.Grup];
+                    }
+                    else
+                    {
+                        g = new Group()
+                        {
+                            Name = r.Grup,
+                            Created = DateTime.UtcNow,
+                        };
+                        groups.Add(r.Grup, g);
+                    }
+
+                    PersonGroupCourse pgc;
+                    if (personGroupCourse.ContainsKey(p.DocumentId))
+                    {
+                        pgc = personGroupCourse[p.DocumentId];
+                        if (pgc.Group.Id != g.Id)
+                        {
+                            pgc.Group = g;
+                        }
+                    }
+                    else
+                    {
+                        pgc = new PersonGroupCourse()
+                        {
+                            Group = g,
+                            Person = p,
+                            Course = course,
+                        };
+                        personGroupCourse.Add(p.DocumentId, pgc);
+                    }
+                }
+                
+                if (string.IsNullOrEmpty(r.Grup))
+                if (r.Expedient.HasValue)
+                {
+                    var s = students[r.Expedient.Value];
+                    
+                }
             }
-            students.Add(s.AcademicRecordNumber, s);
+            return personGroupCourse;
         }
 
-        IEnumerable<long> expedients = students.Select(x => x.Key);
-        IEnumerable<Student> existingStudents = await _peopleService.GetManyStudentsAsync(expedients, true, ct);
-        foreach (var s in existingStudents)
+        private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<PeopleObject> rows, CancellationToken ct)
+    {
+        IEnumerable<string> groupNames = rows.Select(x => x.Grup ?? string.Empty).Distinct();
+        IEnumerable<Group> existingGroups = await _peopleService.GetGroupsByNameAsync(groupNames, ct);
+        IDictionary<string, Group> groups = existingGroups.ToDictionary(x => x.Name, x => x);
+
+        foreach (var name in groupNames)
         {
-            if (students.ContainsKey(s.AcademicRecordNumber))
+            if (groups.ContainsKey(name)) continue;
+
+            var g = new Group()
             {
-                // update student
-                UpdateStudentFields(s, students[s.AcademicRecordNumber]);
-                students.Remove(s.AcademicRecordNumber);
+                Name = name,
+                Created = DateTime.Now
+            };
+            groups[name] = g;
+        }
+        return groups;
+    }
+
+    private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<PeopleObject> rows, CancellationToken ct)
+    {
+        IEnumerable<Person> existingPeople = await _peopleService.GetPeopleAsync(rows.Select(x => x.Identitat), ct);
+        IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
+        foreach (var r in rows)
+        {
+            if (people.ContainsKey(r.Identitat))
+            {
+                var existingPerson = people[r.Identitat];
+                var newPerson = CreatePersonFromRow(r);
+                UpdatePersonFields(existingPerson, newPerson);
+            }
+            else
+            {
+                var p = CreatePersonFromRow(r);
+                people[r.Identitat] = p;
             }
         }
-
-        return existingStudents.Concat(students.Select(x => x.Value));
-
+        return people;
     }
 
-    private void UpdateStudentFields(Student s, Student newStudent)
+    private async Task<IDictionary<long, Student>> ProcessStudents(IEnumerable<PeopleObject> rows, CancellationToken ct)
     {
-        s.SubjectsInfo = newStudent.SubjectsInfo;
-        s.Person.DocumentId = newStudent.Person.DocumentId;
-        s.Person.Name = newStudent.Person.Name;
-        s.Person.Surname1 = newStudent.Person.Surname1;
-        s.Person.Surname2 = newStudent.Person.Surname2;
-        s.Person.ContactMail = newStudent.Person.ContactMail;
-        s.Person.ContactPhone = newStudent.Person.ContactPhone;
+        IEnumerable<Student> existingStudents = await _peopleService.GetManyStudentsAsync(rows.Select(x => x.Expedient ?? 0), true, ct);
+        IDictionary<long, Student> students = existingStudents.ToDictionary(x => x.AcademicRecordNumber, x => x);
+        foreach (var r in rows)
+        {
+            var number = r.Expedient ?? 0;
+            if (students.ContainsKey(number))
+            {
+                var existingStudent = students[number];
+                var newStudent = CreateStudentFromRow(r);
+                UpdateStudentFields(existingStudent, newStudent);
+            }
+            else
+            {
+                var p = CreateStudentFromRow(r);
+                students[number] = p;
+            }
+        }
+        return students;
     }
 
-    private Student? CreateStudentFromRow(PeopleObject po)
+    private Student CreateStudentFromRow(PeopleObject po)
     {
         var s = new Student();
         if (!po.Expedient.HasValue)
@@ -103,14 +206,35 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
              throw new Exception("this is not and student");
         }
         s.AcademicRecordNumber = po.Expedient.Value;
-        s.Person = new Person();
-        s.Person.DocumentId = po.Identitat;
-        s.Person.Name = po.Nom;
-        s.Person.Surname1 = po.Llinatge1;
-        s.Person.Surname2 =po.Llinatge2;
-        s.Person.ContactMail = po.EmailContacte;
-        s.Person.ContactPhone = po.TelContacte;
+        s.Person = CreatePersonFromRow(po);
         s.SubjectsInfo = po.Assignatures;
         return s;
     }
+
+    private void UpdateStudentFields(Student s, Student newStudent)
+    {
+        s.SubjectsInfo = newStudent.SubjectsInfo;
+        UpdatePersonFields(s.Person, newStudent.Person);
+    }
+
+    private Person CreatePersonFromRow(PeopleObject po)
+    {
+        var s = new Person();
+        s.Name = po.Nom;
+        s.Surname1 = po.Llinatge1;
+        s.Surname2 = po.Llinatge2;
+        s.ContactMail = po.EmailContacte;
+        s.ContactPhone = po.TelContacte;
+        return s;
+    }
+
+    private void UpdatePersonFields(Person s, Person newPerson)
+    {
+        s.Name = newPerson.Name;
+        s.Surname1 = newPerson.Surname1;
+        s.Surname2 = newPerson.Surname2;
+        s.ContactMail = newPerson.ContactMail;
+        s.ContactPhone = newPerson.ContactPhone;
+    }
+    #endregion
 }
