@@ -88,6 +88,9 @@ namespace netpaymentswebserver.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsAmipa")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal>("NormalPrice")
                         .HasColumnType("TEXT");
 
@@ -320,7 +323,13 @@ namespace netpaymentswebserver.Migrations
                     b.Property<long>("AcademicRecordNumber")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Amipa")
+                        .HasColumnType("INTEGER");
+
                     b.Property<long>("PersonId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("PreEnrollment")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("SubjectsInfo")
@@ -335,23 +344,6 @@ namespace netpaymentswebserver.Migrations
                         .IsUnique();
 
                     b.ToTable("student", "people");
-                });
-
-            modelBuilder.Entity("Domain.Entities.People.Teacher", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("PersonId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PersonId")
-                        .IsUnique();
-
-                    b.ToTable("teacher", "people");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.UserClaim", b =>
@@ -440,17 +432,6 @@ namespace netpaymentswebserver.Migrations
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Student", b =>
-                {
-                    b.HasOne("Domain.Entities.People.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("Domain.Entities.People.Teacher", b =>
                 {
                     b.HasOne("Domain.Entities.People.Person", "Person")
                         .WithMany()

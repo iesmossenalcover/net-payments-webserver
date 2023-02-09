@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace netpaymentswebserver.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class complet : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,7 +52,8 @@ namespace netpaymentswebserver.Migrations
                     AmipaPrice = table.Column<decimal>(type: "TEXT", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     PublishDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UnpublishDate = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    UnpublishDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsAmipa = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -200,34 +201,15 @@ namespace netpaymentswebserver.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     PersonId = table.Column<long>(type: "INTEGER", nullable: false),
                     AcademicRecordNumber = table.Column<long>(type: "INTEGER", nullable: false),
-                    SubjectsInfo = table.Column<string>(type: "TEXT", nullable: true)
+                    SubjectsInfo = table.Column<string>(type: "TEXT", nullable: true),
+                    Amipa = table.Column<bool>(type: "INTEGER", nullable: false),
+                    PreEnrollment = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_student", x => x.Id);
                     table.ForeignKey(
                         name: "FK_student_person_PersonId",
-                        column: x => x.PersonId,
-                        principalSchema: "people",
-                        principalTable: "person",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "teacher",
-                schema: "people",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    PersonId = table.Column<long>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_teacher", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_teacher_person_PersonId",
                         column: x => x.PersonId,
                         principalSchema: "people",
                         principalTable: "person",
@@ -436,13 +418,6 @@ namespace netpaymentswebserver.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_teacher_PersonId",
-                schema: "people",
-                table: "teacher",
-                column: "PersonId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_user_Username",
                 schema: "authentication",
                 table: "user",
@@ -469,10 +444,6 @@ namespace netpaymentswebserver.Migrations
 
             migrationBuilder.DropTable(
                 name: "student",
-                schema: "people");
-
-            migrationBuilder.DropTable(
-                name: "teacher",
                 schema: "people");
 
             migrationBuilder.DropTable(

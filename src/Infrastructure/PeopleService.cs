@@ -52,6 +52,16 @@ public class PeopleService : IPeopleService
         return await query.ToListAsync();
     }
 
+    public async Task<bool> IfPersonExistsAsync(string documentID, CancellationToken ct)
+    {
+        return await _dbContext.People.AnyAsync(x => x.DocumentId == documentID);
+    }
+
+    public async Task<bool> IfStudentExistsAsync(long academicRecordNumbers, CancellationToken ct)
+    {
+        return await _dbContext.Students.AnyAsync(x => x.AcademicRecordNumber == academicRecordNumbers);
+    }
+
     public async Task InsertAndUpdateTransactionAsync(
         Application.Common.Models.BatchUploadModel batchUploadModel,
         CancellationToken ct)
@@ -67,10 +77,15 @@ public class PeopleService : IPeopleService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<Student> InsertStudentAsync(Student student)
+    public async Task InsertPersonAsync(Person person)
+    {
+        _dbContext.People.Add(person);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task InsertStudentAsync(Student student)
     {
         _dbContext.Students.Add(student);
         await _dbContext.SaveChangesAsync();
-        return student;
     }
 }

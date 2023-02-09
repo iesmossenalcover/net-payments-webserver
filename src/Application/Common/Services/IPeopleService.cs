@@ -8,11 +8,19 @@ public interface IPeopleService
     public Task<IEnumerable<Group>> GetGroupsByNameAsync(IEnumerable<string> names, CancellationToken ct);
 
     // Students
-    public Task<Student> InsertStudentAsync(Student student);
-    public Task<IEnumerable<Student>> GetStudentsByAcademicRecordAsync(IEnumerable<long> academincRecordNumbers, CancellationToken ct);
+    public Task InsertStudentAsync(Student student);
+    public Task<IEnumerable<Student>> GetStudentsByAcademicRecordAsync(IEnumerable<long> academicRecordNumbers, CancellationToken ct);
+    public Task<bool> IfStudentExistsAsync(long academicRecordNumbers, CancellationToken ct);
+
 
     // People
     public Task<IEnumerable<Person>> GetPeopleAsync(IEnumerable<string> documents, CancellationToken ct);
+
+    public Task<bool> IfPersonExistsAsync(string documentID, CancellationToken ct);
+
+    public Task InsertPersonAsync(Person person);
+
+
 
     // Courses
     public Task<Course> GetCurrentCoursAsync(CancellationToken ct);

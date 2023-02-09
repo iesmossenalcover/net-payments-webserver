@@ -21,5 +21,10 @@ public static class RegisterRoutes
         app.MapPost("/api/tasks/people", WebServer.Handlers.Tasks.UploadPeople)
             .WithName("Upload people")
             .WithOpenApi();
+
+
+        app.MapPost("/api/people", WebServer.Handlers.People.CreatePerson)
+            .WithName("Create new person")
+            .WithOpenApi();
     }
 }

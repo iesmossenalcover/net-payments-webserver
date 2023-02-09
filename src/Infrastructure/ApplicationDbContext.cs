@@ -16,7 +16,6 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Authentication.UserClaim> UserClaims { get; set; } = default!;
 
         public DbSet<Domain.Entities.People.Person> People { get; set; } = default!;
-        public DbSet<Domain.Entities.People.Teacher> Teachers { get; set; } = default!;
         public DbSet<Domain.Entities.People.Student> Students { get; set; } = default!;
         public DbSet<Domain.Entities.People.Group> Groups { get; set; } = default!;
         public DbSet<Domain.Entities.People.Course> Courses { get; set; } = default!;
@@ -71,15 +70,6 @@ namespace Infrastructure
                 .Property(x => x.DocumentId).HasMaxLength(50);
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactPhone).HasMaxLength(15);
-
-
-            modelBuilder.Entity<Domain.Entities.People.Teacher>()
-                .ToTable("teacher", "people")
-                .Property(x => x.Id).ValueGeneratedOnAdd(); ;
-            modelBuilder.Entity<Domain.Entities.People.Teacher>()
-                .HasIndex(x => x.PersonId).IsUnique();
-            modelBuilder.Entity<Domain.Entities.People.Teacher>()
-                .HasOne(x => x.Person);
 
 
             modelBuilder.Entity<Domain.Entities.People.Student>()
