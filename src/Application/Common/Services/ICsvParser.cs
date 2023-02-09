@@ -1,10 +1,11 @@
+using Application.Common.Models;
 using System.Data;
 
 namespace Application.Common.Services;
 
 public interface ICsvParser
 {
-    CsvParserResult<T> Parse<T>(Stream stream);
+    CsvParserResult<BatchUploadRowModel> ParseBatchUpload(Stream stream);
 }
 
 public class CsvParserResult<T>

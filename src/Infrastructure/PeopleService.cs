@@ -42,35 +42,28 @@ public class PeopleService : IPeopleService
         return await _dbContext.People.Where(x => documents.Contains(x.DocumentId)).ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<Student>> GetManyStudentsAsync(IEnumerable<long> expidients, bool loadPeople, CancellationToken ct)
+    public async Task<IEnumerable<Student>> GetStudentsByAcademicRecordAsync(IEnumerable<long> expidients, CancellationToken ct)
     {
         var query = _dbContext
                     .Students
+                    .Include(x => x.Person)
                     .Where(x => expidients.Contains(x.AcademicRecordNumber));
-
-        if (loadPeople)
-        {
-            query = query.Include(x => x.Person);
-        }
 
         return await query.ToListAsync();
     }
 
     public async Task InsertAndUpdateTransactionAsync(
-        IEnumerable<Group> groups,
-        IEnumerable<Person> people,
-        IEnumerable<Student> students,
-        IEnumerable<PersonGroupCourse> personGroupCourses,
+        Application.Common.Models.BatchUploadModel batchUploadModel,
         CancellationToken ct)
     {
-        _dbContext.Groups.AddRange(groups.Where(x => x.Id == 0));
-        _dbContext.Groups.UpdateRange(groups.Where(x => x.Id > 0));
-        _dbContext.People.AddRange(people.Where(x => x.Id == 0));
-        _dbContext.People.UpdateRange(people.Where(x => x.Id > 0));
-        _dbContext.Students.AddRange(students.Where(x => x.Id == 0));
-        _dbContext.Students.UpdateRange(students.Where(x => x.Id > 0));
-        _dbContext.PersonGroupCourses.AddRange(personGroupCourses.Where(x => x.Id == 0));
-        _dbContext.PersonGroupCourses.UpdateRange(personGroupCourses.Where(x => x.Id > 0));
+        _dbContext.Groups.AddRange(batchUploadModel.NewGroups);
+        _dbContext.Groups.UpdateRange(batchUploadModel.ExistingGroups);
+        _dbContext.People.AddRange(batchUploadModel.NewPeople);
+        _dbContext.People.UpdateRange(batchUploadModel.ExistingPeople);
+        _dbContext.Students.AddRange(batchUploadModel.NewStudents);
+        _dbContext.Students.UpdateRange(batchUploadModel.ExistingStudents);
+        _dbContext.PersonGroupCourses.AddRange(batchUploadModel.NewPersonGroupCourses);
+        _dbContext.PersonGroupCourses.UpdateRange(batchUploadModel.ExistingPersonGroupCourses);
         await _dbContext.SaveChangesAsync();
     }
 

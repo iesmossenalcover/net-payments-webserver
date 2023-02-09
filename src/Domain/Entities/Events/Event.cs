@@ -9,5 +9,6 @@ public class Event
     public DateTime CreationDate { get; set; } = default!;
     public DateTime PublishDate { get; set; } = default!;
     public DateTime UnpublishDate { get; set; } = default!;
+    public bool IsAmipa { get; set; } = false;
 
 }

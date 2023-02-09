@@ -1,7 +1,7 @@
 using System.Data;
+using Application.Common.Models;
 using Application.Common.Services;
 using Domain.Entities.People;
-using Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
 
@@ -13,7 +13,8 @@ public record PeopleBatchUploadCommand(Stream File) : IRequest<BatchUploadVm>;
 // Validator for the model
 
 // Optionally define a view model
-public record BatchUploadVm(bool Ok, string? ErrorMessage = null);
+public record BatchUploadSummary(int StudentsCreated, int StudentsUpdated, int GroupsCreated, int GroupsUpdated, int PeopleCreated, int PeopleUpdated);
+public record BatchUploadVm(bool Ok, BatchUploadSummary? Summary, string? ErrorMessage = null);
 
 // Handler
 public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, BatchUploadVm>
@@ -37,18 +38,16 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
     public async Task<BatchUploadVm> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
     {
-        // TODO: Add to default grup, if no group is present.
-
         // Parse csv
-        var result = _csvParser.Parse<PeopleObject>(request.File);
+        var result = _csvParser.ParseBatchUpload(request.File);
         request.File.Dispose();
         
         if (result.Values == null)
         {
-            return new BatchUploadVm(false, result.ErrorMessage);
+            return new BatchUploadVm(false, null, result.ErrorMessage);
         }
 
-        IEnumerable<PeopleObject> rows = result.Values;
+        IEnumerable<BatchUploadRowModel> rows = result.Values;
 
         // Process groups
         IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
@@ -59,9 +58,11 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         // Process PersonGroupCourse
         IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, students, groups, rows, ct);
 
-        await _peopleService.InsertAndUpdateTransactionAsync(groups.Values, people.Values, students.Values, presonGroupCourses.Values, ct);
+        var m = new BatchUploadModel(students, people, groups, presonGroupCourses.Values);
+        var summary = new BatchUploadSummary(m.NewStudents.Count(), m.ExistingStudents.Count(), m.NewGroups.Count(), m.ExistingGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
-        return new BatchUploadVm(true);
+        await _peopleService.InsertAndUpdateTransactionAsync(m, ct);
+        return new BatchUploadVm(true, summary);
     }
 
     #region private methods
@@ -70,7 +71,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             IDictionary<string, Person> people,
             IDictionary<long, Student> students,
             IDictionary<string, Group> groups,
-            IEnumerable<PeopleObject> rows,
+            IEnumerable<BatchUploadRowModel> rows,
             CancellationToken ct)
         {
             var course = await _peopleService.GetCurrentCoursAsync(ct);
@@ -84,7 +85,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
                 if (string.IsNullOrEmpty(r.Grup))
                 {
-                    // no te grup a excel, hauriem d'eliminar l'associació
+                    // no group. Should add the default group.
                 }
                 else
                 {
@@ -114,7 +115,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             return personGroupCourse;
         }
 
-        private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<PeopleObject> rows, CancellationToken ct)
+        private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
     {
         IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.Grup)).Select(x => x.Grup ?? "").Distinct();
         IEnumerable<Group> existingGroups = await _peopleService.GetGroupsByNameAsync(groupNames, ct);
@@ -134,7 +135,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         return groups;
     }
 
-    private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<PeopleObject> rows, CancellationToken ct)
+    private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
     {
         IEnumerable<Person> existingPeople = await _peopleService.GetPeopleAsync(rows.Select(x => x.Identitat), ct);
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
@@ -155,9 +156,9 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         return people;
     }
 
-    private async Task<IDictionary<long, Student>> ProcessStudents(IEnumerable<PeopleObject> rows, CancellationToken ct)
+    private async Task<IDictionary<long, Student>> ProcessStudents(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
     {
-        IEnumerable<Student> existingStudents = await _peopleService.GetManyStudentsAsync(rows.Select(x => x.Expedient ?? 0), true, ct);
+        IEnumerable<Student> existingStudents = await _peopleService.GetStudentsByAcademicRecordAsync(rows.Select(x => x.Expedient ?? 0), ct);
         IDictionary<long, Student> students = existingStudents.ToDictionary(x => x.AcademicRecordNumber, x => x);
         foreach (var r in rows)
         {
@@ -177,7 +178,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         return students;
     }
 
-    private Student CreateStudentFromRow(PeopleObject po)
+    private Student CreateStudentFromRow(BatchUploadRowModel po)
     {
         var s = new Student();
         s.AcademicRecordNumber = po.Expedient ?? 0;
@@ -192,7 +193,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         UpdatePersonFields(s.Person, newStudent.Person);
     }
 
-    private Person CreatePersonFromRow(PeopleObject po)
+    private Person CreatePersonFromRow(BatchUploadRowModel po)
     {
         var s = new Person();
         s.Name = po.Nom;

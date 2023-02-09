@@ -7,4 +7,5 @@ public class Student
     public Person Person { get; set; } = default!;
     public long AcademicRecordNumber { get; set; }
     public string? SubjectsInfo { get; set; } = default!;
+    public bool Amipa { get; set; } = false;
 }
