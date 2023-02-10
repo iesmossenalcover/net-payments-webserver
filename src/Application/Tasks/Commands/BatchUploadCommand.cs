@@ -125,7 +125,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             var g = new Group()
             {
                 Name = name,
-                Created = DateTime.Now
+                Created = DateTimeOffset.UtcNow,
             };
             groups[name] = g;
         }

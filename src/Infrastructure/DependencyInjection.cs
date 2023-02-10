@@ -6,14 +6,13 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(
-                configuration.GetConnectionString("Sqlite"))
-            );
-
-            // services.AddDbContext<ApplicationDbContext>(options =>
-            //     options.UseSqlite(configuration.GetConnectionString("Sqlite"),
-            //     b => b.MigrationsAssembly("WebApp")) // if want some project in a solution
+            // services.AddDbContext<ApplicationDbContext>(o => o.UseSqlite(
+            //     configuration.GetConnectionString("Sqlite"))
             // );
+
+            services.AddDbContext<ApplicationDbContext>(o => 
+                o.UseNpgsql(configuration.GetConnectionString("PostgreSql"))
+            );
 
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
 

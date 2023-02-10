@@ -6,9 +6,9 @@ public class Event
     public string Code { get; set; }  = default!;
     public decimal NormalPrice { get; set; }
     public decimal AmipaPrice { get; set; }
-    public DateTime CreationDate { get; set; } = default!;
-    public DateTime PublishDate { get; set; } = default!;
-    public DateTime UnpublishDate { get; set; } = default!;
+    public DateTimeOffset CreationDate { get; set; } = default!;
+    public DateTimeOffset PublishDate { get; set; } = default!;
+    public DateTimeOffset UnpublishDate { get; set; } = default!;
     public bool IsAmipa { get; set; } = false;
 
 }

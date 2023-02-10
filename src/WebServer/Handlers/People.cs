@@ -13,4 +13,11 @@ public class People
     {
         return await mediator.Send(cmd);
     }
+
+    public static async Task<long> UpdatePerson(
+        IMediator mediator,
+        [FromBody] UpdatePersonCommand cmd)
+    {
+        return await mediator.Send(cmd);
+    }
 }

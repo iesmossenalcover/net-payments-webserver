@@ -29,34 +29,24 @@ public class PeopleService : IPeopleService
                         .Include(x => x.Person)
                         .Include(x => x.Group)
                         .Include(x => x.Course)
-                        .Where(x => x.Course.Active == true && peopleIds.Contains(x.PersonId)).ToListAsync();
+                        .Where(x => x.Course.Active == true && peopleIds.Distinct().Contains(x.PersonId)).ToListAsync();
     }
 
     public async Task<IEnumerable<Group>> GetGroupsByNameAsync(IEnumerable<string> names, CancellationToken ct)
     {
-        return await _dbContext.Groups.Where(x => names.Contains(x.Name)).ToListAsync(ct);
+        return await _dbContext.Groups.Where(x => names.Distinct().Contains(x.Name)).ToListAsync(ct);
     }
 
     public async Task<IEnumerable<Person>> GetPeopleAsync(IEnumerable<string> documents, CancellationToken ct)
     {
-        return await _dbContext.People.Where(x => documents.Contains(x.DocumentId)).ToListAsync(ct);
+        return await _dbContext.People.Where(x => documents.Distinct().Contains(x.DocumentId)).ToListAsync(ct);
     }
 
     public async Task<IEnumerable<Student>> GetStudentsByAcademicRecordAsync(IEnumerable<long> academicRecords, CancellationToken ct)
     {
         return await _dbContext.Students
-            .Where(x => academicRecords.Contains(x.AcademicRecordNumber))
+            .Where(x => academicRecords.Distinct().Contains(x.AcademicRecordNumber))
             .ToListAsync(ct);
-    }
-
-    public async Task<bool> IfPersonExistsAsync(string documentID, CancellationToken ct)
-    {
-        return await _dbContext.People.AnyAsync(x => x.DocumentId == documentID);
-    }
-
-    public async Task<bool> IfStudentExistsAsync(long academicRecordNumbers, CancellationToken ct)
-    {
-        return await _dbContext.Students.AnyAsync(x => x.AcademicRecordNumber == academicRecordNumbers);
     }
 
     public async Task InsertAndUpdateTransactionAsync(
@@ -82,5 +72,15 @@ public class PeopleService : IPeopleService
     {
         _dbContext.Students.Add(student);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<Student?> GetStudentByAcademicRecordAsync(long academicRecordNumber, CancellationToken ct)
+    {
+        return await _dbContext.Students.FirstOrDefaultAsync(x => x.AcademicRecordNumber == academicRecordNumber);
+    }
+
+    public async Task<Person?> GetPersonByDocumentIdAsync(string documentId, CancellationToken ct)
+    {
+        return await _dbContext.People.FirstOrDefaultAsync(x => x.DocumentId == documentId);
     }
 }

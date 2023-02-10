@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -28,12 +29,12 @@ namespace netpaymentswebserver.Migrations
                 schema: "people",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Active = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    StartDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Active = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -45,15 +46,15 @@ namespace netpaymentswebserver.Migrations
                 schema: "event",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Code = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    NormalPrice = table.Column<decimal>(type: "TEXT", nullable: false),
-                    AmipaPrice = table.Column<decimal>(type: "TEXT", nullable: false),
-                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    PublishDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UnpublishDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    IsAmipa = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    NormalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    CreationDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    PublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    IsAmipa = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,12 +66,12 @@ namespace netpaymentswebserver.Migrations
                 schema: "people",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ParentId = table.Column<long>(type: "INTEGER", nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ParentId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -88,10 +89,10 @@ namespace netpaymentswebserver.Migrations
                 schema: "order",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -103,14 +104,14 @@ namespace netpaymentswebserver.Migrations
                 schema: "people",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    DocumentId = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Surname1 = table.Column<string>(type: "TEXT", nullable: false),
-                    Surname2 = table.Column<string>(type: "TEXT", nullable: true),
-                    ContactPhone = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true),
-                    ContactMail = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DocumentId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Surname1 = table.Column<string>(type: "text", nullable: false),
+                    Surname2 = table.Column<string>(type: "text", nullable: true),
+                    ContactPhone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
+                    ContactMail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -122,12 +123,12 @@ namespace netpaymentswebserver.Migrations
                 schema: "authentication",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    HashedPassword = table.Column<string>(type: "TEXT", nullable: false),
-                    Firstname = table.Column<string>(type: "TEXT", nullable: false),
-                    Lastname = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    HashedPassword = table.Column<string>(type: "text", nullable: false),
+                    Firstname = table.Column<string>(type: "text", nullable: false),
+                    Lastname = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -139,9 +140,9 @@ namespace netpaymentswebserver.Migrations
                 schema: "order",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    OrderId = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrderId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -160,11 +161,11 @@ namespace netpaymentswebserver.Migrations
                 schema: "people",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    PersonId = table.Column<long>(type: "INTEGER", nullable: false),
-                    CourseId = table.Column<long>(type: "INTEGER", nullable: false),
-                    GroupId = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PersonId = table.Column<long>(type: "bigint", nullable: false),
+                    CourseId = table.Column<long>(type: "bigint", nullable: false),
+                    GroupId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -197,12 +198,11 @@ namespace netpaymentswebserver.Migrations
                 schema: "people",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    AcademicRecordNumber = table.Column<long>(type: "INTEGER", nullable: false),
-                    SubjectsInfo = table.Column<string>(type: "TEXT", nullable: true),
-                    Amipa = table.Column<bool>(type: "INTEGER", nullable: false),
-                    PreEnrollment = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false),
+                    AcademicRecordNumber = table.Column<long>(type: "bigint", nullable: false),
+                    SubjectsInfo = table.Column<string>(type: "text", nullable: true),
+                    Amipa = table.Column<bool>(type: "boolean", nullable: false),
+                    PreEnrollment = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -221,10 +221,11 @@ namespace netpaymentswebserver.Migrations
                 schema: "authentication",
                 columns: table => new
                 {
-                    Type = table.Column<string>(type: "TEXT", nullable: false),
-                    UserId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Id = table.Column<long>(type: "INTEGER", nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: false)
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Value = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -243,12 +244,12 @@ namespace netpaymentswebserver.Migrations
                 schema: "event",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Paid = table.Column<bool>(type: "INTEGER", nullable: false),
-                    PersonId = table.Column<long>(type: "INTEGER", nullable: false),
-                    EventId = table.Column<long>(type: "INTEGER", nullable: false),
-                    ItemId = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Paid = table.Column<bool>(type: "boolean", nullable: false),
+                    PersonId = table.Column<long>(type: "bigint", nullable: false),
+                    EventId = table.Column<long>(type: "bigint", nullable: false),
+                    ItemId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -19,7 +19,6 @@ public record CreatePersonCommand : IRequest<long>
     public bool PreEnrollment { get; set; }
 }
 
-
 public class CreatePersonCommandValidator : AbstractValidator<CreatePersonCommand>
 {
     private readonly IPeopleService _peopleService;
@@ -27,21 +26,34 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
     public CreatePersonCommandValidator(IPeopleService peopleService)
     {
         _peopleService = peopleService;
-        RuleFor(x => x.Name).NotEmpty().WithMessage("Text must be not empty");
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .WithMessage("El camp no pot ser buid.");
+
+        RuleFor(x => x.Surname1)
+            .NotEmpty().WithMessage("El camp no pot ser buid.");
+
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("Text must be not empty")
+            .MaximumLength(50).WithMessage("Màxim 50 caràcters")
             .MustAsync(async (DocumentId, ct) =>
             {
-                return !await _peopleService.IfPersonExistsAsync(DocumentId, ct);
-            }).WithMessage("Ja existeix una persona amb aquest document identificatiu");
+                return await _peopleService.GetPersonByDocumentIdAsync(DocumentId, ct) == null;
+            }).WithMessage("Ja existeix una persona amb aquest document identificatiu.");
 
         RuleFor(x => x.AcademicRecordNumber)
             .MustAsync(async (x, ct) =>
             {
                 if (!x.HasValue) return true;
+                return await _peopleService.GetStudentByAcademicRecordAsync(x.Value, ct) == null;
+                
+            }).WithMessage("Ja existeix un alumne amb aquest número d'expedient.");
 
-                return !await _peopleService.IfStudentExistsAsync(x.Value, ct);
-            }).WithMessage("L'alumne que es vol introduir ja existeix a la BBDD");
+        RuleFor(x => x.ContactPhone)
+            .MaximumLength(50).WithMessage("Màxim 15 caràcters");
+
+        RuleFor(x => x.ContactMail)
+            .MaximumLength(50).WithMessage("Màxim 100 caràcters");
     }
 }
 

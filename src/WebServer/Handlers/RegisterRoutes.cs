@@ -22,9 +22,13 @@ public static class RegisterRoutes
             .WithName("Upload people")
             .WithOpenApi();
 
-
+        // People
         app.MapPost("/api/people", WebServer.Handlers.People.CreatePerson)
-            .WithName("Create new person")
+            .WithName("Create person")
+            .WithOpenApi();
+
+        app.MapPut("/api/people", WebServer.Handlers.People.UpdatePerson)
+            .WithName("Update person")
             .WithOpenApi();
     }
 }
