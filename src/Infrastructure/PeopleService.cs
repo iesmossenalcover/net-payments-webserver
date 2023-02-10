@@ -42,14 +42,11 @@ public class PeopleService : IPeopleService
         return await _dbContext.People.Where(x => documents.Contains(x.DocumentId)).ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<Student>> GetStudentsByAcademicRecordAsync(IEnumerable<long> expidients, CancellationToken ct)
+    public async Task<IEnumerable<Student>> GetStudentsByAcademicRecordAsync(IEnumerable<long> academicRecords, CancellationToken ct)
     {
-        var query = _dbContext
-                    .Students
-                    .Include(x => x.Person)
-                    .Where(x => expidients.Contains(x.AcademicRecordNumber));
-
-        return await query.ToListAsync();
+        return await _dbContext.Students
+            .Where(x => academicRecords.Contains(x.AcademicRecordNumber))
+            .ToListAsync(ct);
     }
 
     public async Task<bool> IfPersonExistsAsync(string documentID, CancellationToken ct)
@@ -70,8 +67,6 @@ public class PeopleService : IPeopleService
         _dbContext.Groups.UpdateRange(batchUploadModel.ExistingGroups);
         _dbContext.People.AddRange(batchUploadModel.NewPeople);
         _dbContext.People.UpdateRange(batchUploadModel.ExistingPeople);
-        _dbContext.Students.AddRange(batchUploadModel.NewStudents);
-        _dbContext.Students.UpdateRange(batchUploadModel.ExistingStudents);
         _dbContext.PersonGroupCourses.AddRange(batchUploadModel.NewPersonGroupCourses);
         _dbContext.PersonGroupCourses.UpdateRange(batchUploadModel.ExistingPersonGroupCourses);
         await _dbContext.SaveChangesAsync();

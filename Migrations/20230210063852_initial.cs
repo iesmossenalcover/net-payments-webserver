@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace netpaymentswebserver.Migrations
 {
     /// <inheritdoc />
-    public partial class complet : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -199,7 +199,6 @@ namespace netpaymentswebserver.Migrations
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PersonId = table.Column<long>(type: "INTEGER", nullable: false),
                     AcademicRecordNumber = table.Column<long>(type: "INTEGER", nullable: false),
                     SubjectsInfo = table.Column<string>(type: "TEXT", nullable: true),
                     Amipa = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -209,8 +208,8 @@ namespace netpaymentswebserver.Migrations
                 {
                     table.PrimaryKey("PK_student", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_student_person_PersonId",
-                        column: x => x.PersonId,
+                        name: "FK_student_person_Id",
+                        column: x => x.Id,
                         principalSchema: "people",
                         principalTable: "person",
                         principalColumn: "Id",
@@ -408,13 +407,6 @@ namespace netpaymentswebserver.Migrations
                 schema: "people",
                 table: "student",
                 column: "AcademicRecordNumber",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_student_PersonId",
-                schema: "people",
-                table: "student",
-                column: "PersonId",
                 unique: true);
 
             migrationBuilder.CreateIndex(

@@ -76,12 +76,6 @@ namespace Infrastructure
                 .ToTable("student", "people")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.People.Student>()
-                .HasIndex(x => x.PersonId).IsUnique();
-            modelBuilder.Entity<Domain.Entities.People.Student>()
-                .HasOne(x => x.Person);
-            modelBuilder.Entity<Domain.Entities.People.Student>()
-                .Property(x => x.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Domain.Entities.People.Student>()
                 .HasIndex(x => x.AcademicRecordNumber).IsUnique();
 
 

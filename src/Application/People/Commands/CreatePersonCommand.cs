@@ -6,7 +6,7 @@ using MediatR;
 namespace Application.People.Commands;
 
 // Model we receive
-public record CreatePersonCommand  : IRequest<long>
+public record CreatePersonCommand : IRequest<long>
 {
     public long? AcademicRecordNumber { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -17,7 +17,7 @@ public record CreatePersonCommand  : IRequest<long>
     public string? ContactMail { get; set; }
     public string? SubjectsInfo { get; set; }
     public bool PreEnrollment { get; set; }
- }
+}
 
 
 public class CreatePersonCommandValidator : AbstractValidator<CreatePersonCommand>
@@ -32,11 +32,12 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .NotEmpty().WithMessage("Text must be not empty")
             .MustAsync(async (DocumentId, ct) =>
             {
-                return !await _peopleService.IfPersonExistsAsync(DocumentId, ct);   
+                return !await _peopleService.IfPersonExistsAsync(DocumentId, ct);
             }).WithMessage("Ja existeix una persona amb aquest document identificatiu");
 
         RuleFor(x => x.AcademicRecordNumber)
-            .MustAsync(async (x, ct) => {
+            .MustAsync(async (x, ct) =>
+            {
                 if (!x.HasValue) return true;
 
                 return !await _peopleService.IfStudentExistsAsync(x.Value, ct);
@@ -55,29 +56,31 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, l
     }
     public async Task<long> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
     {
-        var p = new Person()
-        {
-            Name = request.Name,
-            DocumentId = request.DocumentId,
-            ContactMail = request.ContactMail,
-            ContactPhone = request.ContactPhone,
-            Surname1 = request.Surname1,
-            Surname2 = request.Surname2
-        };
+        Person p;
 
-        if(request.AcademicRecordNumber.HasValue){
-            var s = new Student()
+        if (request.AcademicRecordNumber.HasValue)
+        {
+            p = new Student()
             {
                 AcademicRecordNumber = request.AcademicRecordNumber.Value,
                 Amipa = false,
                 PreEnrollment = request.PreEnrollment,
                 SubjectsInfo = request.SubjectsInfo,
-                Person = p,        
             };
-            await _peopleService.InsertStudentAsync(s);
-        } else {
-            await _peopleService.InsertPersonAsync(p);
         }
+        else
+        {
+            p = new Person();
+        }
+        
+        p.Name = request.Name;
+        p.DocumentId = request.DocumentId;
+        p.ContactMail = request.ContactMail;
+        p.ContactPhone = request.ContactPhone;
+        p.Surname1 = request.Surname1;
+        p.Surname2 = request.Surname2;
+
+        await _peopleService.InsertPersonAsync(p);
 
         return p.Id;
     }

@@ -13,19 +13,19 @@ public record PeopleBatchUploadCommand(Stream File) : IRequest<BatchUploadVm>;
 // Validator for the model
 
 // Optionally define a view model
-public record BatchUploadSummary(int StudentsCreated, int StudentsUpdated, int GroupsCreated, int GroupsUpdated, int PeopleCreated, int PeopleUpdated);
+public record BatchUploadSummary(int GroupsCreated, int GroupsUpdated, int PeopleCreated, int PeopleUpdated);
 public record BatchUploadVm(bool Ok, BatchUploadSummary? Summary, string? ErrorMessage = null);
 
 // Handler
 public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, BatchUploadVm>
 {
     #region props
-    
+
     /* csv structure
     Expedient,Identitat,Nom,Llinatge1,Llinatge2,EmailContacte,TelContacte,Prematricula,Pagament,Grup,Amipa,Assignatures
     1,42374617S,Belinda Elisabeth,Arias,Tarira,prova@ies.com,6741222554,1,0,1ESOC,0,
     */
-    
+
     private readonly ICsvParser _csvParser;
     private readonly IPeopleService _peopleService;
 
@@ -41,7 +41,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         // Parse csv
         var result = _csvParser.ParseBatchUpload(request.File);
         request.File.Dispose();
-        
+
         if (result.Values == null)
         {
             return new BatchUploadVm(false, null, result.ErrorMessage);
@@ -53,13 +53,18 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
         // Process students
         IDictionary<long, Student> students = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
-        // Teachers
+        // Process people
         IDictionary<string, Person> people = await ProcessPeople(rows.Where(x => !x.Expedient.HasValue), ct);
-        // Process PersonGroupCourse
-        IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, students, groups, rows, ct);
+        foreach (var s in students)
+        {
+            people[s.Value.DocumentId] = s.Value;
+        }
 
-        var m = new BatchUploadModel(students, people, groups, presonGroupCourses.Values);
-        var summary = new BatchUploadSummary(m.NewStudents.Count(), m.ExistingStudents.Count(), m.NewGroups.Count(), m.ExistingGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
+        // Process PersonGroupCourse
+        IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, groups, rows, ct);
+
+        var m = new BatchUploadModel(people, groups, presonGroupCourses.Values);
+        var summary = new BatchUploadSummary(m.NewGroups.Count(), m.ExistingGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
         await _peopleService.InsertAndUpdateTransactionAsync(m, ct);
         return new BatchUploadVm(true, summary);
@@ -69,53 +74,50 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
     private async Task<IDictionary<string, PersonGroupCourse>> ProcessPersonGroupCourse(
             IDictionary<string, Person> people,
-            IDictionary<long, Student> students,
             IDictionary<string, Group> groups,
             IEnumerable<BatchUploadRowModel> rows,
             CancellationToken ct)
+    {
+        var course = await _peopleService.GetCurrentCoursAsync(ct);
+        var peopleIds = people.Select(x => x.Value.Id);
+        var personGroupCourse = (await _peopleService.GetCurrentCoursePersonGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
+        foreach (var r in rows)
         {
-            var course = await _peopleService.GetCurrentCoursAsync(ct);
-            var peopleIds = people.Select(x => x.Value.Id).Concat(students.Select(y => y.Value.PersonId));
-            var personGroupCourse = (await _peopleService.GetCurrentCoursePersonGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
-            foreach (var r in rows)
-            {
-                Person p = r.Expedient.HasValue ? 
-                                students[r.Expedient.Value].Person : 
-                                people[r.Identitat];
+            Person p = people[r.Identitat];
 
-                if (string.IsNullOrEmpty(r.Grup))
+            if (string.IsNullOrEmpty(r.Grup))
+            {
+                // no group. Should add the default group.
+            }
+            else
+            {
+                Group g = groups[r.Grup];
+
+                PersonGroupCourse pgc;
+                if (personGroupCourse.ContainsKey(p.DocumentId))
                 {
-                    // no group. Should add the default group.
+                    pgc = personGroupCourse[p.DocumentId];
+                    if (pgc.Group.Id != g.Id)
+                    {
+                        pgc.Group = g;
+                    }
                 }
                 else
                 {
-                    Group g = groups[r.Grup];
-
-                    PersonGroupCourse pgc;
-                    if (personGroupCourse.ContainsKey(p.DocumentId))
+                    pgc = new PersonGroupCourse()
                     {
-                        pgc = personGroupCourse[p.DocumentId];
-                        if (pgc.Group.Id != g.Id)
-                        {
-                            pgc.Group = g;
-                        }
-                    }
-                    else
-                    {
-                        pgc = new PersonGroupCourse()
-                        {
-                            Group = g,
-                            Person = p,
-                            Course = course,
-                        };
-                        personGroupCourse.Add(p.DocumentId, pgc);
-                    }
+                        Group = g,
+                        Person = p,
+                        Course = course,
+                    };
+                    personGroupCourse.Add(p.DocumentId, pgc);
                 }
             }
-            return personGroupCourse;
         }
+        return personGroupCourse;
+    }
 
-        private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
+    private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
     {
         IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.Grup)).Select(x => x.Grup ?? "").Distinct();
         IEnumerable<Group> existingGroups = await _peopleService.GetGroupsByNameAsync(groupNames, ct);
@@ -171,8 +173,8 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             }
             else
             {
-                var p = CreateStudentFromRow(r);
-                students[number] = p;
+                var s = CreateStudentFromRow(r);
+                students[number] = s;
             }
         }
         return students;
@@ -180,38 +182,54 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
     private Student CreateStudentFromRow(BatchUploadRowModel po)
     {
-        var s = new Student();
-        s.AcademicRecordNumber = po.Expedient ?? 0;
-        s.Person = CreatePersonFromRow(po);
-        s.SubjectsInfo = po.Assignatures;
-        return s;
+        if (po.Expedient.HasValue)
+        {
+            var s = new Student()
+            {
+                AcademicRecordNumber = po.Expedient.Value,
+                Amipa = false,
+                SubjectsInfo = po.Assignatures,
+                PreEnrollment = po.Prematricula == 1,
+            };
+
+            var tempPerson = CreatePersonFromRow(po);
+            UpdatePersonFields(s, tempPerson);
+
+            return s;
+        }
+        throw new Exception("argument is not a user");
     }
 
     private void UpdateStudentFields(Student s, Student newStudent)
     {
         s.SubjectsInfo = newStudent.SubjectsInfo;
-        UpdatePersonFields(s.Person, newStudent.Person);
-    }
-
-    private Person CreatePersonFromRow(BatchUploadRowModel po)
-    {
-        var s = new Person();
-        s.Name = po.Nom;
-        s.DocumentId = po.Identitat;
-        s.Surname1 = po.Llinatge1;
-        s.Surname2 = po.Llinatge2;
-        s.ContactMail = po.EmailContacte;
-        s.ContactPhone = po.TelContacte;
-        return s;
+        s.Amipa = newStudent.Amipa;
+        s.PreEnrollment = newStudent.PreEnrollment;
+        UpdatePersonFields(s, newStudent);
     }
 
     private void UpdatePersonFields(Person s, Person newPerson)
     {
+        s.DocumentId = newPerson.DocumentId;
         s.Name = newPerson.Name;
         s.Surname1 = newPerson.Surname1;
         s.Surname2 = newPerson.Surname2;
         s.ContactMail = newPerson.ContactMail;
         s.ContactPhone = newPerson.ContactPhone;
+    }
+
+    private Person CreatePersonFromRow(BatchUploadRowModel row)
+    {
+        var p = new Person()
+        {
+            DocumentId = row.Identitat,
+            ContactMail = row.EmailContacte,
+            ContactPhone = row.TelContacte,
+            Name = row.Nom,
+            Surname1 = row.Llinatge1,
+            Surname2 = row.Llinatge2,
+        };
+        return p;
     }
     #endregion
 }

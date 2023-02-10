@@ -1,4 +1,3 @@
-using System.Data;
 using System.Globalization;
 using Application.Common.Models;
 using Application.Common.Services;
@@ -33,12 +32,17 @@ public class BatchUploadRowModelMap : ClassMap<BatchUploadRowModel>
 {
     public BatchUploadRowModelMap()
     {
+        // EmailContacte,TelContacte,Prematricula,Pagament,Grup,Assignatures
         Map(m => m.Expedient);
         Map(m => m.Identitat).Validate(x => !string.IsNullOrEmpty(x.Field));
         Map(m => m.Nom).Validate(x => !string.IsNullOrEmpty(x.Field));
         Map(m => m.Llinatge1).Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Llinatge2);
+        Map(m => m.EmailContacte);
+        Map(m => m.TelContacte);
         Map(m => m.Prematricula).Validate(x => x.Field == "1" || x.Field == "0");
         Map(m => m.Pagament).Validate(x => x.Field == "1" || x.Field == "0");
-        Map(m => m.Pagament).Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Grup).Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Assignatures);
     }
 }

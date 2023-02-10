@@ -285,6 +285,8 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("person", "people");
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Domain.Entities.People.PersonGroupCourse", b =>
@@ -316,17 +318,12 @@ namespace netpaymentswebserver.Migrations
 
             modelBuilder.Entity("Domain.Entities.People.Student", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.HasBaseType("Domain.Entities.People.Person");
 
                     b.Property<long>("AcademicRecordNumber")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("Amipa")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("PersonId")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("PreEnrollment")
@@ -335,12 +332,7 @@ namespace netpaymentswebserver.Migrations
                     b.Property<string>("SubjectsInfo")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("AcademicRecordNumber")
-                        .IsUnique();
-
-                    b.HasIndex("PersonId")
                         .IsUnique();
 
                     b.ToTable("student", "people");
@@ -433,13 +425,11 @@ namespace netpaymentswebserver.Migrations
 
             modelBuilder.Entity("Domain.Entities.People.Student", b =>
                 {
-                    b.HasOne("Domain.Entities.People.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
+                    b.HasOne("Domain.Entities.People.Person", null)
+                        .WithOne()
+                        .HasForeignKey("Domain.Entities.People.Student", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.User", b =>

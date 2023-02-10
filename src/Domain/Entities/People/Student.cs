@@ -1,10 +1,7 @@
 namespace Domain.Entities.People;
 
-public class Student
+public class Student : Person
 {
-    public long Id { get; set; }
-    public long PersonId { get; set; }
-    public Person Person { get; set; } = default!;
     public long AcademicRecordNumber { get; set; }
     public string? SubjectsInfo { get; set; } = default!;
     public bool Amipa { get; set; } = false;
