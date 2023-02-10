@@ -21,11 +21,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 {
     #region props
 
-    /* csv structure
-    Expedient,Identitat,Nom,Llinatge1,Llinatge2,EmailContacte,TelContacte,Prematricula,Pagament,Grup,Amipa,Assignatures
-    1,42374617S,Belinda Elisabeth,Arias,Tarira,prova@ies.com,6741222554,1,0,1ESOC,0,
-    */
-
     private readonly ICsvParser _csvParser;
     private readonly IPeopleService _peopleService;
 
