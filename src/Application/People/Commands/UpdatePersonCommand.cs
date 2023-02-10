@@ -14,13 +14,9 @@ public record UpdatePersonCommand : CreatePersonCommand
 // Validator
 public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonCommand>
 {
-    private readonly IPeopleService _peopleService;
-    private Person? person = null;
 
-    public UpdatePersonCommandValidator(IPeopleService peopleService)
+    public UpdatePersonCommandValidator()
     {
-        _peopleService = peopleService;
-        
         RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
