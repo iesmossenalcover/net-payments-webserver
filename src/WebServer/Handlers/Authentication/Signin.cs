@@ -26,12 +26,12 @@ public class Signin
     public static async Task Post(
         [FromBody] SigninRequest model,
         HttpContext ctx,
-        Application.Common.Services.IAuthenticationService authService,
+        Application.Common.Services.IUsersRepository usersRepository,
         IPasswordHasher<User> hasher,
         CancellationToken ct
     )
     {
-        User? user = await authService.GetUserAsync(model.username, ct);
+        User? user = await usersRepository.GetUserByUsernameAsync(model.username, ct);
         bool correctPassowrd = false;
         if (user != null)
         {
@@ -44,7 +44,7 @@ public class Signin
             {
                 correctPassowrd = true;
                 user.HashedPassword = hasher.HashPassword(user, model.password);
-                await authService.UpdateUserAsync(user, CancellationToken.None);
+                await usersRepository.UpdateAsync(user, CancellationToken.None);
             }
         }
 

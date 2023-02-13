@@ -21,11 +21,14 @@ public record CreatePersonCommand : IRequest<long>
 
 public class CreatePersonCommandValidator : AbstractValidator<CreatePersonCommand>
 {
-    private readonly IPeopleService _peopleService;
+    private readonly IPeopleRepository _peopleRepo;
+    private readonly IStudentsRepository _studentRepo;
 
-    public CreatePersonCommandValidator(IPeopleService peopleService)
+    public CreatePersonCommandValidator(IPeopleRepository peopleRepo, IStudentsRepository studentRepo)
     {
-        _peopleService = peopleService;
+        _peopleRepo = peopleRepo;
+        _studentRepo = studentRepo;
+
         RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
@@ -38,14 +41,14 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .MaximumLength(50).WithMessage("Màxim 50 caràcters")
             .MustAsync(async (DocumentId, ct) =>
             {
-                return await _peopleService.GetPersonByDocumentIdAsync(DocumentId, ct) == null;
+                return await _peopleRepo.GetPersonByDocumentIdAsync(DocumentId, ct) == null;
             }).WithMessage("Ja existeix una persona amb aquest document identificatiu.");
 
         RuleFor(x => x.AcademicRecordNumber)
             .MustAsync(async (x, ct) =>
             {
                 if (!x.HasValue) return true;
-                return await _peopleService.GetStudentByAcademicRecordAsync(x.Value, ct) == null;
+                return await studentRepo.GetStudentByAcademicRecordAsync(x.Value, ct) == null;
                 
             }).WithMessage("Ja existeix un alumne amb aquest número d'expedient.");
 
@@ -60,11 +63,11 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
 // Handler
 public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, long>
 {
-    private readonly IPeopleService _peopleService;
+    private readonly IPeopleRepository _peopleRepo;
 
-    public CreatePersonCommandHandler(IPeopleService peopleService)
+    public CreatePersonCommandHandler(IPeopleRepository peopleRepo)
     {
-        _peopleService = peopleService;
+        _peopleRepo = peopleRepo;
     }
     public async Task<long> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
     {
@@ -92,7 +95,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, l
         p.Surname1 = request.Surname1;
         p.Surname2 = request.Surname2;
 
-        await _peopleService.InsertPersonAsync(p);
+        await _peopleRepo.InsertAsync(p, CancellationToken.None);
 
         return p.Id;
     }

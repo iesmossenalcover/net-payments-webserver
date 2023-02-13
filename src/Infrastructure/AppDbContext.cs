@@ -1,13 +1,12 @@
-using Application.Common.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure
 {
-    public class ApplicationDbContext : DbContext
+    public class AppDbContext : DbContext
     {
 
         #region constructor
-        public ApplicationDbContext(DbContextOptions options) : base(options)
+        public AppDbContext(DbContextOptions options) : base(options)
         { }
         #endregion
 

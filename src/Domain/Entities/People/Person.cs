@@ -1,8 +1,7 @@
 namespace Domain.Entities.People;
 
-public class Person
+public class Person : Entity
 {
-    public long Id { get; set; }
     public string DocumentId { get; set; } = default!;
     public string Name  { get; set; }  = default!;
     public string Surname1  { get; set; }  = default!;

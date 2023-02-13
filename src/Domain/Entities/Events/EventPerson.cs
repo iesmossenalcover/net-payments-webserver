@@ -3,9 +3,8 @@ using Domain.Entities.Orders;
 
 namespace Domain.Entities.Events;
 
-public class EventPerson
+public class EventPerson : Entity
 {
-    public long Id { get; set; }
     public bool Paid { get; set; }
 
     public long PersonId { get; set; }

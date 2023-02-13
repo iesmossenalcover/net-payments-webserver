@@ -10,15 +10,19 @@ namespace Infrastructure
             //     configuration.GetConnectionString("Sqlite"))
             // );
 
-            services.AddDbContext<ApplicationDbContext>(o => 
+            services.AddDbContextPool<Infrastructure.AppDbContext>(o => 
                 o.UseNpgsql(configuration.GetConnectionString("PostgreSql"))
             );
 
-            services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
+            services.AddScoped<Infrastructure.AppDbContext, Infrastructure.AppDbContext>();
 
             // Better approach
-            services.AddScoped<Application.Common.Services.IAuthenticationService, Infrastructure.AuthenticationService>();
-            services.AddScoped<Application.Common.Services.IPeopleService, Infrastructure.PeopleService>();
+            services.AddScoped<Application.Common.Services.IUsersRepository, Infrastructure.Repos.UserRepository>();
+            services.AddScoped<Application.Common.Services.ICoursesRepository, Infrastructure.Repos.CoursesRepository>();
+            services.AddScoped<Application.Common.Services.IPeopleRepository, Infrastructure.Repos.PeopleRepository>();
+            services.AddScoped<Application.Common.Services.IStudentsRepository, Infrastructure.Repos.StudentsRepository>();
+            services.AddScoped<Application.Common.Services.IGroupsRepository, Infrastructure.Repos.GroupsRepository>();
+            services.AddScoped<Application.Common.Services.ITransactionsService, Infrastructure.TransactionsService>();
             services.AddSingleton<Application.Common.Services.ICsvParser, Infrastructure.CsvParser>();
 
             return services;

@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace netpaymentswebserver.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230210082455_Initial")]
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20230213070026_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

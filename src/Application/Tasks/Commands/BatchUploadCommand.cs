@@ -22,12 +22,26 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     #region props
 
     private readonly ICsvParser _csvParser;
-    private readonly IPeopleService _peopleService;
+    private readonly IPeopleRepository _peopleRepo;
+    private readonly ICoursesRepository _coursesRepo;
+    private readonly IGroupsRepository _groupsRepo;
+    private readonly IStudentsRepository _studentsRepo;
+    private readonly ITransactionsService _transactionsService;
 
-    public BatchUploadCommandHandler(ICsvParser csvParser, IPeopleService peopleService)
+    public BatchUploadCommandHandler(
+        ICsvParser csvParser,
+        IPeopleRepository peopleRepo,
+        ICoursesRepository coursesRepo,
+        IGroupsRepository groupsRepo,
+        IStudentsRepository studentsRepo,
+        ITransactionsService transactionsService)
     {
         _csvParser = csvParser;
-        _peopleService = peopleService;
+        _peopleRepo = peopleRepo;
+        _coursesRepo = coursesRepo;
+        _groupsRepo = groupsRepo;
+        _transactionsService = transactionsService;
+        _studentsRepo = studentsRepo;
     }
     #endregion
 
@@ -61,7 +75,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         var m = new BatchUploadModel(people, groups, presonGroupCourses.Values);
         var summary = new BatchUploadSummary(m.NewGroups.Count(), m.ExistingGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
-        await _peopleService.InsertAndUpdateTransactionAsync(m, ct);
+        await _transactionsService.InsertAndUpdateTransactionAsync(m, ct);
         return new BatchUploadVm(true, summary);
     }
 
@@ -73,9 +87,9 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             IEnumerable<BatchUploadRowModel> rows,
             CancellationToken ct)
     {
-        var course = await _peopleService.GetCurrentCoursAsync(ct);
+        var course = await _coursesRepo.GetCurrentCoursAsync(ct);
         var peopleIds = people.Select(x => x.Value.Id);
-        var personGroupCourse = (await _peopleService.GetCurrentCoursePersonGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
+        var personGroupCourse = (await _peopleRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
         foreach (var r in rows)
         {
             Person p = people[r.Identitat];
@@ -115,7 +129,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
     {
         IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.Grup)).Select(x => x.Grup ?? "").Distinct();
-        IEnumerable<Group> existingGroups = await _peopleService.GetGroupsByNameAsync(groupNames, ct);
+        IEnumerable<Group> existingGroups = await _groupsRepo.GetGroupsByNameAsync(groupNames, ct);
         IDictionary<string, Group> groups = existingGroups.ToDictionary(x => x.Name, x => x);
 
         foreach (var name in groupNames)
@@ -134,7 +148,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
     private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
     {
-        IEnumerable<Person> existingPeople = await _peopleService.GetPeopleAsync(rows.Select(x => x.Identitat), ct);
+        IEnumerable<Person> existingPeople = await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.Identitat), ct);
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
         foreach (var r in rows)
         {
@@ -155,7 +169,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
     private async Task<IDictionary<long, Student>> ProcessStudents(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
     {
-        IEnumerable<Student> existingStudents = await _peopleService.GetStudentsByAcademicRecordAsync(rows.Select(x => x.Expedient ?? 0), ct);
+        IEnumerable<Student> existingStudents = await _studentsRepo.GetStudentsByAcademicRecordAsync(rows.Select(x => x.Expedient ?? 0), ct);
         IDictionary<long, Student> students = existingStudents.ToDictionary(x => x.AcademicRecordNumber, x => x);
         foreach (var r in rows)
         {

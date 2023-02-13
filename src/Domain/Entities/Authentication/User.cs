@@ -1,8 +1,7 @@
 namespace Domain.Entities.Authentication;
 
-public class User
+public class User : Entity
 {
-    public long Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string HashedPassword { get; set; } = string.Empty;
     public string Firstname { get; set; } = string.Empty;

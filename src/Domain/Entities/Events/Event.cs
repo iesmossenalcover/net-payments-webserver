@@ -1,8 +1,7 @@
 namespace Domain.Entities.Events;
 
-public class Event
+public class Event : Entity
 {
-    public long Id { get; set; }
     public string Code { get; set; }  = default!;
     public decimal NormalPrice { get; set; }
     public decimal AmipaPrice { get; set; }

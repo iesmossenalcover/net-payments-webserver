@@ -1,8 +1,7 @@
 namespace Domain.Entities.People;
 
-public class PersonGroupCourse
+public class PersonGroupCourse : Entity
 {
-    public long Id { get; set; }
 
     public long PersonId { get; set; }
     public Person Person { get; set; } = default!;

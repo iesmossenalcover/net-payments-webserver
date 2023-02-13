@@ -223,9 +223,9 @@ namespace netpaymentswebserver.Migrations
                 {
                     Type = table.Column<string>(type: "text", nullable: false),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false),
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Value = table.Column<string>(type: "text", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
                 },
                 constraints: table =>
                 {

@@ -1,0 +1,49 @@
+using Application.Common.Services;
+using Domain;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Repos;
+
+public class Repository<T> : IRepository<T> where T : Entity
+{
+    #region constructors
+
+    protected readonly AppDbContext _dbContext;
+    protected readonly DbSet<T> _dbSet;
+
+    public Repository(AppDbContext dbContext, DbSet<T> dbSet)
+    {
+        _dbContext = dbContext;
+        _dbSet = dbSet;
+    }
+    
+    #endregion
+
+    public async Task<T?> GetByIdAsync(long id, CancellationToken ct)
+    {
+        return await _dbSet.FindAsync(id);
+    }
+
+    public IQueryable<T> GetByIdAsync(IEnumerable<long> ids, CancellationToken ct)
+    {
+        return _dbSet.Where(x => ids.Contains(x.Id));
+    }
+
+    public async Task InsertAsync(T entity, CancellationToken ct)
+    {
+        _dbSet.Add(entity);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(T entity, CancellationToken ct)
+    {
+        _dbContext.Entry(entity).State = EntityState.Modified;
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(T entity, CancellationToken ct)
+    {
+        _dbSet.Remove(entity);
+        await _dbContext.SaveChangesAsync();
+    }
+}

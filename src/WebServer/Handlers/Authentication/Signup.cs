@@ -26,12 +26,12 @@ public class Signup
     public static async Task Post(
         [FromBody] SignupRequest model,
         HttpContext ctx,
-        Application.Common.Services.IAuthenticationService authService,
+        Application.Common.Services.IUsersRepository usersRepository,
         IPasswordHasher<User> hasher,
         CancellationToken ct)
     {
         // TODO: validate model, but this is just for text
-        User? user = await authService.GetUserAsync(model.username, ct);
+        User? user = await usersRepository.GetUserByUsernameAsync(model.username, ct);
 
         if (user != null)
         {
@@ -47,7 +47,7 @@ public class Signup
             Lastname = model.lastName,
         };
         user.HashedPassword = hasher.HashPassword(user, model.password);
-        user.Id = await authService.InsertUserAsync(user, CancellationToken.None);
+        await usersRepository.InsertAsync(user, CancellationToken.None);
 
         await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user.ToClaimPrincipal());
         var res = new SignupResult(SignupStatus.Ok);

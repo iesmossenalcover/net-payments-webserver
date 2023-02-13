@@ -1,8 +1,7 @@
 namespace Domain.Entities.People;
 
-public class Group
+public class Group : Entity
 {
-    public long Id { get; set; }
     public string Name { get; set; } = default!;
     public string? Description { get; set; }
     public DateTimeOffset Created { get; set; } = default!;
