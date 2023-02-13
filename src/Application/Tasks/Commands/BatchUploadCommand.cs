@@ -27,6 +27,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     private readonly IGroupsRepository _groupsRepo;
     private readonly IStudentsRepository _studentsRepo;
     private readonly ITransactionsService _transactionsService;
+    private readonly IPersonGroupCourseRepository _personGroupCourseRepo;
 
     public BatchUploadCommandHandler(
         ICsvParser csvParser,
@@ -34,6 +35,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         ICoursesRepository coursesRepo,
         IGroupsRepository groupsRepo,
         IStudentsRepository studentsRepo,
+        IPersonGroupCourseRepository personGroupCourseRepo,
         ITransactionsService transactionsService)
     {
         _csvParser = csvParser;
@@ -42,6 +44,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         _groupsRepo = groupsRepo;
         _transactionsService = transactionsService;
         _studentsRepo = studentsRepo;
+        _personGroupCourseRepo = personGroupCourseRepo;
     }
     #endregion
 
@@ -89,7 +92,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     {
         var course = await _coursesRepo.GetCurrentCoursAsync(ct);
         var peopleIds = people.Select(x => x.Value.Id);
-        var personGroupCourse = (await _peopleRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
+        var personGroupCourse = (await _personGroupCourseRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
         foreach (var r in rows)
         {
             Person p = people[r.Identitat];

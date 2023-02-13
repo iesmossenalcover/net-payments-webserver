@@ -20,6 +20,7 @@ namespace Infrastructure
             services.AddScoped<Application.Common.Services.IUsersRepository, Infrastructure.Repos.UserRepository>();
             services.AddScoped<Application.Common.Services.ICoursesRepository, Infrastructure.Repos.CoursesRepository>();
             services.AddScoped<Application.Common.Services.IPeopleRepository, Infrastructure.Repos.PeopleRepository>();
+            services.AddScoped<Application.Common.Services.IPersonGroupCourseRepository, Infrastructure.Repos.PeopleGroupCourseRepository>();
             services.AddScoped<Application.Common.Services.IStudentsRepository, Infrastructure.Repos.StudentsRepository>();
             services.AddScoped<Application.Common.Services.IGroupsRepository, Infrastructure.Repos.GroupsRepository>();
             services.AddScoped<Application.Common.Services.ITransactionsService, Infrastructure.TransactionsService>();

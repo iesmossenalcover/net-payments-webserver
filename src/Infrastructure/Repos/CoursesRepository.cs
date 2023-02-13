@@ -11,4 +11,9 @@ public class CoursesRepository : Repository<Course>, Application.Common.Services
     {
         return await _dbSet.FirstAsync(x => x.Active == true);
     }
+
+    public async Task<IEnumerable<Course>> GetAllAsync(CancellationToken ct)
+    {
+        return await _dbSet.ToListAsync(ct);
+    }
 }
