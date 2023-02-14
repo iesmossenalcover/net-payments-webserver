@@ -24,9 +24,9 @@ public class Repository<T> : IRepository<T> where T : Entity
         return await _dbSet.FindAsync(id);
     }
 
-    public IQueryable<T> GetByIdAsync(IEnumerable<long> ids, CancellationToken ct)
+    public async Task<IEnumerable<T>> GetByIdAsync(IEnumerable<long> ids, CancellationToken ct)
     {
-        return _dbSet.Where(x => ids.Contains(x.Id));
+        return await _dbSet.Where(x => ids.Contains(x.Id)).ToListAsync();
     }
 
     public async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct)
@@ -49,6 +49,12 @@ public class Repository<T> : IRepository<T> where T : Entity
     public async Task DeleteAsync(T entity, CancellationToken ct)
     {
         _dbSet.Remove(entity);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task InsertManyAsync(IEnumerable<T> entities, CancellationToken ct)
+    {
+        _dbSet.AddRange(entities);
         await _dbContext.SaveChangesAsync();
     }
 }

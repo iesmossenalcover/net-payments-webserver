@@ -10,7 +10,7 @@ public class StudentsRepository : Repository<Student>, Application.Common.Servic
     public async Task<Student?> GetStudentByAcademicRecordAsync(long academicRecord, CancellationToken ct)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(x => x.AcademicRecordNumber == x.AcademicRecordNumber, ct);
+            .FirstOrDefaultAsync(x => x.AcademicRecordNumber == academicRecord, ct);
     }
 
     public async Task<IEnumerable<Student>> GetStudentsByAcademicRecordAsync(IEnumerable<long> academicRecords, CancellationToken ct)
