@@ -8,6 +8,4 @@ public class Person : Entity
     public string? Surname2  { get; set; }
     public string? ContactPhone { get; set; }
     public string? ContactMail  { get; set; }
-
-    public IEnumerable<PersonGroupCourse> GroupCourses = default!;
 }

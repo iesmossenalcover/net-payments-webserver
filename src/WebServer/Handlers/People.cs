@@ -1,4 +1,3 @@
-
 using Application.People.Commands;
 using Application.People.Queries;
 using MediatR;
@@ -13,6 +12,13 @@ public class People
         IMediator mediator)
     {
         return await mediator.Send(new ListPeopleByCourseQuery(courseId));
+    }
+
+    public static async Task<GetPersonByIdVm> GetPerson(
+        long id,
+        IMediator mediator)
+    {
+        return await mediator.Send(new GetPersonByIdQuery(id));
     }
 
     public static async Task<long> CreatePerson(

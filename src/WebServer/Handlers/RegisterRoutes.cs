@@ -23,6 +23,10 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // People
+        app.MapGet("/api/people/{id}", WebServer.Handlers.People.GetPerson)
+            .WithName("Get person by id")
+            .WithOpenApi();
+            
         app.MapGet("/api/people", WebServer.Handlers.People.ListPeople)
             .WithName("List people by group")
             .WithOpenApi();

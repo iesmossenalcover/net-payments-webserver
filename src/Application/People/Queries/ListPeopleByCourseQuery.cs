@@ -1,13 +1,15 @@
 using Application.Common.Services;
+using Application.People.Common.ViewModels;
 using Domain.Entities.People;
 using MediatR;
 
 namespace Application.People.Queries;
 
-public record GroupVm(long Id, string Name);
-public record CourseVm(long Id, string Name, bool SelectedCourse);
-public record PersonVm(long Id, string DocumentId, string FirstName, string LastName, GroupVm Group, long? AcademicRecordNumber);
-public record ListPeopleByCourseVm(IEnumerable<CourseVm> Courses, IEnumerable<PersonVm> People);
+
+public record CourseVm(long Id, string Name);
+public record ListPeopleByCourseVm(IEnumerable<CourseVm> Courses, IEnumerable<PersonSummaryVm> People, long SelectedCourseId);
+public record PersonSummaryVm(long Id, string DocumentId, string FirstName, string LastName, GroupVm Group, long? AcademicRecordNumber);
+
 public record ListPeopleByCourseQuery(long? CourseId) : IRequest<ListPeopleByCourseVm>;
 
 public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCourseQuery, ListPeopleByCourseVm>
@@ -35,16 +37,16 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
                     // .Take(10);
 
         var peopleVm = personGroupCourses.Select(x => ToPersonVm(x));
-        var corusesVm = courses.Select(x => ToCourseVm(x, course.Id));
-        return new ListPeopleByCourseVm(corusesVm, peopleVm);
+        var corusesVm = courses.Select(x => ToCourseVm(x));
+        return new ListPeopleByCourseVm(corusesVm, peopleVm, course.Id);
     }
 
-    public static PersonVm ToPersonVm(PersonGroupCourse pgc)
+    public static PersonSummaryVm ToPersonVm(PersonGroupCourse pgc)
     {
         Person p = pgc.Person;
         Student? s = p as Student;
         long? academicRecordNumber = s != null ? s.AcademicRecordNumber : null;
-        return new PersonVm(
+        return new PersonSummaryVm(
             p.Id,
             p.DocumentId,
             p.Name,
@@ -54,12 +56,11 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
         );
     }
 
-    public static CourseVm ToCourseVm(Course c, long currentCourseId)
+    public static CourseVm ToCourseVm(Course c)
     {
         return new CourseVm(
             c.Id,
-            c.Name,
-            c.Id == currentCourseId
+            c.Name
         );
     }
 }

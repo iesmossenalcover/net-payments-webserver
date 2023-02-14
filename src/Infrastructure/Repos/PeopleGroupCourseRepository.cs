@@ -19,9 +19,18 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
     public IQueryable<PersonGroupCourse> GetPersonGroupCourseByCourseAsync(long courseId, CancellationToken ct)
     {
         return _dbContext.PersonGroupCourses
+                    .Where(x => x.CourseId == courseId)
                     .Include(x => x.Person)
                     .Include(x => x.Group)
-                    .Include(x => x.Course)
-                    .Where(x => x.CourseId == courseId);
+                    .Include(x => x.Course);
+    }
+
+    public async Task<IEnumerable<PersonGroupCourse>> GetPersonGroupCoursesByPersonIdAsync(long personId, CancellationToken ct)
+    {
+        return await _dbSet
+                    .Where(x => x.PersonId == personId)
+                    .Include(x => x.Person)
+                    .Include(x => x.Group)
+                    .Include(x => x.Course).ToListAsync(ct);
     }
 }

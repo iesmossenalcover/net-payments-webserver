@@ -29,6 +29,11 @@ public class Repository<T> : IRepository<T> where T : Entity
         return _dbSet.Where(x => ids.Contains(x.Id));
     }
 
+    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct)
+    {
+        return await _dbSet.ToListAsync(ct);
+    }
+
     public async Task InsertAsync(T entity, CancellationToken ct)
     {
         _dbSet.Add(entity);
