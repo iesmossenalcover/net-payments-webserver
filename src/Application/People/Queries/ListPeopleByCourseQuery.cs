@@ -4,8 +4,9 @@ using MediatR;
 
 namespace Application.People.Queries;
 
-public record CourseVm(long Id, string Name);
-public record PersonVm(long Id, string DocumentId, string FirstName, string LastName, long? AcademicRecordNumber);
+public record GroupVm(long Id, string Name);
+public record CourseVm(long Id, string Name, bool SelectedCourse);
+public record PersonVm(long Id, string DocumentId, string FirstName, string LastName, GroupVm Group, long? AcademicRecordNumber);
 public record ListPeopleByCourseVm(IEnumerable<CourseVm> Courses, IEnumerable<PersonVm> People);
 public record ListPeopleByCourseQuery(long? CourseId) : IRequest<ListPeopleByCourseVm>;
 
@@ -33,12 +34,14 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
                     .Skip(0);
                     // .Take(10);
 
-        var peopleVm = personGroupCourses.Select(x => ToPersonVm(x.Person));
-        return new ListPeopleByCourseVm(courses.Select(x => new CourseVm(x.Id, x.Name)), peopleVm);
+        var peopleVm = personGroupCourses.Select(x => ToPersonVm(x));
+        var corusesVm = courses.Select(x => ToCourseVm(x, course.Id));
+        return new ListPeopleByCourseVm(corusesVm, peopleVm);
     }
 
-    public static PersonVm ToPersonVm(Person p)
+    public static PersonVm ToPersonVm(PersonGroupCourse pgc)
     {
+        Person p = pgc.Person;
         Student? s = p as Student;
         long? academicRecordNumber = s != null ? s.AcademicRecordNumber : null;
         return new PersonVm(
@@ -46,7 +49,17 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
             p.DocumentId,
             p.Name,
             $"{p.Surname1} {p.Surname2}",
+            new GroupVm(pgc.Group.Id, pgc.Group.Name),
             academicRecordNumber
+        );
+    }
+
+    public static CourseVm ToCourseVm(Course c, long currentCourseId)
+    {
+        return new CourseVm(
+            c.Id,
+            c.Name,
+            c.Id == currentCourseId
         );
     }
 }
