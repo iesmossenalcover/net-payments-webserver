@@ -29,9 +29,18 @@ public class People
     }
 
     public static async Task<long> UpdatePerson(
+        long id,
         IMediator mediator,
         [FromBody] UpdatePersonCommand cmd)
     {
+        cmd.Id = id;
         return await mediator.Send(cmd);
+    }
+
+    public static async Task<long> DeletePerson(
+        long id,
+        IMediator mediator)
+    {
+        return await mediator.Send(new DeletePersonCommand(id));
     }
 }

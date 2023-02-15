@@ -26,7 +26,7 @@ public static class RegisterRoutes
         app.MapGet("/api/people/{id}", WebServer.Handlers.People.GetPerson)
             .WithName("Get person by id")
             .WithOpenApi();
-            
+
         app.MapGet("/api/people", WebServer.Handlers.People.ListPeople)
             .WithName("List people by group")
             .WithOpenApi();
@@ -35,8 +35,12 @@ public static class RegisterRoutes
             .WithName("Create person")
             .WithOpenApi();
 
-        app.MapPut("/api/people", WebServer.Handlers.People.UpdatePerson)
+        app.MapPut("/api/people/{id}", WebServer.Handlers.People.UpdatePerson)
             .WithName("Update person")
+            .WithOpenApi();
+
+        app.MapDelete("/api/people/{id}", WebServer.Handlers.People.DeletePerson)
+            .WithName("Delete person")
             .WithOpenApi();
 
         // Courses
