@@ -19,5 +19,3 @@ public record StudentVm
 }
 
 public record PersonGroupCourseVm(long Id, long CourseId, string CourseName, long GroupId, string GroupName);
-public record GroupVm(long Id, string Name);
-public record CourseVm(long Id, string Name);

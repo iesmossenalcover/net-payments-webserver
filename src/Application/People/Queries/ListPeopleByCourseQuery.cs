@@ -8,7 +8,7 @@ namespace Application.People.Queries;
 
 public record CourseVm(long Id, string Name);
 public record ListPeopleByCourseVm(IEnumerable<PersonSummaryVm> People, long SelectedCourseId);
-public record PersonSummaryVm(long Id, string DocumentId, string FirstName, string LastName, GroupVm Group, long? AcademicRecordNumber);
+public record PersonSummaryVm(long Id, string DocumentId, string FirstName, string LastName, long GroupId, string GroupName, long? AcademicRecordNumber);
 
 public record ListPeopleByCourseQuery(long? CourseId) : IRequest<ListPeopleByCourseVm>;
 
@@ -50,7 +50,8 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
             p.DocumentId,
             p.Name,
             $"{p.Surname1} {p.Surname2}",
-            new GroupVm(pgc.Group.Id, pgc.Group.Name),
+            pgc.Group.Id,
+            pgc.Group.Name,
             academicRecordNumber
         );
     }

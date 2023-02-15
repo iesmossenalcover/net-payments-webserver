@@ -1,3 +1,4 @@
+using Application.Common.Models;
 using Application.Common.Services;
 using Application.People.Common.ViewModels;
 using Domain.Entities.People;
@@ -5,7 +6,7 @@ using MediatR;
 
 namespace Application.People.Queries;
 
-public record GetPersonGroupCoursesVm(IEnumerable<PersonGroupCourseVm> PersonGroupCourses, IEnumerable<GroupVm> Groups);
+public record GetPersonGroupCoursesVm(IEnumerable<PersonGroupCourseVm> PersonGroupCourses, IEnumerable<SelectOptionVm> Groups);
 public record GetPersonByIdVm(GetPersonGroupCoursesVm PersonGroups, Common.ViewModels.PersonVm Person, Common.ViewModels.StudentVm? Student);
 
 public record GetPersonByIdQuery(long Id) : IRequest<GetPersonByIdVm>;
@@ -38,7 +39,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Get
         IEnumerable<PersonGroupCourse> pgc = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(person.Id, ct);
 
         IEnumerable<PersonGroupCourseVm> pgcVm = pgc.Select(x => new PersonGroupCourseVm(x.Id, x.CourseId, x.Course.Name, x.GroupId, x.Group.Name));
-        IEnumerable<GroupVm> groupsVm = groups.Select(x => new GroupVm(x.Id, x.Name));
+        IEnumerable<SelectOptionVm> groupsVm = groups.Select(x => new SelectOptionVm(x.Id.ToString(), x.Name));
         GetPersonGroupCoursesVm gcVm = new GetPersonGroupCoursesVm(pgcVm, groupsVm);
 
         Common.ViewModels.PersonVm personVm = new Common.ViewModels.PersonVm()
