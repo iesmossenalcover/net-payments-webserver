@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Application.People.Queries;
 
-public record GetPersonGroupCoursesVm(IEnumerable<PersonGroupCourseVm> PersonGroupCourses, IEnumerable<SelectOptionVm> Groups);
+public record GetPersonGroupCoursesVm(IEnumerable<PersonGroupCourseVm> PersonGroupCourses);
 public record GetPersonByIdVm(GetPersonGroupCoursesVm PersonGroups, Common.ViewModels.PersonVm Person, Common.ViewModels.StudentVm? Student);
 
 public record GetPersonByIdQuery(long Id) : IRequest<GetPersonByIdVm>;
@@ -15,18 +15,15 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Get
 {
     private readonly ICoursesRepository _courseRepository;
     private readonly IPeopleRepository _peopleRepository;
-    private readonly IGroupsRepository _groupsRepository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
 
     public GetPersonByIdQueryHandler(
         ICoursesRepository courseRepository,
         IPeopleRepository peopleRepository,
-        IPersonGroupCourseRepository personGroupCourseRepository,
-        IGroupsRepository groupsRepository)
+        IPersonGroupCourseRepository personGroupCourseRepository)
     {
         _courseRepository = courseRepository;
         _peopleRepository = peopleRepository;
-        _groupsRepository = groupsRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
     }
 
@@ -35,12 +32,10 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Get
         Person? person = await _peopleRepository.GetByIdAsync(request.Id, ct);
         if (person == null) throw new Exception("Bad request");
         
-        IEnumerable<Group> groups = await _groupsRepository.GetAllAsync(ct);
         IEnumerable<PersonGroupCourse> pgc = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(person.Id, ct);
 
         IEnumerable<PersonGroupCourseVm> pgcVm = pgc.Select(x => new PersonGroupCourseVm(x.Id, x.CourseId, x.Course.Name, x.GroupId, x.Group.Name));
-        IEnumerable<SelectOptionVm> groupsVm = groups.Select(x => new SelectOptionVm(x.Id.ToString(), x.Name));
-        GetPersonGroupCoursesVm gcVm = new GetPersonGroupCoursesVm(pgcVm, groupsVm);
+        GetPersonGroupCoursesVm gcVm = new GetPersonGroupCoursesVm(pgcVm);
 
         Common.ViewModels.PersonVm personVm = new Common.ViewModels.PersonVm()
         {

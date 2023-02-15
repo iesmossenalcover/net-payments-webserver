@@ -7,11 +7,11 @@ namespace Application.Courses.Queries;
 
 public record GetAllCoursesSelectorQuery() : IRequest<SelectorVm>;
 
-public class GetPersonByIdQueryHandler : IRequestHandler<GetAllCoursesSelectorQuery, SelectorVm>
+public class GetAllCoursesSelectorQueryHandler : IRequestHandler<GetAllCoursesSelectorQuery, SelectorVm>
 {
     private readonly ICoursesRepository _coursesRepository;
 
-    public GetPersonByIdQueryHandler(ICoursesRepository coursesRepository)
+    public GetAllCoursesSelectorQueryHandler(ICoursesRepository coursesRepository)
     {
         _coursesRepository = coursesRepository;
     }

@@ -43,5 +43,10 @@ public static class RegisterRoutes
         app.MapGet("/api/courses/selector", WebServer.Handlers.Courses.GetCoursesSelector)
             .WithName("Get courses selector")
             .WithOpenApi();
+
+        // Groups
+        app.MapGet("/api/groups/selector", WebServer.Handlers.Groups.GetGroupsSelector)
+            .WithName("Get groups selector")
+            .WithOpenApi();
     }
 }
