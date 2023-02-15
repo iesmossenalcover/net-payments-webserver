@@ -16,4 +16,9 @@ public class PeopleRepository : Repository<Person>, Application.Common.Services.
     {
         return await _dbSet.FirstOrDefaultAsync(x => x.DocumentId == documentId, ct);
     }
+
+    public async Task<Person?> GetPersonByIdAsync(long id)
+    {
+        return await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+    }
 }

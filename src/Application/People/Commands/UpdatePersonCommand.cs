@@ -6,9 +6,29 @@ using MediatR;
 namespace Application.People.Commands;
 
 // Model we receive
-public record UpdatePersonCommand : CreatePersonCommand
+public record UpdatePersonCommand : IRequest<long>
 {
     public long Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+    public string Surname1 { get; set; } = string.Empty;
+    public string? Surname2 { get; set; }
+    public string DocumentId { get; set; } = string.Empty;
+    public string? ContactPhone { get; set; }
+    public string? ContactMail { get; set; }
+
+    // Group Courses info
+    public IEnumerable<PersonGroupCourseModel> GroupCourses { get; set; } = Enumerable.Empty<PersonGroupCourseModel>();
+
+    // Options student info
+    public long AcademicRecordNumber { get; set; }
+    public string? SubjectsInfo { get; set; }
+    public bool PreEnrollment { get; set; }
+    public bool Amipa { get; set; }
+    public UpdatePersonCommand(long id)
+    {
+        Id = id;
+    }
 }
 
 // Validator
@@ -17,12 +37,18 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
 
     public UpdatePersonCommandValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("El camp no pot ser buid.");
         RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
 
         RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
+
+        RuleFor(x => x.GroupCourses)
+            .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un group i curs.");                
 
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("Text must be not empty")
@@ -38,11 +64,35 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
 
 public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, long>
 {
-    public Task<long> Handle(UpdatePersonCommand request, CancellationToken cancellationToken)
+    private readonly IPeopleRepository _peopleRepo;
+    private readonly IStudentsRepository _studentRepo;
+
+    public UpdatePersonCommandHandler(
+    IPeopleRepository peopleRepo,
+    IStudentsRepository studentRepo)
     {
-        // validacion més complexes
-        // Si el ja existeix una persona diferent a la que actualitze amb el mateix id --> error
-        // Si ja existeix un alumne amb el mateix expedient diferent al que actualitzem --> error
-        throw new NotImplementedException();
+        _peopleRepo = peopleRepo;
+        _studentRepo = studentRepo;
+    }
+    public async Task<long> Handle(UpdatePersonCommand request, CancellationToken ct)
+    {
+        
+
+        //Comprovam que no existeix un usuari amb un DocumentID o Academic Record Number igual a la BBDD que no sigui l'usuari que volem actualitzar.
+
+        Person ? p1 = await _peopleRepo.GetPersonByDocumentIdAsync(request.DocumentId, ct);
+        Person ? p2 = await _studentRepo.GetStudentByAcademicRecordAsync(request.AcademicRecordNumber, ct);
+
+        Person ? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
+
+
+        if (p == null || (p1 != null && p.Id != p1.Id) || (p2 != null && p.Id != p2.Id))
+        {
+            throw new Exception("Bad request");
+        }
+
+        //Actualitzar usuari
+        Console.WriteLine("-------------" + request.Name);
+        return p.Id;
     }
 }
