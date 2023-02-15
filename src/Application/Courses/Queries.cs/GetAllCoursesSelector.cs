@@ -1,0 +1,32 @@
+using Application.Common.Models;
+using Application.Common.Services;
+using Domain.Entities.People;
+using MediatR;
+
+namespace Application.Courses.Queries;
+
+public record GetAllCoursesSelectorQuery() : IRequest<SelectorVm>;
+
+public class GetPersonByIdQueryHandler : IRequestHandler<GetAllCoursesSelectorQuery, SelectorVm>
+{
+    private readonly ICoursesRepository _coursesRepository;
+
+    public GetPersonByIdQueryHandler(ICoursesRepository coursesRepository)
+    {
+        _coursesRepository = coursesRepository;
+    }
+
+    public async Task<SelectorVm> Handle(GetAllCoursesSelectorQuery request, CancellationToken ct)
+    {
+        IEnumerable<Course> courses = await _coursesRepository.GetAllAsync(ct);
+
+        long activeCourseId = 0;
+        List<SelectOptionVm> options = new List<SelectOptionVm>(courses.Count());
+        foreach (var c in courses)
+        {
+            options.Add(new SelectOptionVm(c.Id.ToString(), c.Name));
+            if (c.Active) activeCourseId = c.Id;
+        }
+        return new SelectorVm(activeCourseId.ToString(), options);
+    }
+}

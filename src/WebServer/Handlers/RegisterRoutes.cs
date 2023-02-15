@@ -38,5 +38,10 @@ public static class RegisterRoutes
         app.MapPut("/api/people", WebServer.Handlers.People.UpdatePerson)
             .WithName("Update person")
             .WithOpenApi();
+
+        // Courses
+        app.MapGet("/api/courses/selector", WebServer.Handlers.Courses.GetCoursesSelector)
+            .WithName("Get courses selector")
+            .WithOpenApi();
     }
 }

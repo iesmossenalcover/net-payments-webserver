@@ -7,7 +7,7 @@ namespace Application.People.Queries;
 
 
 public record CourseVm(long Id, string Name);
-public record ListPeopleByCourseVm(IEnumerable<CourseVm> Courses, IEnumerable<PersonSummaryVm> People, long SelectedCourseId);
+public record ListPeopleByCourseVm(IEnumerable<PersonSummaryVm> People, long SelectedCourseId);
 public record PersonSummaryVm(long Id, string DocumentId, string FirstName, string LastName, GroupVm Group, long? AcademicRecordNumber);
 
 public record ListPeopleByCourseQuery(long? CourseId) : IRequest<ListPeopleByCourseVm>;
@@ -37,8 +37,7 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
                     // .Take(10);
 
         var peopleVm = personGroupCourses.Select(x => ToPersonVm(x));
-        var corusesVm = courses.Select(x => ToCourseVm(x));
-        return new ListPeopleByCourseVm(corusesVm, peopleVm, course.Id);
+        return new ListPeopleByCourseVm(peopleVm, course.Id);
     }
 
     public static PersonSummaryVm ToPersonVm(PersonGroupCourse pgc)
