@@ -26,7 +26,7 @@ public class RequestValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
         
         if (errors.Count != 0)
         {
-            throw new ValidationException(errors);
+            throw new Exceptions.BadRequestException(errors);
         }
 
         return await next();

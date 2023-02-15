@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.Services;
 using Domain.Entities.People;
 using FluentValidation;
@@ -15,9 +16,7 @@ public record CreatePersonCommand : IRequest<long>
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
-
-    // Group Courses info
-    public IEnumerable<PersonGroupCourseModel> GroupCourses { get; set; } = Enumerable.Empty<PersonGroupCourseModel>();
+    public long GroupId { get; set; }
 
     // Options student info
     public long? AcademicRecordNumber { get; set; }
@@ -43,8 +42,8 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
         RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
-        RuleFor(x => x.GroupCourses)
-            .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un group i curs.");                
+        RuleFor(x => x.GroupId)
+            .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un grup.");
 
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("Text must be not empty")
@@ -59,7 +58,7 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             {
                 if (!x.HasValue) return true;
                 return await studentRepo.GetStudentByAcademicRecordAsync(x.Value, ct) == null;
-                
+
             }).WithMessage("Ja existeix un alumne amb aquest número d'expedient.");
 
         RuleFor(x => x.ContactPhone)
@@ -92,8 +91,13 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, l
 
     public async Task<long> Handle(CreatePersonCommand request, CancellationToken ct)
     {
-        IEnumerable<Course> courses = await _coursesRepo.GetAllAsync(ct);
-        IEnumerable<Group> groups = await _groupsRepo.GetByIdAsync(request.GroupCourses.Select(x => x.GroupId), ct);
+        Course course = await _coursesRepo.GetCurrentCoursAsync(ct);
+        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId, ct);
+
+        if (group == null)
+        {
+            throw new BadRequestException(nameof(request.GroupId), "El grup no existeix");
+        }
 
         Person p;
         if (request.AcademicRecordNumber.HasValue)
@@ -110,40 +114,23 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, l
         {
             p = new Person();
         }
-        
+
         p.Name = request.Name;
         p.DocumentId = request.DocumentId;
         p.ContactMail = request.ContactMail;
         p.ContactPhone = request.ContactPhone;
         p.Surname1 = request.Surname1;
         p.Surname2 = request.Surname2;
-        
 
-        // Create group courses assignations.
-        List<PersonGroupCourse> personGroupCourses = new List<PersonGroupCourse>(request.GroupCourses.Count());
-        foreach (var pgc in request.GroupCourses)
+        var pgc = new PersonGroupCourse()
         {
-            var group = groups.FirstOrDefault(x => x.Id == pgc.GroupId);
-            if (group == null)
-            {
-                throw new Exception("Bad request");
-            }
-
-            var course = courses.FirstOrDefault(x => x.Id == pgc.CourseId);
-            if (course == null)
-            {
-                throw new Exception("Bad request");
-            }
-            personGroupCourses.Add(new PersonGroupCourse()
-            {
-                Person = p,
-                Group = group,
-                Course = course,
-            });
-        }
+            Person = p,
+            Course = course,
+            Group = group,
+        };
 
         await _peopleRepo.InsertAsync(p, CancellationToken.None);
-        await _personGroupCourseRepo.InsertManyAsync(personGroupCourses, CancellationToken.None);
+        await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
 
         return p.Id;
     }

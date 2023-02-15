@@ -1,14 +1,21 @@
-using FluentValidation;
+using Application.Common.Exceptions;
 
 namespace WebServer.Middleware;
 
 public class ValidationExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly System.Text.Json.JsonSerializerOptions serializeOptions;
 
     public ValidationExceptionHandlerMiddleware(RequestDelegate next)
     {
         _next = next;
+        serializeOptions = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        };
     }
 
     public async Task Invoke(HttpContext context)
@@ -17,14 +24,12 @@ public class ValidationExceptionHandlerMiddleware
         {
             await _next(context);
         }
-        catch (ValidationException ex)
+        catch (BadRequestException ex)
         {
-            await context.Response.WriteAsJsonAsync(
-                new Error(true, ex.Errors.Select(x => new ValidationError(x.PropertyName, x.ErrorMessage, x.AttemptedValue)))
-            );
+
+            await context.Response.WriteAsJsonAsync(new Error(true, ex.Failures), serializeOptions);
         }
     }
 }
 
-record Error(bool error, IEnumerable<ValidationError> errors);
-record ValidationError(string propertyName, string message, object attemptedValue);
+record Error(bool error, IDictionary<string, string[]> errors);
