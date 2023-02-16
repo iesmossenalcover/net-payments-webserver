@@ -54,6 +54,12 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             }).WithMessage("Ja existeix una persona amb aquest document identificatiu.");
 
         RuleFor(x => x.AcademicRecordNumber)
+            .Must(x => {
+                if (x.HasValue && x.Value == 0) return false;
+
+                return true;
+            })
+            .WithMessage("Si és un estudiant, s'ha d'indicar l'expedient acadèmic.")
             .MustAsync(async (x, ct) =>
             {
                 if (!x.HasValue) return true;

@@ -6,25 +6,10 @@ using MediatR;
 namespace Application.People.Commands;
 
 // Model we receive
-public record UpdatePersonCommand : IRequest<long>
+public record UpdatePersonCommand : CreatePersonCommand, IRequest<long>
 {
     public long Id { get; set; }
 
-    public string Name { get; set; } = string.Empty;
-    public string Surname1 { get; set; } = string.Empty;
-    public string? Surname2 { get; set; }
-    public string DocumentId { get; set; } = string.Empty;
-    public string? ContactPhone { get; set; }
-    public string? ContactMail { get; set; }
-
-    // Group Courses info
-    public IEnumerable<PersonGroupCourseModel> GroupCourses { get; set; } = Enumerable.Empty<PersonGroupCourseModel>();
-
-    // Options student info
-    public long AcademicRecordNumber { get; set; }
-    public string? SubjectsInfo { get; set; }
-    public bool PreEnrollment { get; set; }
-    public bool Amipa { get; set; }
     public UpdatePersonCommand(long id)
     {
         Id = id;
@@ -47,8 +32,8 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
         RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
-        RuleFor(x => x.GroupCourses)
-            .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un group i curs.");                
+        RuleFor(x => x.GroupId)
+            .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un group ");
 
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("Text must be not empty")
