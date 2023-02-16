@@ -64,7 +64,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, l
         //Comprovam que no existeix un usuari amb un DocumentID o Academic Record Number igual a la BBDD que no sigui l'usuari que volem actualitzar.
 
         Person ? p1 = await _peopleRepo.GetPersonByDocumentIdAsync(request.DocumentId, ct);
-        Person ? p2 = await _studentRepo.GetStudentByAcademicRecordAsync(request.AcademicRecordNumber, ct);
+        Person ? p2 = await _studentRepo.GetStudentByAcademicRecordAsync(request.AcademicRecordNumber.Value, ct);
 
         Person ? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
 
