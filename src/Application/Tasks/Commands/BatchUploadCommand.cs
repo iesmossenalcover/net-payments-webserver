@@ -13,8 +13,8 @@ public record PeopleBatchUploadCommand(Stream File) : IRequest<BatchUploadVm>;
 // Validator for the model
 
 // Optionally define a view model
-public record BatchUploadSummary(int GroupsCreated, int GroupsUpdated, int PeopleCreated, int PeopleUpdated);
-public record BatchUploadVm(bool Ok, BatchUploadSummary? Summary, string? ErrorMessage = null);
+public record BatchUploadSummary(int GroupsCreated, int PeopleCreated, int PeopleUpdated);
+public record BatchUploadVm(BatchUploadSummary Data);
 
 // Handler
 public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, BatchUploadVm>
@@ -56,7 +56,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
         if (result.Values == null)
         {
-            return new BatchUploadVm(false, null, result.ErrorMessage);
+            throw new Application.Common.Exceptions.BadRequestException("", result.ErrorMessage ?? "Error processing csv.");
         }
 
         IEnumerable<BatchUploadRowModel> rows = result.Values;
@@ -76,10 +76,10 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, groups, rows, ct);
 
         var m = new BatchUploadModel(people, groups, presonGroupCourses.Values);
-        var summary = new BatchUploadSummary(m.NewGroups.Count(), m.ExistingGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
+        var summary = new BatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
         await _transactionsService.InsertAndUpdateTransactionAsync(m, ct);
-        return new BatchUploadVm(true, summary);
+        return new BatchUploadVm(summary);
     }
 
     #region private methods

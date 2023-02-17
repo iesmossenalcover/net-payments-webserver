@@ -16,15 +16,13 @@ public class Tasks
                 f = files[0];
             }
         }
-        catch (Exception)
-        {
-            return Results.BadRequest();
-        }
+        catch (Exception) {}
 
         if (f == null)
         {
-            return Results.BadRequest();
+            throw new Application.Common.Exceptions.BadRequestException("", "No s'ha pogut processar el fitxer");
         }
+
         Stream fileStream = f.OpenReadStream();
         var result = await m.Send(new PeopleBatchUploadCommand(fileStream));
         fileStream.Close();
