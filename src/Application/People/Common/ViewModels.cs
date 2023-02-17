@@ -8,9 +8,10 @@ public record PersonVm
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
+    public long GroupId { get; set; }
 }
 
-public record StudentVm
+public record StudentVm : PersonVm
 {
     public long AcademicRecordNumber { get; set; }
     public bool PreEnrollment { get; set; }

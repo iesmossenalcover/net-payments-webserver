@@ -1,4 +1,3 @@
-using Application.Common.Models;
 using Application.Common.Services;
 using Application.People.Common.ViewModels;
 using Domain.Entities.People;
@@ -6,12 +5,9 @@ using MediatR;
 
 namespace Application.People.Queries;
 
-public record GetPersonGroupCoursesVm(IEnumerable<PersonGroupCourseVm> PersonGroupCourses);
-public record GetPersonByIdVm(GetPersonGroupCoursesVm PersonGroups, Common.ViewModels.PersonVm Person, Common.ViewModels.StudentVm? Student);
+public record GetPersonByIdQuery(long Id) : IRequest<PersonVm>;
 
-public record GetPersonByIdQuery(long Id) : IRequest<GetPersonByIdVm>;
-
-public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, GetPersonByIdVm>
+public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, PersonVm>
 {
     private readonly ICoursesRepository _courseRepository;
     private readonly IPeopleRepository _peopleRepository;
@@ -27,43 +23,40 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Get
         _personGroupCourseRepository = personGroupCourseRepository;
     }
 
-    public async Task<GetPersonByIdVm> Handle(GetPersonByIdQuery request, CancellationToken ct)
+    public async Task<PersonVm> Handle(GetPersonByIdQuery request, CancellationToken ct)
     {
         Person? person = await _peopleRepository.GetByIdAsync(request.Id, ct);
         if (person == null) throw new Exception("Bad request");
-        
+
         IEnumerable<PersonGroupCourse> pgc = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(person.Id, ct);
+        PersonGroupCourse group = pgc.First(x => x.Course.Active == true);
 
-        IEnumerable<PersonGroupCourseVm> pgcVm = pgc.Select(x => new PersonGroupCourseVm(x.Id, x.CourseId, x.Course.Name, x.GroupId, x.Group.Name));
-        GetPersonGroupCoursesVm gcVm = new GetPersonGroupCoursesVm(pgcVm);
-
-        Common.ViewModels.PersonVm personVm = new Common.ViewModels.PersonVm()
+        Common.ViewModels.PersonVm personVm;
+        if (person is Student)
         {
-            Name = person.Name,
-            DocumentId = person.DocumentId,
-            Surname1 = person.Surname1,
-            Surname2 = person.Surname2,
-            ContactMail = person.ContactMail,
-            ContactPhone = person.ContactPhone,
-        };
-
-        Common.ViewModels.StudentVm? studentVm = null;
-        Student? s = person as Student;
-        if (s != null)
-        {
-            studentVm = new Common.ViewModels.StudentVm()
+            var student = (Student)person;
+            StudentVm studentVm = new Common.ViewModels.StudentVm()
             {
-                AcademicRecordNumber = s.AcademicRecordNumber,
-                Amipa = s.Amipa,
-                PreEnrollment = s.PreEnrollment,
-                SubjectsInfo = s.SubjectsInfo,
+                AcademicRecordNumber = student.AcademicRecordNumber,
+                Amipa = student.Amipa,
+                PreEnrollment = student.PreEnrollment,
+                SubjectsInfo = student.SubjectsInfo
             };
+            personVm = studentVm;
         }
-        
-        return new GetPersonByIdVm(
-            gcVm,
-            personVm,
-            studentVm
-        );
+        else
+        {
+            personVm = new Common.ViewModels.PersonVm();
+        }
+
+        personVm.Name = person.Name;
+        personVm.DocumentId = person.DocumentId;
+        personVm.Surname1 = person.Surname1;
+        personVm.Surname2 = person.Surname2;
+        personVm.ContactMail = person.ContactMail;
+        personVm.ContactPhone = person.ContactPhone;
+        personVm.GroupId = group.Id;
+
+        return personVm;
     }
 }

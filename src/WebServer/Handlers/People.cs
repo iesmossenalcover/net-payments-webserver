@@ -1,4 +1,5 @@
 using Application.People.Commands;
+using Application.People.Common.ViewModels;
 using Application.People.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ public class People
         return await mediator.Send(new ListPeopleByCourseQuery(courseId));
     }
 
-    public static async Task<GetPersonByIdVm> GetPerson(
+    public static async Task<PersonVm> GetPerson(
         long id,
         IMediator mediator)
     {
