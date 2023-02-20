@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230217093916_complet")]
-    partial class complet
+    [Migration("20230220140108_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,16 +102,17 @@ namespace netpaymentswebserver.Migrations
                     b.Property<DateTimeOffset>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsAmipa")
-                        .HasColumnType("boolean");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<decimal>("NormalPrice")
+                    b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
                     b.Property<DateTimeOffset>("PublishDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("UnpublishDate")
+                    b.Property<DateTimeOffset?>("UnpublishDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -142,7 +143,7 @@ namespace netpaymentswebserver.Migrations
                     b.Property<long>("EventId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("ItemId")
+                    b.Property<long?>("ItemId")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("Paid")
@@ -387,9 +388,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasOne("Domain.Entities.Orders.Item", "Item")
                         .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ItemId");
 
                     b.HasOne("Domain.Entities.People.Person", "Person")
                         .WithMany()

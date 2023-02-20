@@ -1,35 +1,42 @@
 using Application.Common;
 using Application.Common.Services;
-using Application.People.Commands;
 using Domain.Entities.Events;
 using FluentValidation;
 using MediatR;
 using System.Text;
-using System;
 using Domain.Entities.People;
-using System.Runtime.CompilerServices;
-using Domain.Entities.Orders;
 
 namespace Application.Events.Commands;
 
-public record SetPeopleToEventCommand(long EventId, IEnumerable<long> PeopleIds) : IRequest<Response<bool?>>;
-
-public class SetPeopleToEventCommandValidator : AbstractValidator<SetPeopleToEventCommand>
+public record SetPeopleEventCommand : IRequest<Response<bool?>>
 {
-    public SetPeopleToEventCommandValidator()
+    public long EventId { get; set; }
+    public IEnumerable<long> PeopleIds { get; set; } = Enumerable.Empty<long>();
+}
+
+public class SetPeopleEventCommandValidator : AbstractValidator<SetPeopleEventCommand>
+{
+    public SetPeopleEventCommandValidator()
     {
     }
 }
 
-public class SetPeopleToEventCommandHandler : IRequestHandler<SetPeopleToEventCommand, Response<bool?>>
+public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventCommand, Response<bool?>>
 {
     #region IOC
     private readonly IPeopleRepository _peopleRepository;
     private readonly IEventsRespository _eventsRespository;
     private readonly IEventsPeopleRespository _eventsPeopleRepository;
+
+    public SetPeopleEventCommandHandler(IPeopleRepository peopleRepository, IEventsRespository eventsRespository, IEventsPeopleRespository eventsPeopleRepository)
+    {
+        _peopleRepository = peopleRepository;
+        _eventsRespository = eventsRespository;
+        _eventsPeopleRepository = eventsPeopleRepository;
+    }
     #endregion
 
-    public async Task<Response<bool?>> Handle(SetPeopleToEventCommand request, CancellationToken ct)
+    public async Task<Response<bool?>> Handle(SetPeopleEventCommand request, CancellationToken ct)
     {
         Event? e = await _eventsRespository.GetByIdAsync(request.EventId, ct);
         if (e == null)

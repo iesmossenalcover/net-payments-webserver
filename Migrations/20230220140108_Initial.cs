@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     /// <inheritdoc />
-    public partial class complet : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,12 +49,12 @@ namespace netpaymentswebserver.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    NormalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
                     AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     CreationDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     PublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    IsAmipa = table.Column<bool>(type: "boolean", nullable: false)
+                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -249,7 +249,7 @@ namespace netpaymentswebserver.Migrations
                     Paid = table.Column<bool>(type: "boolean", nullable: false),
                     PersonId = table.Column<long>(type: "bigint", nullable: false),
                     EventId = table.Column<long>(type: "bigint", nullable: false),
-                    ItemId = table.Column<long>(type: "bigint", nullable: false)
+                    ItemId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -266,8 +266,7 @@ namespace netpaymentswebserver.Migrations
                         column: x => x.ItemId,
                         principalSchema: "order",
                         principalTable: "item",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_event_person_person_PersonId",
                         column: x => x.PersonId,

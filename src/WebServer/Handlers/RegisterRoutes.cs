@@ -28,7 +28,7 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapGet("/api/people", WebServer.Handlers.People.ListPeople)
-            .WithName("List people by group")
+            .WithName("List people by course")
             .WithOpenApi();
 
         app.MapPost("/api/people", People.CreatePerson)
@@ -68,6 +68,11 @@ public static class RegisterRoutes
 
         app.MapDelete("/api/events/{id}", Events.DeleteEvent)
             .WithName("Delete event")
+            .WithOpenApi();
+
+        // Events People
+        app.MapPost("/api/events/{eventId}/people", WebServer.Handlers.Events.SetPeopleToEvent)
+            .WithName("Set people to event")
             .WithOpenApi();
     }
 }
