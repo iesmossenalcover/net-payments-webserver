@@ -31,7 +31,7 @@ public static class RegisterRoutes
             .WithName("List people by group")
             .WithOpenApi();
 
-        app.MapPost("/api/people", WebServer.Handlers.People.CreatePerson)
+        app.MapPost("/api/people", People.CreatePerson)
             .WithName("Create person")
             .WithOpenApi();
 
