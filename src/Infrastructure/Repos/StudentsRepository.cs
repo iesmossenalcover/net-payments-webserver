@@ -7,6 +7,14 @@ public class StudentsRepository : Repository<Student>, Application.Common.Servic
 {
     public StudentsRepository(AppDbContext dbContext) : base(dbContext, dbContext.Students) {}
 
+    public async Task AddStudentsExistingPersonAsync(Student s, Person p, CancellationToken ct)
+    {
+        _dbContext.Students.Add(s);
+        _dbContext.People.Entry(p).State = EntityState.Unchanged;
+
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
     public async Task<Student?> GetStudentByAcademicRecordAsync(long academicRecord, CancellationToken ct)
     {
         return await _dbSet

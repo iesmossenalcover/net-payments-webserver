@@ -99,17 +99,16 @@ namespace netpaymentswebserver.Migrations
                     b.Property<DateTimeOffset>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("IsAmipa")
+                        .HasColumnType("boolean");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal>("NormalPrice")
                         .HasColumnType("numeric");
 
                     b.Property<DateTimeOffset>("PublishDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset?>("UnpublishDate")
+                    b.Property<DateTimeOffset>("UnpublishDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");

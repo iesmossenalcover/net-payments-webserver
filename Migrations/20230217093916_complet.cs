@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class complet : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,12 +49,12 @@ namespace netpaymentswebserver.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    NormalPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     CreationDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     PublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    IsAmipa = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

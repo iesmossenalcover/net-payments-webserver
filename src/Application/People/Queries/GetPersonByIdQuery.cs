@@ -8,6 +8,7 @@ namespace Application.People.Queries;
 # region ViewModels
 public record PersonVm
 {
+    public long id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Surname1 { get; set; } = string.Empty;
     public string? Surname2 { get; set; }
@@ -75,6 +76,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
             personVm = new PersonVm();
         }
 
+        personVm.id = person.Id;
         personVm.Name = person.Name;
         personVm.DocumentId = person.DocumentId;
         personVm.Surname1 = person.Surname1;

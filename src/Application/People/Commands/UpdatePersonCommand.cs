@@ -64,20 +64,66 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
     {
         //Comprovam que no existeix un usuari amb un DocumentID o Academic Record Number igual a la BBDD que no sigui l'usuari que volem actualitzar.
 
-        Person ? p1 = await _peopleRepo.GetPersonByDocumentIdAsync(request.DocumentId, ct);
-        Person ? p2 = await _studentRepo.GetStudentByAcademicRecordAsync(request.AcademicRecordNumber.Value, ct);
 
-        Person ? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
+        Person? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
 
 
-        if (p == null || (p1 != null && p.Id != p1.Id) || (p2 != null && p.Id != p2.Id))
+        if (p == null)
         {
-            Response<long?>.Error(ResponseCode.BadRequest, "Description error...");
+            return Response<long?>.Error(ResponseCode.BadRequest, "Bad request from UpdatePersonCommand");
         }
 
-        //Actualitzar usuari
-        Console.WriteLine("-------------" + request.Name);
+        Person? p1 = await _peopleRepo.GetPersonByDocumentIdAsync(request.DocumentId, ct);
+        if (p1 != null && p.Id != p1.Id)
+        {
+            return Response<long?>.Error(ResponseCode.BadRequest, nameof(p.DocumentId), "Ja existeix una persona amb aquest DNI");
+        }
+
+        if (request.AcademicRecordNumber.HasValue)
+        {
+            Person? p2 = await _studentRepo.GetStudentByAcademicRecordAsync(request.AcademicRecordNumber.Value, ct);
+            if (p2 != null && p.Id != p2.Id)
+            {
+                return Response<long?>.Error(ResponseCode.BadRequest, nameof(request.AcademicRecordNumber), "Ja existeix una persona amb aquest numero d'expedient");
+            }
+            Student? s = p as Student;
+            if (s != null)
+            {
+                //Actualitzar estudiant
+                s.AcademicRecordNumber = request.AcademicRecordNumber.Value;
+                s.Amipa = request.Amipa;
+                s.PreEnrollment = request.PreEnrollment;
+                s.SubjectsInfo = request.SubjectsInfo;
+                p = s;
+            }
+            else
+            {
+                //Crear estudiant
+                s = new Student();
+                s.AcademicRecordNumber = request.AcademicRecordNumber.Value;
+                s.Amipa = request.Amipa;
+                s.PreEnrollment = request.PreEnrollment;
+                s.SubjectsInfo = request.SubjectsInfo;
+                s.DocumentId = request.DocumentId;
+                s.Name = request.Name;
+                s.Surname1 = request.Surname1;
+                
+                //await _studentRepo.AddStudentsExistingPersonAsync(s,p,ct);
+                //await _peopleRepo.UpdateAsync(p, ct);
+
+            }
+        }
+        else
+        {
+            if (p is Student)
+            {
+                //Eliminar estudiant
+            }
+        }
+
+        //Actualitzar P
         
+
         return Response<long?>.Ok(p.Id);
     }
 }
