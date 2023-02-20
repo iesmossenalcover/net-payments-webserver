@@ -1,6 +1,5 @@
 using Application.Common;
 using Application.People.Commands;
-using Application.People.Common.ViewModels;
 using Application.People.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

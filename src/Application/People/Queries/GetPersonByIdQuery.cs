@@ -1,15 +1,39 @@
 using Application.Common;
 using Application.Common.Services;
-using Application.People.Common.ViewModels;
 using Domain.Entities.People;
 using MediatR;
 
 namespace Application.People.Queries;
 
+# region ViewModels
+public record PersonVm
+{
+    public string Name { get; set; } = string.Empty;
+    public string Surname1 { get; set; } = string.Empty;
+    public string? Surname2 { get; set; }
+    public string DocumentId { get; set; } = string.Empty;
+    public string? ContactPhone { get; set; }
+    public string? ContactMail { get; set; }
+    public long GroupId { get; set; }
+}
+
+public record StudentVm : PersonVm
+{
+    public long AcademicRecordNumber { get; set; }
+    public bool PreEnrollment { get; set; }
+    public bool Amipa { get; set; }
+    public string? SubjectsInfo { get; set; }
+}
+
+#endregion
+
+#region Query
 public record GetPersonByIdQuery(long Id) : IRequest<Response<PersonVm>>;
+#endregion
 
 public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Response<PersonVm>>
 {
+    #region  IOC
     private readonly ICoursesRepository _courseRepository;
     private readonly IPeopleRepository _peopleRepository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
@@ -23,6 +47,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         _peopleRepository = peopleRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
     }
+    #endregion
 
     public async Task<Response<PersonVm>> Handle(GetPersonByIdQuery request, CancellationToken ct)
     {
@@ -32,11 +57,11 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         IEnumerable<PersonGroupCourse> pgc = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(person.Id, ct);
         PersonGroupCourse group = pgc.First(x => x.Course.Active == true);
 
-        Common.ViewModels.PersonVm personVm;
+        PersonVm personVm;
         if (person is Student)
         {
             var student = (Student)person;
-            StudentVm studentVm = new Common.ViewModels.StudentVm()
+            StudentVm studentVm = new StudentVm()
             {
                 AcademicRecordNumber = student.AcademicRecordNumber,
                 Amipa = student.Amipa,
@@ -47,7 +72,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         }
         else
         {
-            personVm = new Common.ViewModels.PersonVm();
+            personVm = new PersonVm();
         }
 
         personVm.Name = person.Name;
