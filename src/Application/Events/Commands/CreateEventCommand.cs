@@ -9,7 +9,7 @@ using System;
 
 namespace Application.Events.Commands;
 
-public record CreateEventCommand : IRequest<Response<long?>>
+public record EventData
 {
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
@@ -17,6 +17,9 @@ public record CreateEventCommand : IRequest<Response<long?>>
     public DateTimeOffset? PublishDate { get; set; } = default!;
     public DateTimeOffset? UnpublishDate { get; set; } = default!;
 }
+
+public record CreateEventCommand : EventData, IRequest<Response<long?>>
+{ }
 
 public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
 {
