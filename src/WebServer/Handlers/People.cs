@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.People.Commands;
 using Application.People.Common.ViewModels;
 using Application.People.Queries;
@@ -15,21 +16,21 @@ public class People
         return await mediator.Send(new ListPeopleByCourseQuery(courseId));
     }
 
-    public static async Task<PersonVm> GetPerson(
+    public static async Task<Response<PersonVm>> GetPerson(
         long id,
         IMediator mediator)
     {
         return await mediator.Send(new GetPersonByIdQuery(id));
     }
 
-    public static async Task<long> CreatePerson(
+    public static async Task<Response<long?>> CreatePerson(
         IMediator mediator,
         [FromBody] CreatePersonCommand cmd)
     {
         return await mediator.Send(cmd);
     }
 
-    public static async Task<long> UpdatePerson(
+    public static async Task<Response<long?>> UpdatePerson(
         long id,
         IMediator mediator,
         [FromBody] UpdatePersonCommand cmd)

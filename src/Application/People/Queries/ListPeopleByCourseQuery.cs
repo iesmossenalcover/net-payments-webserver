@@ -1,5 +1,4 @@
 using Application.Common.Services;
-using Application.People.Common.ViewModels;
 using Domain.Entities.People;
 using MediatR;
 

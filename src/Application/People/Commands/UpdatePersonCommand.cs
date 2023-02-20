@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Common.Services;
 using Domain.Entities.People;
 using FluentValidation;
@@ -6,7 +7,7 @@ using MediatR;
 namespace Application.People.Commands;
 
 // Model we receive
-public record UpdatePersonCommand : CreatePersonCommand, IRequest<long>
+public record UpdatePersonCommand : CreatePersonCommand, IRequest<Response<long?>>
 {
     public long Id { get; set; }
 
@@ -47,7 +48,7 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
     }
 }
 
-public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, long>
+public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, Response<long?>>
 {
     private readonly IPeopleRepository _peopleRepo;
     private readonly IStudentsRepository _studentRepo;
@@ -59,7 +60,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, l
         _peopleRepo = peopleRepo;
         _studentRepo = studentRepo;
     }
-    public async Task<long> Handle(UpdatePersonCommand request, CancellationToken ct)
+    public async Task<Response<long?>> Handle(UpdatePersonCommand request, CancellationToken ct)
     {
         //Comprovam que no existeix un usuari amb un DocumentID o Academic Record Number igual a la BBDD que no sigui l'usuari que volem actualitzar.
 
@@ -71,11 +72,12 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, l
 
         if (p == null || (p1 != null && p.Id != p1.Id) || (p2 != null && p.Id != p2.Id))
         {
-            throw new Exception("Bad request");
+            Response<long?>.Error(ResponseCode.BadRequest, "Description error...");
         }
 
         //Actualitzar usuari
         Console.WriteLine("-------------" + request.Name);
-        return p.Id;
+        
+        return Response<long?>.Ok(p.Id);
     }
 }
