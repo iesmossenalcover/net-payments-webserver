@@ -61,5 +61,9 @@ public static class RegisterRoutes
         app.MapPost("/api/events", WebServer.Handlers.Events.CreateEvent)
             .WithName("Create event")
             .WithOpenApi();
+
+        app.MapPut("/api/events", Events.UpdateEvent)
+            .WithName("Update event")
+            .WithOpenApi();
     }
 }
