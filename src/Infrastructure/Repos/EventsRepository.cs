@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class EventsRepository : Repository<Event>, Application.Common.Services.IEventsRespository
+public class EventsPeopleRepository : Repository<EventPerson>, Application.Common.Services.IEventsPeopleRespository
 {
-    public EventsRepository(AppDbContext dbContext) : base(dbContext, dbContext.Events) {}
+    public EventsPeopleRepository(AppDbContext dbContext) : base(dbContext, dbContext.EventPersons) {}
 
-    public async Task<Event?> GetEventByCodeAsync(string code, CancellationToken ct)
+    public async Task<IEnumerable<EventPerson>> GetAllByEventIdAsync(long eventId, CancellationToken ct)
     {
-        return await _dbSet.FirstOrDefaultAsync(x => x.Code == code);
+        return await _dbSet.Where(x => x.EventId == eventId).ToListAsync();
     }
 }
