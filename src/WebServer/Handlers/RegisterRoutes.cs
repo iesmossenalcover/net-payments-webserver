@@ -31,7 +31,7 @@ public static class RegisterRoutes
             .WithName("List people by group")
             .WithOpenApi();
 
-        app.MapPost("/api/people", WebServer.Handlers.People.CreatePerson)
+        app.MapPost("/api/people", People.CreatePerson)
             .WithName("Create person")
             .WithOpenApi();
 
@@ -51,6 +51,23 @@ public static class RegisterRoutes
         // Groups
         app.MapGet("/api/groups/selector", WebServer.Handlers.Groups.GetGroupsSelector)
             .WithName("Get groups selector")
+            .WithOpenApi();
+
+        // Events
+        app.MapGet("/api/events/{id}", WebServer.Handlers.Events.GetEvent)
+            .WithName("Get event by id")
+            .WithOpenApi();
+
+        app.MapPost("/api/events", WebServer.Handlers.Events.CreateEvent)
+            .WithName("Create event")
+            .WithOpenApi();
+
+        app.MapPut("/api/events/{id}", Events.UpdateEvent)
+            .WithName("Update event")
+            .WithOpenApi();
+
+        app.MapDelete("/api/events/{id}", Events.DeleteEvent)
+            .WithName("Delete event")
             .WithOpenApi();
     }
 }

@@ -27,6 +27,7 @@ public class GetAllCoursesSelectorQueryHandler : IRequestHandler<GetAllCoursesSe
             options.Add(new SelectOptionVm(c.Id.ToString(), c.Name));
             if (c.Active) activeCourseId = c.Id;
         }
+        
         return new SelectorVm(activeCourseId.ToString(), options);
     }
 }

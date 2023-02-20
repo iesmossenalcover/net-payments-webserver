@@ -1,19 +1,20 @@
 using Application.Common.Services;
-using Application.People.Common.ViewModels;
 using Domain.Entities.People;
 using MediatR;
 
 namespace Application.People.Queries;
 
-
+# region ViewModels
 public record CourseVm(long Id, string Name);
-public record ListPeopleByCourseVm(IEnumerable<PersonSummaryVm> People, long SelectedCourseId);
 public record PersonSummaryVm(long Id, string DocumentId, string FirstName, string LastName, long GroupId, string GroupName, long? AcademicRecordNumber);
+public record ListPeopleByCourseVm(IEnumerable<PersonSummaryVm> People, long SelectedCourseId);
+#endregion
 
 public record ListPeopleByCourseQuery(long? CourseId) : IRequest<ListPeopleByCourseVm>;
 
 public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCourseQuery, ListPeopleByCourseVm>
 {
+    # region IOC
     private readonly ICoursesRepository _courseRepository;
     private readonly IPeopleRepository _peopleRepository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
@@ -24,6 +25,7 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
         _peopleRepository = peopleRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
     }
+    #endregion
 
     public async Task<ListPeopleByCourseVm> Handle(ListPeopleByCourseQuery request, CancellationToken ct)
     {
@@ -56,7 +58,7 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
         );
     }
 
-    public static CourseVm ToCourseVm(Course c)
+    private static CourseVm ToCourseVm(Course c)
     {
         return new CourseVm(
             c.Id,

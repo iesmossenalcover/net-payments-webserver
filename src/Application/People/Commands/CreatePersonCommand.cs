@@ -1,4 +1,4 @@
-using Application.Common.Exceptions;
+using Application.Common;
 using Application.Common.Services;
 using Domain.Entities.People;
 using FluentValidation;
@@ -7,8 +7,7 @@ using MediatR;
 namespace Application.People.Commands;
 
 // Model we receive
-public record PersonGroupCourseModel(long GroupId, long CourseId);
-public record CreatePersonCommand : IRequest<long>
+public record CreatePersonCommand : IRequest<Response<long?>>
 {
     public string Name { get; set; } = string.Empty;
     public string Surname1 { get; set; } = string.Empty;
@@ -25,6 +24,7 @@ public record CreatePersonCommand : IRequest<long>
     public bool Amipa { get; set; }
 }
 
+// Validator
 public class CreatePersonCommandValidator : AbstractValidator<CreatePersonCommand>
 {
     private readonly IPeopleRepository _peopleRepo;
@@ -76,7 +76,7 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
 }
 
 // Handler
-public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, long>
+public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, Response<long?>>
 {
     private readonly IPeopleRepository _peopleRepo;
     private readonly ICoursesRepository _coursesRepo;
@@ -95,15 +95,12 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, l
         _groupsRepo = groupsRepo;
     }
 
-    public async Task<long> Handle(CreatePersonCommand request, CancellationToken ct)
+    public async Task<Response<long?>> Handle(CreatePersonCommand request, CancellationToken ct)
     {
         Course course = await _coursesRepo.GetCurrentCoursAsync(ct);
         Group? group = await _groupsRepo.GetByIdAsync(request.GroupId, ct);
 
-        if (group == null)
-        {
-            throw new BadRequestException(nameof(request.GroupId), "El grup no existeix");
-        }
+        if (group == null) return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "Specified group does not exist");
 
         Person p;
         if (request.AcademicRecordNumber.HasValue)
@@ -138,6 +135,6 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, l
         await _peopleRepo.InsertAsync(p, CancellationToken.None);
         await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
 
-        return p.Id;
+        return Response<long?>.Ok(p.Id);
     }
 }

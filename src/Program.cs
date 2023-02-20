@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using MediatR;
 using System.Reflection;
 using FluentValidation;
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Payments API", Version = "v1" });
+});
+
+builder.Services.Configure<JsonOptions>(options => {
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
 });
 
 // Auth services
@@ -71,15 +79,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api pagamanets IES Mossèn Alcover v1");
+        c.RoutePrefix = string.Empty;
     });
 }
 
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Add ValidationHandler
-app.UseMiddleware<WebServer.Middleware.ValidationExceptionHandlerMiddleware>();
 
 app.MapRoutes();
 

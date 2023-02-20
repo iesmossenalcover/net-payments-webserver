@@ -10,21 +10,22 @@ namespace Infrastructure
             //     configuration.GetConnectionString("Sqlite"))
             // );
 
-            services.AddDbContextPool<Infrastructure.AppDbContext>(o => 
+            services.AddDbContextPool<AppDbContext>(o => 
                 o.UseNpgsql(configuration.GetConnectionString("PostgreSql"))
             );
 
-            services.AddScoped<Infrastructure.AppDbContext, Infrastructure.AppDbContext>();
+            services.AddScoped<AppDbContext, AppDbContext>();
 
             // Better approach
-            services.AddScoped<Application.Common.Services.IUsersRepository, Infrastructure.Repos.UserRepository>();
-            services.AddScoped<Application.Common.Services.ICoursesRepository, Infrastructure.Repos.CoursesRepository>();
-            services.AddScoped<Application.Common.Services.IPeopleRepository, Infrastructure.Repos.PeopleRepository>();
-            services.AddScoped<Application.Common.Services.IPersonGroupCourseRepository, Infrastructure.Repos.PeopleGroupCourseRepository>();
-            services.AddScoped<Application.Common.Services.IStudentsRepository, Infrastructure.Repos.StudentsRepository>();
-            services.AddScoped<Application.Common.Services.IGroupsRepository, Infrastructure.Repos.GroupsRepository>();
-            services.AddScoped<Application.Common.Services.ITransactionsService, Infrastructure.TransactionsService>();
-            services.AddSingleton<Application.Common.Services.ICsvParser, Infrastructure.CsvParser>();
+            services.AddScoped<Application.Common.Services.IUsersRepository, Repos.UserRepository>();
+            services.AddScoped<Application.Common.Services.ICoursesRepository, Repos.CoursesRepository>();
+            services.AddScoped<Application.Common.Services.IPeopleRepository, Repos.PeopleRepository>();
+            services.AddScoped<Application.Common.Services.IPersonGroupCourseRepository, Repos.PeopleGroupCourseRepository>();
+            services.AddScoped<Application.Common.Services.IStudentsRepository, Repos.StudentsRepository>();
+            services.AddScoped<Application.Common.Services.IGroupsRepository, Repos.GroupsRepository>();
+            services.AddScoped<Application.Common.Services.IEventsRespository, Repos.EventsRepository>();
+            services.AddScoped<Application.Common.Services.ITransactionsService , TransactionsService>();
+            services.AddSingleton<Application.Common.Services.ICsvParser, CsvParser>();
 
             return services;
         }

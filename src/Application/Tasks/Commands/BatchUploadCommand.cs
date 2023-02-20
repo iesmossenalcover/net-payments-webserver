@@ -1,4 +1,5 @@
 using System.Data;
+using Application.Common;
 using Application.Common.Models;
 using Application.Common.Services;
 using Domain.Entities.People;
@@ -8,7 +9,7 @@ using MediatR;
 namespace Application.Tasks.Commands;
 
 // Model we receive
-public record PeopleBatchUploadCommand(Stream File) : IRequest<BatchUploadVm>;
+public record PeopleBatchUploadCommand(Stream File) : IRequest<Response<BatchUploadVm>>;
 
 // Validator for the model
 
@@ -17,7 +18,7 @@ public record BatchUploadSummary(int GroupsCreated, int PeopleCreated, int Peopl
 public record BatchUploadVm(BatchUploadSummary Data);
 
 // Handler
-public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, BatchUploadVm>
+public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, Response<BatchUploadVm>>
 {
     #region props
 
@@ -48,16 +49,13 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     }
     #endregion
 
-    public async Task<BatchUploadVm> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
+    public async Task<Response<BatchUploadVm>> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
     {
         // Parse csv
         var result = _csvParser.ParseBatchUpload(request.File);
         request.File.Dispose();
 
-        if (result.Values == null)
-        {
-            throw new Application.Common.Exceptions.BadRequestException("", result.ErrorMessage ?? "Error processing csv.");
-        }
+        if (result.Values == null) return Response<BatchUploadVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error processing csv.");
 
         IEnumerable<BatchUploadRowModel> rows = result.Values;
 
@@ -67,6 +65,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         IDictionary<long, Student> students = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
         // Process people
         IDictionary<string, Person> people = await ProcessPeople(rows.Where(x => !x.Expedient.HasValue), ct);
+        
         foreach (var s in students)
         {
             people[s.Value.DocumentId] = s.Value;
@@ -79,7 +78,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         var summary = new BatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
         await _transactionsService.InsertAndUpdateTransactionAsync(m, ct);
-        return new BatchUploadVm(summary);
+        return Response<BatchUploadVm>.Ok(new BatchUploadVm(summary));
     }
 
     #region private methods
@@ -209,7 +208,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
             return s;
         }
-        throw new Exception("argument is not a user");
+        throw new ArgumentException("Check argument is a student");
     }
 
     private void UpdateStudentFields(Student s, Student newStudent)

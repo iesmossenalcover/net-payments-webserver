@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Tasks.Commands;
 using MediatR;
 
@@ -5,7 +6,7 @@ namespace WebServer.Handlers;
 
 public class Tasks
 {
-    public async static Task<IResult> UploadPeople(HttpContext ctx, IMediator m)
+    public async static Task<Response<BatchUploadVm>> UploadPeople(HttpContext ctx, IMediator m)
     {
         IFormFile? f = null;
         try
@@ -20,12 +21,12 @@ public class Tasks
 
         if (f == null)
         {
-            throw new Application.Common.Exceptions.BadRequestException("", "No s'ha pogut processar el fitxer");
+            return Response<BatchUploadVm>.Error(ResponseCode.BadRequest, "No s'ha pogut processar el fitxer.");
         }
 
         Stream fileStream = f.OpenReadStream();
         var result = await m.Send(new PeopleBatchUploadCommand(fileStream));
         fileStream.Close();
-        return Results.Ok(result);
+        return result;
     }
 }
