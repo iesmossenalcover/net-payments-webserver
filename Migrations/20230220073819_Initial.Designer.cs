@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230213115136_Initial")]
+    [Migration("20230220073819_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -102,16 +102,17 @@ namespace netpaymentswebserver.Migrations
                     b.Property<DateTimeOffset>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsAmipa")
-                        .HasColumnType("boolean");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<decimal>("NormalPrice")
+                    b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
                     b.Property<DateTimeOffset>("PublishDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("UnpublishDate")
+                    b.Property<DateTimeOffset?>("UnpublishDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");

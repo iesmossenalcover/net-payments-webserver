@@ -8,7 +8,7 @@ namespace Application.Events.Queries;
 # region ViewModels
 public record EventVm(
     long Id, string Code, string Name, decimal Price, decimal AmipaPrice,
-    DateTimeOffset CreationDate, DateTimeOffset PublishDate, DateTimeOffset UnpublishDate
+    DateTimeOffset CreationDate, DateTimeOffset PublishDate, DateTimeOffset? UnpublishDate
 );
 
 #endregion

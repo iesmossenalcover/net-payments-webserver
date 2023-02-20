@@ -49,12 +49,12 @@ namespace netpaymentswebserver.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    NormalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
                     AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     CreationDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     PublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    IsAmipa = table.Column<bool>(type: "boolean", nullable: false)
+                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {

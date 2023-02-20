@@ -52,5 +52,14 @@ public static class RegisterRoutes
         app.MapGet("/api/groups/selector", WebServer.Handlers.Groups.GetGroupsSelector)
             .WithName("Get groups selector")
             .WithOpenApi();
+
+        // Events
+        app.MapGet("/api/events/{id}", WebServer.Handlers.Events.GetEvent)
+            .WithName("Get event by id")
+            .WithOpenApi();
+
+        app.MapPost("/api/events", WebServer.Handlers.Events.CreateEvent)
+            .WithName("Create event")
+            .WithOpenApi();
     }
 }
