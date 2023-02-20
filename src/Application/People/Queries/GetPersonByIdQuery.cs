@@ -39,6 +39,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Get
 
         Common.ViewModels.PersonVm personVm = new Common.ViewModels.PersonVm()
         {
+            Id = person.Id,
             Name = person.Name,
             DocumentId = person.DocumentId,
             Surname1 = person.Surname1,

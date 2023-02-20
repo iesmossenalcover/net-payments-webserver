@@ -2,6 +2,7 @@ namespace Application.People.Common.ViewModels;
 
 public record PersonVm
 {
+    public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Surname1 { get; set; } = string.Empty;
     public string? Surname2 { get; set; }
