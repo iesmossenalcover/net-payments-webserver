@@ -13,7 +13,7 @@ public class EventPerson : Entity
     public long EventId { get; set; }
     public Event Event { get; set; } = default!;
 
-    public long ItemId { get; set; }
-    public Item Item { get; set; } = default!;
+    public long? ItemId { get; set; }
+    public Item? Item { get; set; } = default!;
 
 }
