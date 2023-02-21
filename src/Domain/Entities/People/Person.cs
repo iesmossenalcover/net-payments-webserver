@@ -1,3 +1,5 @@
+using Domain.Entities.Events;
+
 namespace Domain.Entities.People;
 
 public class Person : Entity

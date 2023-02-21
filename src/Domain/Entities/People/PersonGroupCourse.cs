@@ -1,3 +1,5 @@
+using Domain.Entities.Events;
+
 namespace Domain.Entities.People;
 
 public class PersonGroupCourse : Entity
@@ -13,4 +15,9 @@ public class PersonGroupCourse : Entity
     public Group Group { get; set; } = default!;
 
     public bool Amipa { get; set; } = false;
+
+    public decimal PriceForEvent(Event e)
+    {
+        return Amipa ? e.AmipaPrice : e.Price;
+    }
 }

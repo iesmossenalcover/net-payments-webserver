@@ -9,6 +9,16 @@ public class EventsPeopleRepository : Repository<EventPerson>, Application.Commo
 
     public async Task<IEnumerable<EventPerson>> GetAllByEventIdAsync(long eventId, CancellationToken ct)
     {
-        return await _dbSet.Where(x => x.EventId == eventId).ToListAsync();
+        return await _dbSet.Where(x => x.EventId == eventId).ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<EventPerson>> GetAllByPersonAndCourse(long personId, long courseId, CancellationToken ct)
+    {
+        return await _dbSet
+                    .Where(x => x.PersonId == personId && x.Event.CourseId == courseId)
+                    .Include(x => x.Person)
+                    .Include(x => x.Event)
+                    .Include(x => x.Item)
+                    .ToListAsync(ct);
     }
 }

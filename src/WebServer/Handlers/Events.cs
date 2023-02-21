@@ -13,6 +13,11 @@ public class Events
         return await mediator.Send(new ListEventsQuery());
     }
 
+    public static async Task<Response<PersonActiveEventsVm>> ListActivePersonEvents(IMediator mediator, [FromBody] PersonActiveEventsQuery query)
+    {
+        return await mediator.Send(query);
+    }
+
     public static async Task<Response<EventVm>> GetEvent(IMediator mediator, long id)
     {
         return await mediator.Send(new GetEventByIdQuery(id));

@@ -42,26 +42,6 @@ namespace netpaymentswebserver.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "event",
-                schema: "event",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    CreationDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    PublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_event", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "group",
                 schema: "people",
                 columns: table => new
@@ -133,6 +113,34 @@ namespace netpaymentswebserver.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_user", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "event",
+                schema: "event",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    CreationDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    PublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CourseId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_event", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_event_course_CourseId",
+                        column: x => x.CourseId,
+                        principalSchema: "people",
+                        principalTable: "course",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -304,6 +312,12 @@ namespace netpaymentswebserver.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_event_CourseId",
+                schema: "event",
+                table: "event",
+                column: "CourseId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_event_CreationDate",
                 schema: "event",
                 table: "event",
@@ -451,10 +465,6 @@ namespace netpaymentswebserver.Migrations
                 schema: "order");
 
             migrationBuilder.DropTable(
-                name: "course",
-                schema: "people");
-
-            migrationBuilder.DropTable(
                 name: "group",
                 schema: "people");
 
@@ -465,6 +475,10 @@ namespace netpaymentswebserver.Migrations
             migrationBuilder.DropTable(
                 name: "user",
                 schema: "authentication");
+
+            migrationBuilder.DropTable(
+                name: "course",
+                schema: "people");
 
             migrationBuilder.DropTable(
                 name: "order",

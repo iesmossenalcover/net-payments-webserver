@@ -74,6 +74,10 @@ public static class RegisterRoutes
             .WithName("Delete event")
             .WithOpenApi();
 
+        app.MapPost("/api/events/active", Events.ListActivePersonEvents)
+            .WithName("Get active events by person document Id")
+            .WithOpenApi();
+
         // Events People
         app.MapPost("/api/events/{eventId}/people", Events.SetPeopleToEvent)
             .WithName("Set people to event")

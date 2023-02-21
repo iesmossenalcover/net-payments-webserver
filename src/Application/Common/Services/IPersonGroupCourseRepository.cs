@@ -8,4 +8,5 @@ public interface IPersonGroupCourseRepository : IRepository<PersonGroupCourse>
     public Task<IEnumerable<PersonGroupCourse>> GetPersonGroupCoursesByPersonIdAsync(long personId, CancellationToken ct);
 
     public Task<IEnumerable<PersonGroupCourse>> GetCurrentCourseGroupByPeopleIdsAsync(IEnumerable<long> peopleIds, CancellationToken ct);
+    public Task<PersonGroupCourse?> GetCoursePersonGroupBy(string documentId, long courseId, CancellationToken ct);
 }

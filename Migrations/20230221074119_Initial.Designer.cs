@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230221063200_Initial")]
+    [Migration("20230221074119_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -99,6 +99,9 @@ namespace netpaymentswebserver.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<long>("CourseId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -119,6 +122,8 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("CourseId");
 
                     b.HasIndex("CreationDate")
                         .IsDescending();
@@ -376,6 +381,17 @@ namespace netpaymentswebserver.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Events.Event", b =>
+                {
+                    b.HasOne("Domain.Entities.People.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
                 });
 
             modelBuilder.Entity("Domain.Entities.Events.EventPerson", b =>
