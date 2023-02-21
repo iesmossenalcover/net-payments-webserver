@@ -54,6 +54,10 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Events
+        app.MapGet("/api/events", Events.ListCourseEvents)
+            .WithName("List current course events")
+            .WithOpenApi();
+
         app.MapGet("/api/events/{id}", Events.GetEvent)
             .WithName("Get event by id")
             .WithOpenApi();

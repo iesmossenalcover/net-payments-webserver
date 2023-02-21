@@ -8,7 +8,11 @@ namespace WebServer.Handlers;
 
 public class Events
 {
-    
+    public static async Task<IEnumerable<EventVm>> ListCourseEvents(IMediator mediator)
+    {
+        return await mediator.Send(new ListEventsQuery());
+    }
+
     public static async Task<Response<EventVm>> GetEvent(IMediator mediator, long id)
     {
         return await mediator.Send(new GetEventByIdQuery(id));

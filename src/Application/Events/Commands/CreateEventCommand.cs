@@ -6,6 +6,7 @@ using FluentValidation;
 using MediatR;
 using System.Text;
 using System;
+using Domain.Entities.People;
 
 namespace Application.Events.Commands;
 
@@ -45,10 +46,12 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
     #region IOC
     private readonly int MAX_TRIES = 10;
     private readonly IEventsRespository _eventsRespository;
+    private readonly ICoursesRepository _courseRepository;
 
-    public CreateEventCommandHandler(IEventsRespository eventsRespository)
+    public CreateEventCommandHandler(IEventsRespository eventsRespository, ICoursesRepository courseRepository)
     {
         _eventsRespository = eventsRespository;
+        _courseRepository = courseRepository;
     }
     #endregion
 
@@ -68,6 +71,8 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             throw new Exception("Can not found free code for the event");
         }
 
+        Course course = await _courseRepository.GetCurrentCoursAsync(ct);
+
         Event e = new Event()
         {
             Code = code,
@@ -76,7 +81,8 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             AmipaPrice = request.AmipaPrice,
             Price = request.Price,
             PublishDate = request.PublishDate ?? DateTimeOffset.UtcNow,
-            UnpublishDate = request.UnpublishDate
+            UnpublishDate = request.UnpublishDate,
+            Course = course
         };
 
         await _eventsRespository.InsertAsync(e, CancellationToken.None);

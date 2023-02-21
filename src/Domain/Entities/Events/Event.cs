@@ -1,3 +1,5 @@
+using Domain.Entities.People;
+
 namespace Domain.Entities.Events;
 
 public class Event : Entity
@@ -9,5 +11,8 @@ public class Event : Entity
     public DateTimeOffset CreationDate { get; set; } = default!;
     public DateTimeOffset PublishDate { get; set; } = default!;
     public DateTimeOffset? UnpublishDate { get; set; } = default!;
+
+    public long CourseId { get; set; }
+    public Course Course { get; set; } = default!;
 
 }

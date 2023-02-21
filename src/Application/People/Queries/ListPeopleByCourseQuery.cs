@@ -16,15 +16,14 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
 {
     # region IOC
     private readonly ICoursesRepository _courseRepository;
-    private readonly IPeopleRepository _peopleRepository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
 
-    public ListPeopleByCourseQuueryHandler(ICoursesRepository courseRepository, IPeopleRepository peopleRepository, IPersonGroupCourseRepository personGroupCourseRepository)
+    public ListPeopleByCourseQuueryHandler(ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository)
     {
         _courseRepository = courseRepository;
-        _peopleRepository = peopleRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
     }
+
     #endregion
 
     public async Task<ListPeopleByCourseVm> Handle(ListPeopleByCourseQuery request, CancellationToken ct)
