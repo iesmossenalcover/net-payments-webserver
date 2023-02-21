@@ -16,6 +16,4 @@ public class Event : Entity
     public Course Course { get; set; } = default!;
 
     public bool IsActive => (PublishDate < DateTimeOffset.UtcNow) && (UnpublishDate.HasValue ? DateTimeOffset.UtcNow < UnpublishDate : true);
-
-
 }
