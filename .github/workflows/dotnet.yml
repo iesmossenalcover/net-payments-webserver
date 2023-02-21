@@ -15,10 +15,8 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
-    - name: Restore dependencies
-      run: dotnet restore --configuration Release -r linux-arm64 --self-contained
     - name: Build
-      run: dotnet build --no-restore --configuration Release -r linux-arm64 --self-contained
+      run: dotnet build --configuration Release -r linux-arm64 --self-contained
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish
