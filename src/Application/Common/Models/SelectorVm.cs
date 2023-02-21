@@ -1,4 +1,4 @@
 namespace Application.Common.Models;
 
 public record SelectOptionVm(string Key, string Value);
-public record SelectorVm(string Selected, IEnumerable<SelectOptionVm> Options);
+public record SelectorVm(IEnumerable<SelectOptionVm> Options);

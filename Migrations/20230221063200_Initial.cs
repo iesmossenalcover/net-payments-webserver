@@ -165,7 +165,8 @@ namespace netpaymentswebserver.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PersonId = table.Column<long>(type: "bigint", nullable: false),
                     CourseId = table.Column<long>(type: "bigint", nullable: false),
-                    GroupId = table.Column<long>(type: "bigint", nullable: false)
+                    GroupId = table.Column<long>(type: "bigint", nullable: false),
+                    Amipa = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -201,7 +202,6 @@ namespace netpaymentswebserver.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false),
                     AcademicRecordNumber = table.Column<long>(type: "bigint", nullable: false),
                     SubjectsInfo = table.Column<string>(type: "text", nullable: true),
-                    Amipa = table.Column<bool>(type: "boolean", nullable: false),
                     PreEnrollment = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>

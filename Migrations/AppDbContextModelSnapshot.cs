@@ -321,6 +321,9 @@ namespace netpaymentswebserver.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<bool>("Amipa")
+                        .HasColumnType("boolean");
+
                     b.Property<long>("CourseId")
                         .HasColumnType("bigint");
 
@@ -348,9 +351,6 @@ namespace netpaymentswebserver.Migrations
 
                     b.Property<long>("AcademicRecordNumber")
                         .HasColumnType("bigint");
-
-                    b.Property<bool>("Amipa")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("PreEnrollment")
                         .HasColumnType("boolean");

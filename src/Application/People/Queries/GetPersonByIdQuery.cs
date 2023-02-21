@@ -65,7 +65,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
             StudentVm studentVm = new StudentVm()
             {
                 AcademicRecordNumber = student.AcademicRecordNumber,
-                Amipa = student.Amipa,
+                Amipa = group.Amipa,
                 PreEnrollment = student.PreEnrollment,
                 SubjectsInfo = student.SubjectsInfo
             };

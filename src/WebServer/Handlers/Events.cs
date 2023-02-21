@@ -21,7 +21,7 @@ public class Events
 
     public static async Task<Response<long?>> UpdateEvent(IMediator mediator, long id, [FromBody] UpdateEventCommand cmd)
     {
-        cmd.Id = id;
+        cmd.SetId(id);
         return await mediator.Send(cmd);
     }
 

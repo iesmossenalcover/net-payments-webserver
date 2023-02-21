@@ -108,7 +108,6 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             p = new Student()
             {
                 AcademicRecordNumber = request.AcademicRecordNumber.Value,
-                Amipa = false,
                 PreEnrollment = request.PreEnrollment,
                 SubjectsInfo = request.SubjectsInfo,
             };
@@ -130,6 +129,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             Person = p,
             Course = course,
             Group = group,
+            Amipa = request.Amipa,
         };
 
         await _peopleRepo.InsertAsync(p, CancellationToken.None);

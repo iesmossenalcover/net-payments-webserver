@@ -91,7 +91,6 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
             {
                 //Actualitzar estudiant
                 s.AcademicRecordNumber = request.AcademicRecordNumber.Value;
-                s.Amipa = request.Amipa;
                 s.PreEnrollment = request.PreEnrollment;
                 s.SubjectsInfo = request.SubjectsInfo;
                 p = s;
@@ -101,7 +100,6 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
                 //Crear estudiant
                 s = new Student();
                 s.AcademicRecordNumber = request.AcademicRecordNumber.Value;
-                s.Amipa = request.Amipa;
                 s.PreEnrollment = request.PreEnrollment;
                 s.SubjectsInfo = request.SubjectsInfo;
                 s.DocumentId = request.DocumentId;

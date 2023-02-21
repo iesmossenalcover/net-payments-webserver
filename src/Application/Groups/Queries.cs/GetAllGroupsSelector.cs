@@ -25,6 +25,6 @@ public class GetAllGroupsSelectorQueryHandler : IRequestHandler<GetAllGroupsSele
         {
             options.Add(new SelectOptionVm(c.Id.ToString(), c.Name));
         }
-        return new SelectorVm(activeGroupId.ToString(), options);
+        return new SelectorVm(options);
     }
 }

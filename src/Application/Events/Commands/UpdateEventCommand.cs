@@ -1,31 +1,66 @@
 using Application.Common;
 using Application.Common.Services;
+using Application.People.Commands;
 using Domain.Entities.Events;
 using FluentValidation;
 using MediatR;
+using System.Text;
+using System;
 
 namespace Application.Events.Commands;
 
-public record DeleteEventCommand(long Id) : IRequest<Unit>;
-public class DeleteEventCommandHandler : IRequestHandler<DeleteEventCommand, Unit>
+public record UpdateEventCommand : EventData, IRequest<Response<long?>>
+{
+    private long _Id;
+
+    public long GetId => _Id;
+    public void SetId(long value) { _Id = value; }
+}
+
+public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
+{
+	public UpdateEventCommandValidator()
+	{
+        RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
+        RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
+        RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
+        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
+        RuleFor(x => x.UnpublishDate)
+            .Must((request, unpublish) => {
+                if (!unpublish.HasValue) return true;
+
+                if (unpublish.Value < request.PublishDate) return false;
+
+                return true;
+            }).WithMessage("La data ha de ser posterior a la data de publicació");
+    }
+}
+
+public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Response<long?>>
 {
     #region IOC
     private readonly IEventsRespository _eventsRespository;
 
-    public DeleteEventCommandHandler(IEventsRespository eventsRespository)
+    public UpdateEventCommandHandler(IEventsRespository eventsRespository)
     {
         _eventsRespository = eventsRespository;
     }
     #endregion
 
-    public async Task<Unit> Handle(DeleteEventCommand request, CancellationToken ct)
+    public async Task<Response<long?>> Handle(UpdateEventCommand request, CancellationToken ct)
     {
-        Event? e = await _eventsRespository.GetByIdAsync(request.Id, ct);
-        if (e == null) return Unit.Value;
+        Event? e = await _eventsRespository.GetByIdAsync(request.GetId, ct);
+        if (e == null) return Response<long?>.Error(ResponseCode.NotFound, "L'event que es vol modificar no existeix.");
 
-        await _eventsRespository.DeleteAsync(e, CancellationToken.None);
+        e.Name = request.Name;
+        e.AmipaPrice = request.AmipaPrice;
+        e.Price = request.Price;
+        e.PublishDate = request.PublishDate ?? e.PublishDate;
+        e.UnpublishDate = request.UnpublishDate;
 
-        return Unit.Value;
+        await _eventsRespository.UpdateAsync(e, CancellationToken.None);
+
+        return Response<long?>.Ok(e.Id);
     }
 
 

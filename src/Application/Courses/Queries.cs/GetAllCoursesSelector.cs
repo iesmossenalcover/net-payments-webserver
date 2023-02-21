@@ -28,6 +28,6 @@ public class GetAllCoursesSelectorQueryHandler : IRequestHandler<GetAllCoursesSe
             if (c.Active) activeCourseId = c.Id;
         }
         
-        return new SelectorVm(activeCourseId.ToString(), options);
+        return new SelectorVm(options);
     }
 }

@@ -4,30 +4,30 @@ public static class RegisterRoutes
     public static void MapRoutes(this WebApplication app)
     {
         // auth related actions are in WebServer layer dueto related session storage.
-        app.MapPost("/api/signin", Authentication.Signin.Post)
+        app.MapPost("/api/signin", Authentication.Auth.SigninPost)
             .WithName("signin")
             .WithOpenApi();
 
-        app.MapPost("/api/signup", Authentication.Signup.Post)
+        app.MapPost("/api/signup", Authentication.Auth.SignupPost)
             .WithName("signup")
             .WithOpenApi();
 
-        app.MapGet("/api/identity", Authentication.Identity.Get)
+        app.MapGet("/api/identity", Authentication.Auth.GetIdentity)
             .RequireAuthorization()
             .WithName("identity")
             .WithOpenApi();
 
         // Tasks
-        app.MapPost("/api/tasks/people", WebServer.Handlers.Tasks.UploadPeople)
+        app.MapPost("/api/tasks/people", Tasks.UploadPeople)
             .WithName("Upload people")
             .WithOpenApi();
 
         // People
-        app.MapGet("/api/people/{id}", WebServer.Handlers.People.GetPerson)
+        app.MapGet("/api/people/{id}", People.GetPerson)
             .WithName("Get person by id")
             .WithOpenApi();
 
-        app.MapGet("/api/people", WebServer.Handlers.People.ListPeople)
+        app.MapGet("/api/people", People.ListPeople)
             .WithName("List people by course")
             .WithOpenApi();
 
@@ -35,30 +35,30 @@ public static class RegisterRoutes
             .WithName("Create person")
             .WithOpenApi();
 
-        app.MapPut("/api/people/{id}", WebServer.Handlers.People.UpdatePerson)
+        app.MapPut("/api/people/{id}", People.UpdatePerson)
             .WithName("Update person")
             .WithOpenApi();
 
-        app.MapDelete("/api/people/{id}", WebServer.Handlers.People.DeletePerson)
+        app.MapDelete("/api/people/{id}", People.DeletePerson)
             .WithName("Delete person")
             .WithOpenApi();
 
         // Courses
-        app.MapGet("/api/courses/selector", WebServer.Handlers.Courses.GetCoursesSelector)
+        app.MapGet("/api/courses/selector", Courses.GetCoursesSelector)
             .WithName("Get courses selector")
             .WithOpenApi();
 
         // Groups
-        app.MapGet("/api/groups/selector", WebServer.Handlers.Groups.GetGroupsSelector)
+        app.MapGet("/api/groups/selector", Groups.GetGroupsSelector)
             .WithName("Get groups selector")
             .WithOpenApi();
 
         // Events
-        app.MapGet("/api/events/{id}", WebServer.Handlers.Events.GetEvent)
+        app.MapGet("/api/events/{id}", Events.GetEvent)
             .WithName("Get event by id")
             .WithOpenApi();
 
-        app.MapPost("/api/events", WebServer.Handlers.Events.CreateEvent)
+        app.MapPost("/api/events", Events.CreateEvent)
             .WithName("Create event")
             .WithOpenApi();
 
@@ -71,7 +71,7 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Events People
-        app.MapPost("/api/events/{eventId}/people", WebServer.Handlers.Events.SetPeopleToEvent)
+        app.MapPost("/api/events/{eventId}/people", Events.SetPeopleToEvent)
             .WithName("Set people to event")
             .WithOpenApi();
     }

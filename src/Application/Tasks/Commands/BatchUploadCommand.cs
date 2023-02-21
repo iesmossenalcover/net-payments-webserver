@@ -120,6 +120,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                         Group = g,
                         Person = p,
                         Course = course,
+                        Amipa = false,
                     };
                     personGroupCourse.Add(p.DocumentId, pgc);
                 }
@@ -198,7 +199,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             var s = new Student()
             {
                 AcademicRecordNumber = po.Expedient.Value,
-                Amipa = false,
                 SubjectsInfo = po.Assignatures,
                 PreEnrollment = po.Prematricula == 1,
             };
@@ -214,7 +214,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     private void UpdateStudentFields(Student s, Student newStudent)
     {
         s.SubjectsInfo = newStudent.SubjectsInfo;
-        s.Amipa = newStudent.Amipa;
         s.PreEnrollment = newStudent.PreEnrollment;
         UpdatePersonFields(s, newStudent);
     }

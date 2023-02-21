@@ -11,4 +11,6 @@ public class PersonGroupCourse : Entity
 
     public long GroupId { get; set; }
     public Group Group { get; set; } = default!;
+
+    public bool Amipa { get; set; } = false;
 }

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230220140108_Initial")]
+    [Migration("20230221063200_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -324,6 +324,9 @@ namespace netpaymentswebserver.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<bool>("Amipa")
+                        .HasColumnType("boolean");
+
                     b.Property<long>("CourseId")
                         .HasColumnType("bigint");
 
@@ -351,9 +354,6 @@ namespace netpaymentswebserver.Migrations
 
                     b.Property<long>("AcademicRecordNumber")
                         .HasColumnType("bigint");
-
-                    b.Property<bool>("Amipa")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("PreEnrollment")
                         .HasColumnType("boolean");
