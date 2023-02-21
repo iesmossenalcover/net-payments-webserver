@@ -106,6 +106,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
                 s.Name = request.Name;
                 s.Surname1 = request.Surname1;
                 
+                //Falta crear estudiant i enllaçar estudiant amb persona que ja existeix
                 //await _studentRepo.AddStudentsExistingPersonAsync(s,p,ct);
                 //await _peopleRepo.UpdateAsync(p, ct);
 
