@@ -36,4 +36,4 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_S3_SECRETACCESSKEY}}
         aws-region: ${{ secrets.AWS_S3_REGION }}
     - name: Push to S3
-      run: aws s3 cp net-payments-webserver s3://${{ secrets.AWS_S3_AWSBUCKET }}
+      run: aws s3 cp net-payments-webserver.zip s3://${{ secrets.AWS_S3_AWSBUCKET }}
