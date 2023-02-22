@@ -1,0 +1,2 @@
+systemctl stop paymentsapi.service
+systemctl start paymentsapi.service
