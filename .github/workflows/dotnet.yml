@@ -21,8 +21,8 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Publish
       run: dotnet publish --no-build --configuration Release -r linux-arm64 --self-contained -o net-payments-webserver
-    - uses: vimtor/action-zip@v1
     - name: Create Zip
+    - uses: vimtor/action-zip@v1
       with:
         files: net-payments-webserver/
         dest: net-payments-webserver.zip
