@@ -22,12 +22,12 @@ jobs:
     - name: Publish
       run: dotnet publish --no-build --configuration Release -r linux-arm64 --self-contained -o net-payments-webserver
     - name: Create Zip
-    - uses: vimtor/action-zip@v1
+      uses: vimtor/action-zip@v1
       with:
         files: net-payments-webserver/
         dest: net-payments-webserver.zip
     - name: Configure AWS Client
-    - uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_S3_ACCESSKEYID }}
         aws-secret-access-key: ${{ secrets.AWS_S3_SECRETACCESSKEY}}
