@@ -33,11 +33,11 @@ jobs:
       uses: wixplosives/action-upload-to-s3@v10
       with:
         # AWS Access key id (short one)
-        accessKeyId: $AWS_S3_ACCESSKEYID
+        accessKeyId: ${{ secrets.AWS_S3_ACCESSKEYID }}
         # AWS Secret access key  (long one)
-        secretAccessKey: $AWS_S3_SECRETACCESSKEY
+        secretAccessKey: ${{ secrets.AWS_S3_SECRETACCESSKEY }}
         # bucket name
-        awsBucket: $AWS_S3_AWSBUCKET
+        awsBucket: ${{ secrets.AWS_S3_AWSBUCKET }}
         # subfolder in bucket to upload data to
         #s3Subfolder: 
         # sourcefolder to upload
