@@ -29,22 +29,11 @@ jobs:
         path: net-payments-webserver
         if-no-files-found: error
         retention-days: 10
-    - name: action-upload-to-s3
-      uses: wixplosives/action-upload-to-s3@v10
+    - uses: shallwefootball/s3-upload-action@master
+      name: Upload S3
+      id: S3
       with:
-        # AWS Access key id (short one)
-        accessKeyId: ${{ secrets.AWS_S3_ACCESSKEYID }}
-        # AWS Secret access key  (long one)
-        secretAccessKey: ${{ secrets.AWS_S3_SECRETACCESSKEY }}
-        # bucket name
-        awsBucket: ${{ secrets.AWS_S3_AWSBUCKET }}
-        # subfolder in bucket to upload data to
-        #s3Subfolder: 
-        # sourcefolder to upload
-        sourceFolder: net-payments-webserver
-        # tags to set for uploaded files "Business Unit=core3&gitref=someverylongref"
-        # tags: 
-        #  Name of the virtual project to create link.Usefull for creating latest version links.
-        #publishAsVirtualProject: # optional
-        # file in s3Subfolder to upload
-        #specificFile: # optional
+        aws_key_id: ${{ secrets.AWS_S3_ACCESSKEYID }}
+        aws_secret_access_key: ${{ secrets.AWS_S3_AWSBUCKET}}
+        aws_bucket: ${{ secrets.AWS_S3_SECRETACCESSKEY }}
+        source_dir: 'static'
