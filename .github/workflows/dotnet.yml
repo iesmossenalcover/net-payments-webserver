@@ -36,4 +36,4 @@ jobs:
         aws_key_id: ${{ secrets.AWS_S3_ACCESSKEYID }}
         aws_secret_access_key: ${{ secrets.AWS_S3_AWSBUCKET}}
         aws_bucket: ${{ secrets.AWS_S3_SECRETACCESSKEY }}
-        source_dir: ''
+        source_dir: './'
