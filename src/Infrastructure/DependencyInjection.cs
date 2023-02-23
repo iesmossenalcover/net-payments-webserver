@@ -7,10 +7,6 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // services.AddDbContext<ApplicationDbContext>(o => o.UseSqlite(
-            //     configuration.GetConnectionString("Sqlite"))
-            // );
-
             services.AddDbContextPool<AppDbContext>(o => 
                 o.UseNpgsql(configuration.GetConnectionString("PostgreSql"))
             );
