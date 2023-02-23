@@ -1,2 +1,3 @@
-systemctl stop paymentsapi.service
+#!/bin/bash
+systemctl enable paymentsapi.service
 systemctl start paymentsapi.service
