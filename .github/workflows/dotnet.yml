@@ -1,7 +1,7 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET
+name: Build and Push to S3
 
 on:
   workflow_dispatch:
@@ -21,11 +21,16 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Publish
       run: dotnet publish --no-build --configuration Release -r linux-arm64 --self-contained -o net-payments-webserver
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v3.1.2
+    - name: Create Zip
+      uses: vimtor/action-zip@v1
       with:
-        # Artifact name
-        name: net-payments-webserver
-        path: net-payments-webserver
-        if-no-files-found: error
-        retention-days: 10
+        files: net-payments-webserver/
+        dest: net-payments-webserver.zip
+    - name: Configure AWS Client
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_S3_ACCESSKEYID }}
+        aws-secret-access-key: ${{ secrets.AWS_S3_SECRETACCESSKEY}}
+        aws-region: ${{ secrets.AWS_S3_REGION }}
+    - name: Copy to S3
+      run: aws s3 cp net-payments-webserver.zip s3://${{ secrets.AWS_S3_AWSBUCKET }}
