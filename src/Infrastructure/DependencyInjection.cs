@@ -7,8 +7,9 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+
             services.AddDbContextPool<AppDbContext>(o => 
-                o.UseNpgsql(configuration.GetConnectionString("PostgreSql"))
+                o.UseNpgsql(configuration.GetValue<string>("PostgreSqlConnectionString"))
             );
 
             services.AddScoped<AppDbContext, AppDbContext>();
