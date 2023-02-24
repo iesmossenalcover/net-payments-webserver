@@ -22,6 +22,7 @@ namespace Infrastructure
             services.AddScoped<Application.Common.Services.IGroupsRepository, Repos.GroupsRepository>();
             services.AddScoped<Application.Common.Services.IEventsRespository, Repos.EventsRepository>();
             services.AddScoped<Application.Common.Services.IEventsPeopleRespository, EventsPeopleRepository>();
+            services.AddScoped<Application.Common.Services.IOrdersRepository, OrdersRepository>();
             services.AddScoped<Application.Common.Services.ITransactionsService , TransactionsService>();
             services.AddSingleton<Application.Common.Services.ICsvParser, CsvParser>();
 

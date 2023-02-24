@@ -37,30 +37,39 @@ public class Repository<T> : IRepository<T> where T : Entity
     public async Task InsertAsync(T entity, CancellationToken ct)
     {
         _dbSet.Add(entity);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(T entity, CancellationToken ct)
     {
         _dbContext.Entry(entity).State = EntityState.Modified;
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(ct);
     }
 
     public async Task DeleteAsync(T entity, CancellationToken ct)
     {
         _dbSet.Remove(entity);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(ct);
     }
 
     public async Task InsertManyAsync(IEnumerable<T> entities, CancellationToken ct)
     {
         _dbSet.AddRange(entities);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(ct);
     }
 
     public async Task DeleteManyAsync(IEnumerable<T> entities, CancellationToken ct)
     {
         _dbSet.RemoveRange(entities);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateManyAsync(IEnumerable<T> entities, CancellationToken ct)
+    {
+        foreach (var e in entities)
+        {
+            _dbContext.Entry(e).State = EntityState.Modified;
+        }
+        await _dbContext.SaveChangesAsync(ct);
     }
 }

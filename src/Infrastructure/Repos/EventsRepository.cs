@@ -18,7 +18,7 @@ public class EventsPeopleRepository : Repository<EventPerson>, Application.Commo
                     .Where(x => x.PersonId == personId && x.Event.CourseId == courseId)
                     .Include(x => x.Person)
                     .Include(x => x.Event)
-                    .Include(x => x.Item)
+                    .Include(x => x.Order)
                     .ToListAsync(ct);
     }
 }

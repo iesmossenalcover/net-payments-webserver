@@ -82,5 +82,10 @@ public static class RegisterRoutes
         app.MapPost("/api/events/{eventId}/people", Events.SetPeopleToEvent)
             .WithName("Set people to event")
             .WithOpenApi();
+
+        // Orders
+        app.MapPost("/api/orders", Orders.CreateOrder)
+            .WithName("Create order")
+            .WithOpenApi();
     }
 }
