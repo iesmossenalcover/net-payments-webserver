@@ -7,6 +7,7 @@ using MediatR;
 using System.Text;
 using System;
 using Domain.Entities.People;
+using Application.Common.Helpers;
 
 namespace Application.Events.Commands;
 
@@ -29,7 +30,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
         RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
-        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
+        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicaciï¿½");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) => {
                 if (!unpublish.HasValue) return true;
@@ -37,7 +38,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
                 if (unpublish.Value < request.PublishDate) return false;
 
                 return true;
-            }).WithMessage("La data ha de ser posterior a la data de publicació");
+            }).WithMessage("La data ha de ser posterior a la data de publicaciï¿½");
     }
 }
 
@@ -61,7 +62,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
         string code = string.Empty;
         for (int i = 0; i < MAX_TRIES && !foundFreeCode; i++)
         {
-            code = RandomString(5);
+            code = GenerateString.Random(5);
             Event? existingEvent = await _eventsRespository.GetEventByCodeAsync(code, ct);
             if (existingEvent == null) foundFreeCode = true;
         }
@@ -88,21 +89,5 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
         await _eventsRespository.InsertAsync(e, CancellationToken.None);
 
         return Response<long?>.Ok(e.Id);
-    }
-
-
-    // move
-    private static string RandomString(int length)
-    {
-        const string pool = "abcdefghijklmnopqrstuvwxyz";
-        var builder = new StringBuilder(length);
-        var random = new Random();
-        for (var i = 0; i < length; i++)
-        {
-            var c = pool[random.Next(0, pool.Length)];
-            builder.Append(c);
-        }
-
-        return builder.ToString();
     }
 }

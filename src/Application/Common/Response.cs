@@ -5,6 +5,7 @@ public enum ResponseCode
     Success = 0,
     BadRequest = 1,
     NotFound = 2,
+    InternalError = 3,
 }
 
 public interface IResponse

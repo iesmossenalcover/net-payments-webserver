@@ -71,6 +71,8 @@ namespace netpaymentswebserver.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -139,27 +141,6 @@ namespace netpaymentswebserver.Migrations
                         column: x => x.CourseId,
                         principalSchema: "people",
                         principalTable: "course",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "item",
-                schema: "order",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OrderId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_item", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_item_order_OrderId",
-                        column: x => x.OrderId,
-                        principalSchema: "order",
-                        principalTable: "order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -257,7 +238,7 @@ namespace netpaymentswebserver.Migrations
                     Paid = table.Column<bool>(type: "boolean", nullable: false),
                     PersonId = table.Column<long>(type: "bigint", nullable: false),
                     EventId = table.Column<long>(type: "bigint", nullable: false),
-                    ItemId = table.Column<long>(type: "bigint", nullable: true)
+                    OrderId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -270,10 +251,10 @@ namespace netpaymentswebserver.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_event_person_item_ItemId",
-                        column: x => x.ItemId,
+                        name: "FK_event_person_order_OrderId",
+                        column: x => x.OrderId,
                         principalSchema: "order",
-                        principalTable: "item",
+                        principalTable: "order",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_event_person_person_PersonId",
@@ -345,16 +326,16 @@ namespace netpaymentswebserver.Migrations
                 column: "EventId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_event_person_ItemId",
+                name: "IX_event_person_OrderId",
                 schema: "event",
                 table: "event_person",
-                column: "ItemId");
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_event_person_PersonId_EventId_ItemId",
+                name: "IX_event_person_PersonId_EventId_OrderId",
                 schema: "event",
                 table: "event_person",
-                columns: new[] { "PersonId", "EventId", "ItemId" },
+                columns: new[] { "PersonId", "EventId", "OrderId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -369,13 +350,6 @@ namespace netpaymentswebserver.Migrations
                 schema: "people",
                 table: "group",
                 column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_item_OrderId",
-                schema: "order",
-                table: "item",
-                column: "OrderId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_order_Created",
@@ -461,7 +435,7 @@ namespace netpaymentswebserver.Migrations
                 schema: "event");
 
             migrationBuilder.DropTable(
-                name: "item",
+                name: "order",
                 schema: "order");
 
             migrationBuilder.DropTable(
@@ -479,10 +453,6 @@ namespace netpaymentswebserver.Migrations
             migrationBuilder.DropTable(
                 name: "course",
                 schema: "people");
-
-            migrationBuilder.DropTable(
-                name: "order",
-                schema: "order");
         }
     }
 }

@@ -24,7 +24,6 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Events.EventPerson> EventPersons { get; set; } = default!;
 
         public DbSet<Domain.Entities.Orders.Order> Orders { get; set; } = default!;
-        public DbSet<Domain.Entities.Orders.Item> Items { get; set; } = default!;
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -134,24 +133,17 @@ namespace Infrastructure
                 .ToTable("event_person", "event")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
-                .HasIndex(x => new { x.PersonId, x.EventId, x.ItemId }).IsUnique();
+                .HasIndex(x => new { x.PersonId, x.EventId, x.OrderId }).IsUnique();
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasOne(x => x.Person);
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasOne(x => x.Event);
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
-                .HasOne(x => x.Item);
+                .HasOne(x => x.Order);
 
 
 
             //Orders
-            modelBuilder.Entity<Domain.Entities.Orders.Item>()
-                .ToTable("item", "order")
-                .Property(x => x.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Domain.Entities.Orders.Item>()
-                .HasIndex(x => x.OrderId).IsUnique();
-            modelBuilder.Entity<Domain.Entities.Orders.Item>()
-                .HasOne(x => x.Order);
 
             
             modelBuilder.Entity<Domain.Entities.Orders.Order>()

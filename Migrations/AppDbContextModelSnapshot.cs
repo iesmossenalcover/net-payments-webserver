@@ -145,7 +145,7 @@ namespace netpaymentswebserver.Migrations
                     b.Property<long>("EventId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("ItemId")
+                    b.Property<long?>("OrderId")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("Paid")
@@ -158,31 +158,12 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("OrderId");
 
-                    b.HasIndex("PersonId", "EventId", "ItemId")
+                    b.HasIndex("PersonId", "EventId", "OrderId")
                         .IsUnique();
 
                     b.ToTable("event_person", "event");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Orders.Item", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId")
-                        .IsUnique();
-
-                    b.ToTable("item", "order");
                 });
 
             modelBuilder.Entity("Domain.Entities.Orders.Order", b =>
@@ -193,8 +174,15 @@ namespace netpaymentswebserver.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -399,9 +387,9 @@ namespace netpaymentswebserver.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Orders.Item", "Item")
+                    b.HasOne("Domain.Entities.Orders.Order", "Order")
                         .WithMany()
-                        .HasForeignKey("ItemId");
+                        .HasForeignKey("OrderId");
 
                     b.HasOne("Domain.Entities.People.Person", "Person")
                         .WithMany()
@@ -411,20 +399,9 @@ namespace netpaymentswebserver.Migrations
 
                     b.Navigation("Event");
 
-                    b.Navigation("Item");
+                    b.Navigation("Order");
 
                     b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Orders.Item", b =>
-                {
-                    b.HasOne("Domain.Entities.Orders.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Group", b =>
