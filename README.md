@@ -1,5 +1,10 @@
-# For migrations
+# For development
+## Add Database connection string
+Inside de project folder, execute:
 
+`dotnet user-secrets set "PostgreSqlConnectionString" "<connection-string-value>"`
+
+# For migrations
 ## Requisites
 ### Install ef globally
 `dotnet tool update --global dotnet-ef`
@@ -12,5 +17,3 @@
 1. `dotnet ef migrations add MigrationName`
 
 2. `dotnet ef database update`
-
-## 
