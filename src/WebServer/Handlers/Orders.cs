@@ -7,7 +7,7 @@ namespace WebServer.Handlers;
 
 public class Orders
 {
-    public static async Task<Response<long?>> CreateOrder(IMediator mediator, [FromBody] CreateOrderCommand cmd)
+    public static async Task<Response<CreateOrderCommandVm?>> CreateOrder(IMediator mediator, [FromBody] CreateOrderCommand cmd)
     {
         return await mediator.Send(cmd);
     }

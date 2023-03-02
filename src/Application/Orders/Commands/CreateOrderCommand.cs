@@ -3,14 +3,15 @@ using Application.Common.Services;
 using Domain.Entities.Events;
 using FluentValidation;
 using MediatR;
-using System.Text;
 using Domain.Entities.People;
 using Domain.Entities.Orders;
 using Application.Common.Helpers;
 
 namespace Application.Orders.Commands;
 
-public record CreateOrderCommand : IRequest<Response<long?>>
+public record CreateOrderCommandVm(string MerchantParamenters, string SignatureVersion, string Signature);
+
+public record CreateOrderCommand : IRequest<Response<CreateOrderCommandVm?>>
 {
     public string DocumentId { get; set; } = string.Empty;
     public IEnumerable<string> EventCodes { get; set; } = Enumerable.Empty<string>();
@@ -24,7 +25,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateOrderCommand>
     }
 }
 
-public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Response<long?>>
+public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Response<CreateOrderCommandVm?>>
 {
     #region IOC
     private readonly int MAX_TRIES = 10;
@@ -43,14 +44,14 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
 
     #endregion
 
-    public async Task<Response<long?>> Handle(CreateOrderCommand request, CancellationToken ct)
+    public async Task<Response<CreateOrderCommandVm?>> Handle(CreateOrderCommand request, CancellationToken ct)
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupBy(request.DocumentId, course.Id, ct);
         
         if (pgc == null)
         {
-            return Response<long?>.Error(ResponseCode.NotFound, "No s'ha trobat cap persona amb aquest document al curs actual.");
+            return Response<CreateOrderCommandVm?>.Error(ResponseCode.NotFound, "No s'ha trobat cap persona amb aquest document al curs actual.");
         }
         Person person = pgc.Person;
         IEnumerable<EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
@@ -58,7 +59,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         IEnumerable<string> activeEventCodes = personEvents.Select(x => x.Event.Code);
         if (!request.EventCodes.All(x => activeEventCodes.Contains(x)))
         {
-            return Response<long?>.Error(ResponseCode.BadRequest, "S'han especificat esdeveniments que no es poden pagar.");
+            return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, "S'han especificat esdeveniments que no es poden pagar.");
         }
         
         // Create order
@@ -66,19 +67,19 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         string code = string.Empty;
         for (int i = 0; i < MAX_TRIES && !foundFreeCode; i++)
         {
-            code = $"{GenerateString.RandomNumeric(4)}{GenerateString.RandomAlphanumeric(8)}";
+            code = $"{GenerateString.CurrentDateAsCode()}{GenerateString.RandomAlphanumeric(4)}";
             Order? existingOrder = await _ordersRepository.GetByCodeAsync(code, ct);
             if (existingOrder == null) foundFreeCode = true;
         }
-
-        if (!foundFreeCode) return Response<long?>.Error(ResponseCode.InternalError, "S'ha porduït un error. Torna a inciar el procés.");
+        if (!foundFreeCode) return Response<CreateOrderCommandVm?>.Error(ResponseCode.InternalError, "S'ha porduït un error. Torna a inciar el procés.");
 
         Order order = new Order()
         {
             Code = code,
             Status = OrderStatus.Pending,
             Created = DateTimeOffset.UtcNow,
-            Price = personEvents.Sum(x => pgc.PriceForEvent(x.Event)),
+            Amount = personEvents.Sum(x => pgc.PriceForEvent(x.Event)),
+            Person = pgc.Person,
         };
         await _ordersRepository.InsertAsync(order, CancellationToken.None);
 
@@ -92,6 +93,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
 
         // Retornar dades tpv
 
-        return Response<long?>.Ok(1);
+        return Response<CreateOrderCommandVm?>.Ok(new CreateOrderCommandVm("", "", ""));
     }
 }

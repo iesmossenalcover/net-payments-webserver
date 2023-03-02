@@ -65,23 +65,6 @@ namespace netpaymentswebserver.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "order",
-                schema: "order",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Code = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_order", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "person",
                 schema: "people",
                 columns: table => new
@@ -141,6 +124,31 @@ namespace netpaymentswebserver.Migrations
                         column: x => x.CourseId,
                         principalSchema: "people",
                         principalTable: "course",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "order",
+                schema: "order",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    PersonId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_order", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_order_person_PersonId",
+                        column: x => x.PersonId,
+                        principalSchema: "people",
+                        principalTable: "person",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -359,6 +367,12 @@ namespace netpaymentswebserver.Migrations
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
+                name: "IX_order_PersonId",
+                schema: "order",
+                table: "order",
+                column: "PersonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_person_DocumentId",
                 schema: "people",
                 table: "person",
@@ -443,15 +457,15 @@ namespace netpaymentswebserver.Migrations
                 schema: "people");
 
             migrationBuilder.DropTable(
-                name: "person",
-                schema: "people");
-
-            migrationBuilder.DropTable(
                 name: "user",
                 schema: "authentication");
 
             migrationBuilder.DropTable(
                 name: "course",
+                schema: "people");
+
+            migrationBuilder.DropTable(
+                name: "person",
                 schema: "people");
         }
     }
