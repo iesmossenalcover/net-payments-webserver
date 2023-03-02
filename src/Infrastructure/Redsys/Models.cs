@@ -12,7 +12,7 @@ public record MerchantParametersRequest
     public string Code { get; set; } = default!;
 
     [JsonPropertyName("DS_MERCHANT_MERCHANTCODE")]
-    public long ClientCode { get; set; }
+    public long MerchantCode { get; set; }
 
     [JsonPropertyName("DS_MERCHANT_CURRENCY")]
     public short CurrencyCode { get; set; }
@@ -39,8 +39,8 @@ public record MerchantParametersResponse
 {
 
     [JsonPropertyName("Ds_Order")]
-    public string Code { get; set; } = default!;
+    public string OrderCode { get; set; } = default!;
 
     [JsonPropertyName("Ds_Response")]
-    public string Response { get; set; } = default!;
+    public string StatusCode { get; set; } = default!;
 }

@@ -87,5 +87,15 @@ public static class RegisterRoutes
         app.MapPost("/api/orders", Orders.CreateOrder)
             .WithName("Create order")
             .WithOpenApi();
+
+        // TODO convertir a post amb online notification
+        app.MapGet("/api/orders/confirm", Orders.ConfirmOrder)
+            .WithName("Confirm order")
+            .WithOpenApi();
+
+        // TODO convertir a post amb online notification
+        app.MapPost("/api/orders/response", Orders.ConfirmOrderPost)
+            .WithName("Confirm order post")
+            .WithOpenApi();
     }
 }
