@@ -12,6 +12,16 @@ public class EventsPeopleRepository : Repository<EventPerson>, Application.Commo
         return await _dbSet.Where(x => x.EventId == eventId).ToListAsync(ct);
     }
 
+    public async Task<IEnumerable<EventPerson>> GetAllByOrderId(long orderId, CancellationToken ct)
+    {
+        return await _dbSet
+                    .Where(x => x.OrderId == orderId)
+                    .Include(x => x.Person)
+                    .Include(x => x.Event)
+                    .Include(x => x.Order)
+                    .ToListAsync(ct);
+    }
+
     public async Task<IEnumerable<EventPerson>> GetAllByPersonAndCourse(long personId, long courseId, CancellationToken ct)
     {
         return await _dbSet

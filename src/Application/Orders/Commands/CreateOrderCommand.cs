@@ -6,10 +6,11 @@ using MediatR;
 using Domain.Entities.People;
 using Domain.Entities.Orders;
 using Application.Common.Helpers;
+using Application.Common.Models;
 
 namespace Application.Orders.Commands;
 
-public record CreateOrderCommandVm(string MerchantParamenters, string SignatureVersion, string Signature);
+public record CreateOrderCommandVm(string Url, string MerchantParamenters, string SignatureVersion, string Signature);
 
 public record CreateOrderCommand : IRequest<Response<CreateOrderCommandVm?>>
 {
@@ -33,13 +34,15 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly IPersonGroupCourseRepository _peopleGroupCourseRepository;
     private readonly ICoursesRepository _coursesRepository;
     private readonly IOrdersRepository _ordersRepository;
+    private readonly IRedsys _redsys;
 
-    public CreateOrderCommandHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository, IOrdersRepository ordersRepository)
+    public CreateOrderCommandHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository, IOrdersRepository ordersRepository, IRedsys redsys)
     {
         _eventsPeopleRepository = eventsPeopleRepository;
         _peopleGroupCourseRepository = peopleGroupCourseRepository;
         _coursesRepository = coursesRepository;
         _ordersRepository = ordersRepository;
+        _redsys = redsys;
     }
 
     #endregion
@@ -90,9 +93,10 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         await _eventsPeopleRepository.UpdateManyAsync(personEvents, CancellationToken.None);
 
         // Generar dades tpv
+        RedsysRequest redsysRequest = _redsys.CreateRedsysRequest(order);
 
         // Retornar dades tpv
-
-        return Response<CreateOrderCommandVm?>.Ok(new CreateOrderCommandVm("", "", ""));
+        var vm = new CreateOrderCommandVm(redsysRequest.Url, redsysRequest.MerchantParamenters, redsysRequest.SignatureVersion, redsysRequest.Signature);
+        return Response<CreateOrderCommandVm?>.Ok(vm);
     }
 }

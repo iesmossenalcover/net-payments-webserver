@@ -25,6 +25,7 @@ namespace Infrastructure
             services.AddScoped<Application.Common.Services.IOrdersRepository, OrdersRepository>();
             services.AddScoped<Application.Common.Services.ITransactionsService , TransactionsService>();
             services.AddSingleton<Application.Common.Services.ICsvParser, CsvParser>();
+            services.AddSingleton<Application.Common.Services.IRedsys, Redsys.RedsysApi>();
 
             return services;
         }
