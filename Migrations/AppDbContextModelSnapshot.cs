@@ -174,6 +174,9 @@ namespace netpaymentswebserver.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("text");
@@ -181,8 +184,8 @@ namespace netpaymentswebserver.Migrations
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                    b.Property<long>("PersonId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -191,6 +194,8 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("Created")
                         .IsDescending();
+
+                    b.HasIndex("PersonId");
 
                     b.ToTable("order", "order");
                 });
@@ -400,6 +405,17 @@ namespace netpaymentswebserver.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("Order");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Orders.Order", b =>
+                {
+                    b.HasOne("Domain.Entities.People.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Person");
                 });

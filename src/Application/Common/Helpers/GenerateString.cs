@@ -20,7 +20,7 @@ public class GenerateString
 
     public static string RandomAlphanumeric(int length)
     {
-        const string pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const string pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         var builder = new StringBuilder(length);
         var random = new Random();
         for (var i = 0; i < length; i++)
@@ -44,5 +44,10 @@ public class GenerateString
         }
 
         return builder.ToString();
+    }
+
+    public static string CurrentDateAsCode()
+    {
+        return DateTime.UtcNow.ToString("yyyyMMdd");
     }
 }
