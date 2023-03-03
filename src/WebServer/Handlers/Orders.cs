@@ -16,7 +16,7 @@ public class Orders
     
     public static async Task<Response<ConfirmOrderCommandVm?>> ConfirmOrderPost(
         IMediator mediator,
-        [FromBody] RedsysResponse response)
+        [FromForm] RedsysResponse response)
     {
         return await mediator.Send(new ConfirmOrderCommand() { MerchantParamenters = response.Ds_MerchantParameters, Signature = response.Ds_Signature });
     }
