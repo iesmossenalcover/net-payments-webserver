@@ -12,15 +12,8 @@ public class Orders
         return await mediator.Send(cmd);
     }
 
-    public static async Task<Response<ConfirmOrderCommandVm?>> ConfirmOrder(
-        IMediator mediator,
-        [FromQuery(Name = "Ds_MerchantParameters")] string merchantParameters,
-        [FromQuery(Name = "Ds_Signature")] string signature)
-    {
-        return await mediator.Send(new ConfirmOrderCommand() { MerchantParamenters = merchantParameters, Signature = signature });
-    }
-
     public record RedsysResponse(string Ds_MerchantParameters, string Ds_Signature);
+    
     public static async Task<Response<ConfirmOrderCommandVm?>> ConfirmOrderPost(
         IMediator mediator,
         [FromBody] RedsysResponse response)
