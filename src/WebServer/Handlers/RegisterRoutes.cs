@@ -3,6 +3,10 @@ public static class RegisterRoutes
 {
     public static void MapRoutes(this WebApplication app)
     {
+        app.MapGet("/api/health", () => "up")
+            .WithName("Health")
+            .WithOpenApi();
+        
         // auth related actions are in WebServer layer dueto related session storage.
         app.MapPost("/api/signin", Authentication.Auth.SigninPost)
             .WithName("signin")
