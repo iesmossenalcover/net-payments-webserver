@@ -17,3 +17,10 @@ Inside de project folder, execute:
 1. `dotnet ef migrations add MigrationName`
 
 2. `dotnet ef database update`
+
+## Production update
+
+### Generate the script for the migrations
+1. `dotnet ef migrations script -o update.db`
+
+2. Execute the script into production db.

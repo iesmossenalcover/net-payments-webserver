@@ -32,7 +32,7 @@ namespace Infrastructure
 
             // Auths
             modelBuilder.Entity<Domain.Entities.Authentication.User>()
-                .ToTable("user", "authentication")
+                .ToTable("user", "main")
                 .HasIndex(x => x.Username).IsUnique();
             modelBuilder.Entity<Domain.Entities.Authentication.User>()
                 .Property(x => x.Id).ValueGeneratedOnAdd();
@@ -42,12 +42,12 @@ namespace Infrastructure
 
 
             modelBuilder.Entity<Domain.Entities.Authentication.UserClaim>()
-                .ToTable("user_claim", "authentication")
+                .ToTable("user_claim", "main")
                 .HasKey(pc => new { pc.Type, pc.UserId });
 
 
             modelBuilder.Entity<Domain.Entities.Authentication.UserClaim>()
-                .ToTable("user_claim", "authentication")
+                .ToTable("user_claim", "main")
                 .HasIndex(x => x.UserId);
             modelBuilder.Entity<Domain.Entities.Authentication.UserClaim>()
                 .Property(x => x.Id).ValueGeneratedOnAdd();
@@ -56,7 +56,7 @@ namespace Infrastructure
 
             // People
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .ToTable("person", "people")
+                .ToTable("person", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .HasIndex(x => x.DocumentId).IsUnique();
@@ -71,14 +71,14 @@ namespace Infrastructure
 
 
             modelBuilder.Entity<Domain.Entities.People.Student>()
-                .ToTable("student", "people")
+                .ToTable("student", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.People.Student>()
                 .HasIndex(x => x.AcademicRecordNumber).IsUnique();
 
 
             modelBuilder.Entity<Domain.Entities.People.Group>()
-                .ToTable("group", "people")
+                .ToTable("group", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.People.Group>()
             .HasIndex(x => x.Name).IsUnique();
@@ -88,7 +88,7 @@ namespace Infrastructure
                 .Property(x => x.Name).HasMaxLength(50);
 
             modelBuilder.Entity<Domain.Entities.People.Course>()
-                .ToTable("course", "people")
+                .ToTable("course", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.People.Course>()
                 .HasIndex(x => x.Name).IsUnique();
@@ -101,7 +101,7 @@ namespace Infrastructure
 
 
             modelBuilder.Entity<Domain.Entities.People.PersonGroupCourse>()
-                .ToTable("person_group_course", "people")
+                .ToTable("person_group_course", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.People.PersonGroupCourse>()
                 .HasIndex(x => new { x.PersonId, x.GroupId, x.CourseId }).IsUnique();
@@ -115,7 +115,7 @@ namespace Infrastructure
 
             //Events
             modelBuilder.Entity<Domain.Entities.Events.Event>()
-                .ToTable("event", "event")
+                .ToTable("event", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Events.Event>()
                 .HasIndex(x => x.Code).IsUnique();
@@ -130,7 +130,7 @@ namespace Infrastructure
 
             
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
-                .ToTable("event_person", "event")
+                .ToTable("event_person", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasIndex(x => new { x.PersonId, x.EventId, x.OrderId }).IsUnique();
@@ -147,7 +147,7 @@ namespace Infrastructure
 
             
             modelBuilder.Entity<Domain.Entities.Orders.Order>()
-                .ToTable("order", "order")
+                .ToTable("order", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Orders.Order>()
                 .HasIndex(x => x.Created).IsDescending();
