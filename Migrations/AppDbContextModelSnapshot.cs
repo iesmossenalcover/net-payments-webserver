@@ -52,7 +52,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("user", "authentication");
+                    b.ToTable("user", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.UserClaim", b =>
@@ -77,7 +77,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("user_claim", "authentication");
+                    b.ToTable("user_claim", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Events.Event", b =>
@@ -131,7 +131,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("UnpublishDate")
                         .IsDescending();
 
-                    b.ToTable("event", "event");
+                    b.ToTable("event", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Events.EventPerson", b =>
@@ -163,7 +163,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("PersonId", "EventId", "OrderId")
                         .IsUnique();
 
-                    b.ToTable("event_person", "event");
+                    b.ToTable("event_person", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Orders.Order", b =>
@@ -197,7 +197,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("PersonId");
 
-                    b.ToTable("order", "order");
+                    b.ToTable("order", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Course", b =>
@@ -232,7 +232,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("StartDate")
                         .IsDescending();
 
-                    b.ToTable("course", "people");
+                    b.ToTable("course", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Group", b =>
@@ -264,7 +264,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("group", "people");
+                    b.ToTable("group", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Person", b =>
@@ -306,7 +306,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("Name");
 
-                    b.ToTable("person", "people");
+                    b.ToTable("person", "main");
 
                     b.UseTptMappingStrategy();
                 });
@@ -340,7 +340,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("PersonId", "GroupId", "CourseId")
                         .IsUnique();
 
-                    b.ToTable("person_group_course", "people");
+                    b.ToTable("person_group_course", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Student", b =>
@@ -359,7 +359,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("AcademicRecordNumber")
                         .IsUnique();
 
-                    b.ToTable("student", "people");
+                    b.ToTable("student", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.UserClaim", b =>
