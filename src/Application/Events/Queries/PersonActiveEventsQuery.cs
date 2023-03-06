@@ -9,14 +9,13 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record PublicEventVm(string Code, string Name, decimal Price, bool selectable);
-public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events);
 #endregion
 
 #region Query
-public record PersonActiveEventsQuery(string DocumentId) : IRequest<Response<PersonActiveEventsVm>>;
+public record PersonActiveEventsQuery(string DocumentId) : IRequest<Response<IEnumerable<PublicEventVm>>>;
 #endregion
 
-public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEventsQuery, Response<PersonActiveEventsVm>>
+public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEventsQuery, Response<IEnumerable<PublicEventVm>>>
 {
     #region  IOC
     private readonly IEventsPeopleRespository _eventsPeopleRepository;
@@ -31,14 +30,14 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     }
     #endregion
 
-    public async Task<Response<PersonActiveEventsVm>> Handle(PersonActiveEventsQuery request, CancellationToken ct)
+    public async Task<Response<IEnumerable<PublicEventVm>>> Handle(PersonActiveEventsQuery request, CancellationToken ct)
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupBy(request.DocumentId, course.Id, ct);
         
         if (pgc == null)
         {
-            return Response<PersonActiveEventsVm>.Error(ResponseCode.NotFound, "No s'ha trobat cap persona amb aquest document al curs actual.");
+            return Response<IEnumerable<PublicEventVm>>.Error(ResponseCode.NotFound, "No s'ha trobat cap persona amb aquest document al curs actual.");
         }
 
         Person person = pgc.Person;
@@ -48,6 +47,6 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         // TODO: Decide with events are selectable, for the moment all are selectable
         IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => new PublicEventVm(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), true));
 
-        return Response<PersonActiveEventsVm>.Ok(new PersonActiveEventsVm(eventsVm));
+        return Response<IEnumerable<PublicEventVm>>.Ok(eventsVm);
     }
 }
