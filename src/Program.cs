@@ -28,6 +28,9 @@ builder.Services
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, o => {
         o.Cookie.Name = "SID";
         o.Cookie.HttpOnly = true; // Must be true for security reasons.
+        // TODO: Check in production
+        o.Cookie.SameSite = SameSiteMode.None;
+        o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 
         // // If we want to send only a id and store data on a container like redis.
         // // usefull when we store many claims.
