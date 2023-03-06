@@ -6,7 +6,7 @@ namespace WebServer.Handlers;
 
 public class Tasks
 {
-    public async static Task<Response<BatchUploadVm>> UploadPeople(HttpContext ctx, IMediator m)
+    public async static Task<Response<BatchUploadSummary>> UploadPeople(HttpContext ctx, IMediator m)
     {
         IFormFile? f = null;
         try
@@ -21,7 +21,7 @@ public class Tasks
 
         if (f == null)
         {
-            return Response<BatchUploadVm>.Error(ResponseCode.BadRequest, "No s'ha pogut processar el fitxer.");
+            return Response<BatchUploadSummary>.Error(ResponseCode.BadRequest, "No s'ha pogut processar el fitxer.");
         }
 
         Stream fileStream = f.OpenReadStream();
