@@ -8,7 +8,7 @@ namespace WebServer.Handlers;
 
 public class People
 {
-    public static async Task<ListPeopleByCourseVm> ListPeople(
+    public static async Task<IEnumerable<PersonSummaryVm>> ListPeople(
         long? courseId,
         IMediator mediator)
     {
