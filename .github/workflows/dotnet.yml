@@ -35,4 +35,4 @@ jobs:
     - name: Copy to S3
       run: aws s3 cp net-payments-webserver.zip s3://${{ secrets.AWS_S3_AWSBUCKET }}
     - name: Create AWS Deploy
-      run: aws deploy create-deployment --application-name PaymentsAPI --deployment-group-name ${{ secrets.AWS_DEPLOYMENT_GROUP }} --s3-location bucket=${{ secrets.AWS_S3_AWSBUCKET }},key=net-payments-webserver.zip,bundleType=zip -ignore-application-stop-failures
+      run: aws deploy create-deployment --application-name PaymentsAPI --deployment-group-name ${{ secrets.AWS_DEPLOYMENT_GROUP }} --s3-location bucket=${{ secrets.AWS_S3_AWSBUCKET }},key=net-payments-webserver.zip,bundleType=zip
