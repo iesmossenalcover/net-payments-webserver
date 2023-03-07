@@ -13,11 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c => {
+builder.Services.AddSwaggerGen(c =>
+{
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Payments API", Version = "v1" });
 });
 
-builder.Services.Configure<JsonOptions>(options => {
+builder.Services.Configure<JsonOptions>(options =>
+{
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
 });
@@ -25,7 +27,8 @@ builder.Services.Configure<JsonOptions>(options => {
 // Auth services
 builder.Services
     .AddAuthentication()
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, o => {
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, o =>
+    {
         o.Cookie.Name = "SID";
         o.Cookie.HttpOnly = true; // Must be true for security reasons.
         // TODO: Check in production
@@ -53,7 +56,9 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(p =>
     {
         // TODO check for production
-        p.WithOrigins("http://localhost:3000", "http://localhost:3001")
+        p.WithOrigins(
+            builder.Configuration.GetValue<string>("CORSOriginUrl") ?? throw new Exception("Configure CORSOriginUrl"),
+            "http://localhost:3000")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
@@ -80,7 +85,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => {
+    app.UseSwaggerUI(c =>
+    {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api pagamanets IES Mossèn Alcover v1");
         c.RoutePrefix = string.Empty;
     });
