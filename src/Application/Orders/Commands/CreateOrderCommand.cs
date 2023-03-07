@@ -64,6 +64,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         {
             return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, "S'han especificat esdeveniments que no es poden pagar.");
         }
+
+        personEvents = personEvents.Where(x => request.EventCodes.Contains(x.Event.Code));
         
         // Create order
         bool foundFreeCode = false;
