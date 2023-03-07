@@ -10,7 +10,7 @@ using Application.Common.Models;
 
 namespace Application.Orders.Commands;
 
-public record CreateOrderCommandVm(string Url, string MerchantParamenters, string SignatureVersion, string Signature);
+public record CreateOrderCommandVm(string Url, string MerchantParameters, string SignatureVersion, string Signature);
 
 public record CreateOrderCommand : IRequest<Response<CreateOrderCommandVm?>>
 {
