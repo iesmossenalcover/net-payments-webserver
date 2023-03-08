@@ -7,13 +7,22 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
 {
     public PeopleGroupCourseRepository(AppDbContext dbContext) : base(dbContext, dbContext.PersonGroupCourses) {}
 
-    public async Task<PersonGroupCourse?> GetCoursePersonGroupBy(string documentId, long courseId, CancellationToken ct)
+    public async Task<PersonGroupCourse?> GetCoursePersonGroupByDocumentId(string documentId, long courseId, CancellationToken ct)
     {
         return await _dbSet
                 .Include(x => x.Person)
                 .Include(x => x.Group)
                 .Include(x => x.Course)
                 .FirstOrDefaultAsync(x => x.Person.DocumentId == documentId && x.CourseId== courseId, ct);
+    }
+
+    public async Task<PersonGroupCourse?> GetCoursePersonGroupById(long personId, long courseId, CancellationToken ct)
+    {
+        return await _dbSet
+                .Include(x => x.Person)
+                .Include(x => x.Group)
+                .Include(x => x.Course)
+                .FirstOrDefaultAsync(x => x.PersonId == personId && x.CourseId== courseId, ct);
     }
 
     public async Task<IEnumerable<PersonGroupCourse>> GetCurrentCourseGroupByPeopleIdsAsync(IEnumerable<long> peopleIds, CancellationToken ct)
