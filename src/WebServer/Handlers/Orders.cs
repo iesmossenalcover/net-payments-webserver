@@ -25,9 +25,9 @@ public class Orders
 
     public static async Task<Response<OrderInfoVm>> GetOrderInfo(
         IMediator mediator,
-        [FromQuery(Name = "Ds_MerchantParameters")] string merchantParameters,
-        [FromQuery(Name = "Ds_Signature")] string signature,
-        [FromQuery(Name = "Ds_SignatureVersion")] string signatureVersion)
+        [FromQuery(Name = "merchantParameters")] string merchantParameters,
+        [FromQuery(Name = "signature")] string signature,
+        [FromQuery(Name = "signatureVersion")] string signatureVersion)
     {
         return await mediator.Send(new OrderInfoQuery(signature, merchantParameters, signatureVersion));
     }
