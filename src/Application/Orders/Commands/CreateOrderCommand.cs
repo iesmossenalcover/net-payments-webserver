@@ -50,7 +50,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     public async Task<Response<CreateOrderCommandVm?>> Handle(CreateOrderCommand request, CancellationToken ct)
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
-        PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupBy(request.DocumentId, course.Id, ct);
+        PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupByDocumentId(request.DocumentId, course.Id, ct);
         
         if (pgc == null)
         {

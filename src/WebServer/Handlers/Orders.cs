@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Orders.Commands;
+using Application.Orders.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,5 +21,14 @@ public class Orders
             MerchantParamenters = ctx.Request.Form["Ds_MerchantParameters"].ToString(),
             Signature = ctx.Request.Form["Ds_Signature"].ToString()
         });
+    }
+
+    public static async Task<Response<OrderInfoVm>> GetOrderInfo(
+        IMediator mediator,
+        [FromQuery(Name = "Ds_MerchantParameters")] string merchantParameters,
+        [FromQuery(Name = "Ds_Signature")] string signature,
+        [FromQuery(Name = "Ds_SignatureVersion")] string signatureVersion)
+    {
+        return await mediator.Send(new OrderInfoQuery(signature, merchantParameters, signatureVersion));
     }
 }
