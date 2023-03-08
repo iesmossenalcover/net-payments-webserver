@@ -6,13 +6,13 @@ namespace Application.People.Queries;
 
 # region ViewModels
 public record CourseVm(long Id, string Name);
-public record PersonSummaryVm(long Id, string DocumentId, string FirstName, string LastName, long GroupId, string GroupName, long? AcademicRecordNumber);
-public record ListPeopleByCourseVm(IEnumerable<PersonSummaryVm> People);
+public record PersonRowVm(long Id, string DocumentId, string FirstName, string LastName, long GroupId, string GroupName, long? AcademicRecordNumber);
+public record ListPeopleByCourseVm(IEnumerable<PersonRowVm> People);
 #endregion
 
-public record ListPeopleByCourseQuery(long? CourseId) : IRequest<IEnumerable<PersonSummaryVm>>;
+public record ListPeopleByCourseQuery(long? CourseId) : IRequest<IEnumerable<PersonRowVm>>;
 
-public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCourseQuery, IEnumerable<PersonSummaryVm>>
+public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCourseQuery, IEnumerable<PersonRowVm>>
 {
     # region IOC
     private readonly ICoursesRepository _courseRepository;
@@ -26,7 +26,7 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
 
     #endregion
 
-    public async Task<IEnumerable<PersonSummaryVm>> Handle(ListPeopleByCourseQuery request, CancellationToken ct)
+    public async Task<IEnumerable<PersonRowVm>> Handle(ListPeopleByCourseQuery request, CancellationToken ct)
     {
         IEnumerable<Course> courses = await _courseRepository.GetAllAsync(ct);
         Course course = request.CourseId.HasValue ? courses.First(x => x.Id == request.CourseId.Value) : courses.First(x => x.Active);
@@ -40,12 +40,12 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
         return personGroupCourses.Select(x => ToPersonVm(x));
     }
 
-    public static PersonSummaryVm ToPersonVm(PersonGroupCourse pgc)
+    public static PersonRowVm ToPersonVm(PersonGroupCourse pgc)
     {
         Person p = pgc.Person;
         Student? s = p as Student;
         long? academicRecordNumber = s != null ? s.AcademicRecordNumber : null;
-        return new PersonSummaryVm(
+        return new PersonRowVm(
             p.Id,
             p.DocumentId,
             p.Name,
