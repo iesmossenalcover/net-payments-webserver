@@ -96,7 +96,7 @@ public static class RegisterRoutes
             .WithName("Confirm order post")
             .WithOpenApi();
 
-        app.MapGet("/api/order/info", Orders.ConfirmOrderPost)
+        app.MapGet("/api/order/info", Orders.GetOrderInfo)
             .WithName("Get order info")
             .WithOpenApi();
     }

@@ -35,7 +35,7 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
         bool isValid = _redsys.Validate(request.MerchantParamenters, request.Signature);
         if (!isValid) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "Firma no vàlida");
 
-        RedsysResult data = _redsys.GetResult(request.Signature);
+        RedsysResult data = _redsys.GetResult(request.MerchantParamenters);
         Order? order = await _ordersRepository.GetByCodeAsync(data.OrderCode, ct);
         if (order == null) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "No s'ha trobat l'ordre.");
 
