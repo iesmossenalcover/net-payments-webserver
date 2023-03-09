@@ -13,7 +13,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Include(x => x.Person)
                 .Include(x => x.Group)
                 .Include(x => x.Course)
-                .FirstOrDefaultAsync(x => x.Person.DocumentId == documentId && x.CourseId== courseId, ct);
+                .FirstOrDefaultAsync(x => x.Person.DocumentId == documentId.ToUpperInvariant() && x.CourseId== courseId, ct);
     }
 
     public async Task<PersonGroupCourse?> GetCoursePersonGroupById(long personId, long courseId, CancellationToken ct)
