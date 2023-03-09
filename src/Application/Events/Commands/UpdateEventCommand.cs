@@ -24,7 +24,7 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
         RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
-        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicaci�");
+        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) => {
                 if (!unpublish.HasValue) return true;
