@@ -24,7 +24,7 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
         RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
-        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
+        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicaciï¿½");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) => {
                 if (!unpublish.HasValue) return true;
@@ -32,7 +32,7 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
                 if (unpublish.Value < request.PublishDate) return false;
 
                 return true;
-            }).WithMessage("La data ha de ser posterior a la data de publicació");
+            }).WithMessage("La data ha de ser posterior a la data de publicaciï¿½");
     }
 }
 
@@ -57,6 +57,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.Price = request.Price;
         e.PublishDate = request.PublishDate ?? e.PublishDate;
         e.UnpublishDate = request.UnpublishDate;
+        e.Enrollment = request.Enrollment;
 
         await _eventsRespository.UpdateAsync(e, CancellationToken.None);
 
