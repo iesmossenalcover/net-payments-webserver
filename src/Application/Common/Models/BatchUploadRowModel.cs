@@ -9,8 +9,6 @@
         public string? Llinatge2 { get; set; }
         public string? EmailContacte { get; set; }
         public string? TelContacte { get; set; }
-        public int Prematricula { get; set; }
-        public int Pagament { get; set; }
         public string? Grup { get; set; }
         public string? Assignatures { get; set; }
     }

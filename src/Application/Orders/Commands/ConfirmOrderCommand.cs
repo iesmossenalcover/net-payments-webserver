@@ -5,6 +5,7 @@ using MediatR;
 using Domain.Entities.Orders;
 using Application.Common.Models;
 using Domain.Entities.Events;
+using Domain.Entities.People;
 
 namespace Application.Orders.Commands;
 
@@ -28,15 +29,18 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
 {
     #region IOC
     private readonly IEventsPeopleRespository _eventsPeopleRespository;
+    private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRedsys _redsys;
 
-    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository, IOrdersRepository ordersRepository, IRedsys redsys)
+    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository, IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys)
     {
         _eventsPeopleRespository = eventsPeopleRespository;
+        _personGroupCourseRepository = personGroupCourseRepository;
         _ordersRepository = ordersRepository;
         _redsys = redsys;
     }
+
 
     #endregion
 
@@ -71,10 +75,23 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         order.Status = OrderStatus.Paid;
         foreach (var ep in personEvents)
         {
-            ep.Paid = true;   
+            ep.Paid = true;
         }
 
         await _eventsPeopleRespository.UpdateManyAsync(personEvents, CancellationToken.None);
+
+        // buissness logic
+        EventPerson? enrollment = personEvents.FirstOrDefault(x => x.Event.Enrollment);
+        if (enrollment != null)
+        {
+            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(enrollment.PersonId, enrollment.Event.CourseId, ct);
+            if (pgc != null)
+            {
+                pgc.EnrollmentEvent = enrollment.Event;
+                await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
+            }
+        }
+
         return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
     }
 }

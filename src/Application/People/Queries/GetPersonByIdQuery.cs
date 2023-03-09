@@ -21,7 +21,6 @@ public record PersonVm
 public record StudentVm : PersonVm
 {
     public long AcademicRecordNumber { get; set; }
-    public bool PreEnrollment { get; set; }
     public bool Amipa { get; set; }
     public string? SubjectsInfo { get; set; }
 }
@@ -66,7 +65,6 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
             {
                 AcademicRecordNumber = student.AcademicRecordNumber,
                 Amipa = group.Amipa,
-                PreEnrollment = student.PreEnrollment,
                 SubjectsInfo = student.SubjectsInfo
             };
             personVm = studentVm;

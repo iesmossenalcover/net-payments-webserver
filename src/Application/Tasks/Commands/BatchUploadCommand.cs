@@ -199,7 +199,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             {
                 AcademicRecordNumber = po.Expedient.Value,
                 SubjectsInfo = po.Assignatures,
-                PreEnrollment = po.Prematricula == 1,
             };
 
             var tempPerson = CreatePersonFromRow(po);
@@ -213,7 +212,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     private void UpdateStudentFields(Student s, Student newStudent)
     {
         s.SubjectsInfo = newStudent.SubjectsInfo;
-        s.PreEnrollment = newStudent.PreEnrollment;
         UpdatePersonFields(s, newStudent);
     }
 

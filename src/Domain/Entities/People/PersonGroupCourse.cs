@@ -7,7 +7,7 @@ public class PersonGroupCourse : Entity
 
     public long PersonId { get; set; }
     public Person Person { get; set; } = default!;
-    
+
     public long CourseId { get; set; }
     public Course Course { get; set; } = default!;
 
@@ -15,6 +15,9 @@ public class PersonGroupCourse : Entity
     public Group Group { get; set; } = default!;
 
     public bool Amipa { get; set; } = false;
+
+    public long? EnrollmentEventId { get; set; }
+    public Event? EnrollmentEvent { get; set; }
 
     public decimal PriceForEvent(Event e)
     {
