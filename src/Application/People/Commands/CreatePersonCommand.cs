@@ -20,7 +20,6 @@ public record CreatePersonCommand : IRequest<Response<long?>>
     // Options student info
     public long? AcademicRecordNumber { get; set; }
     public string? SubjectsInfo { get; set; }
-    public bool PreEnrollment { get; set; }
     public bool Amipa { get; set; }
 }
 
@@ -108,7 +107,6 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             p = new Student()
             {
                 AcademicRecordNumber = request.AcademicRecordNumber.Value,
-                PreEnrollment = request.PreEnrollment,
                 SubjectsInfo = request.SubjectsInfo,
             };
         }
