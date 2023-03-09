@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230221074119_Initial")]
+    [Migration("20230303065148_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -55,7 +55,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("user", "authentication");
+                    b.ToTable("user", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.UserClaim", b =>
@@ -80,7 +80,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("user_claim", "authentication");
+                    b.ToTable("user_claim", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Events.Event", b =>
@@ -134,7 +134,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("UnpublishDate")
                         .IsDescending();
 
-                    b.ToTable("event", "event");
+                    b.ToTable("event", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Events.EventPerson", b =>
@@ -148,7 +148,7 @@ namespace netpaymentswebserver.Migrations
                     b.Property<long>("EventId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("ItemId")
+                    b.Property<long?>("OrderId")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("Paid")
@@ -161,31 +161,12 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("OrderId");
 
-                    b.HasIndex("PersonId", "EventId", "ItemId")
+                    b.HasIndex("PersonId", "EventId", "OrderId")
                         .IsUnique();
 
-                    b.ToTable("event_person", "event");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Orders.Item", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId")
-                        .IsUnique();
-
-                    b.ToTable("item", "order");
+                    b.ToTable("event_person", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Orders.Order", b =>
@@ -196,8 +177,18 @@ namespace netpaymentswebserver.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("PersonId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -207,7 +198,9 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("Created")
                         .IsDescending();
 
-                    b.ToTable("order", "order");
+                    b.HasIndex("PersonId");
+
+                    b.ToTable("order", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Course", b =>
@@ -242,7 +235,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("StartDate")
                         .IsDescending();
 
-                    b.ToTable("course", "people");
+                    b.ToTable("course", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Group", b =>
@@ -274,7 +267,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("group", "people");
+                    b.ToTable("group", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Person", b =>
@@ -316,7 +309,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("Name");
 
-                    b.ToTable("person", "people");
+                    b.ToTable("person", "main");
 
                     b.UseTptMappingStrategy();
                 });
@@ -350,7 +343,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("PersonId", "GroupId", "CourseId")
                         .IsUnique();
 
-                    b.ToTable("person_group_course", "people");
+                    b.ToTable("person_group_course", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Student", b =>
@@ -369,7 +362,7 @@ namespace netpaymentswebserver.Migrations
                     b.HasIndex("AcademicRecordNumber")
                         .IsUnique();
 
-                    b.ToTable("student", "people");
+                    b.ToTable("student", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.UserClaim", b =>
@@ -402,9 +395,9 @@ namespace netpaymentswebserver.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Orders.Item", "Item")
+                    b.HasOne("Domain.Entities.Orders.Order", "Order")
                         .WithMany()
-                        .HasForeignKey("ItemId");
+                        .HasForeignKey("OrderId");
 
                     b.HasOne("Domain.Entities.People.Person", "Person")
                         .WithMany()
@@ -414,20 +407,20 @@ namespace netpaymentswebserver.Migrations
 
                     b.Navigation("Event");
 
-                    b.Navigation("Item");
+                    b.Navigation("Order");
 
                     b.Navigation("Person");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Orders.Item", b =>
+            modelBuilder.Entity("Domain.Entities.Orders.Order", b =>
                 {
-                    b.HasOne("Domain.Entities.Orders.Order", "Order")
+                    b.HasOne("Domain.Entities.People.Person", "Person")
                         .WithMany()
-                        .HasForeignKey("OrderId")
+                        .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Order");
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Domain.Entities.People.Group", b =>

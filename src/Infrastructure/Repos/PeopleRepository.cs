@@ -9,12 +9,13 @@ public class PeopleRepository : Repository<Person>, Application.Common.Services.
 
     public async Task<IEnumerable<Person>> GetPeopleByDocumentIdsAsync(IEnumerable<string> documentIds, CancellationToken ct)
     {
+        documentIds = documentIds.Distinct().Select(x => x.ToUpperInvariant());
         return await _dbSet.Where(x => documentIds.Distinct().Contains(x.DocumentId)).ToListAsync(ct);
     }
 
     public async Task<Person?> GetPersonByDocumentIdAsync(string documentId, CancellationToken ct)
     {
-        return await _dbSet.FirstOrDefaultAsync(x => x.DocumentId == documentId, ct);
+        return await _dbSet.FirstOrDefaultAsync(x => x.DocumentId == documentId.ToUpperInvariant(), ct);
     }
 
     public async Task<Person?> GetPersonByIdAsync(long id)
