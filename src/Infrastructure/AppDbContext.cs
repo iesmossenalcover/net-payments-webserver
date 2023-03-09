@@ -1,3 +1,4 @@
+using Domain.Entities.People;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure
@@ -128,7 +129,7 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.Events.Event>()
                 .HasIndex(x => x.UnpublishDate).IsDescending();
 
-            
+
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .ToTable("event_person", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
@@ -145,7 +146,7 @@ namespace Infrastructure
 
             //Orders
 
-            
+
             modelBuilder.Entity<Domain.Entities.Orders.Order>()
                 .ToTable("order", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
@@ -154,6 +155,19 @@ namespace Infrastructure
 
 
 
+        }
+
+        public override int SaveChanges()
+        {
+            foreach (var entry in ChangeTracker.Entries<Person>())
+            {
+                if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
+                {
+                    entry.Entity.DocumentId = entry.Entity.DocumentId.ToUpperInvariant();
+                }
+            }
+            
+            return base.SaveChanges();
         }
     }
 }
