@@ -8,8 +8,9 @@ using MediatR;
 namespace Application.Events.Queries;
 
 # region ViewModels
-public record PublicEventVm(string Code, string Name, decimal Price);
-public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events);
+public record PersonSummaryVm(string DocumentId, string FullName);
+public record PublicEventVm(string Code, string Name, decimal Price, string CurrencySymbol, bool selectable);
+public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm person);
 #endregion
 
 #region Query
@@ -34,7 +35,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     public async Task<Response<PersonActiveEventsVm>> Handle(PersonActiveEventsQuery request, CancellationToken ct)
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
-        PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupBy(request.DocumentId, course.Id, ct);
+        PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupByDocumentId(request.DocumentId, course.Id, ct);
         
         if (pgc == null)
         {
@@ -42,12 +43,14 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         }
 
         Person person = pgc.Person;
-
         IEnumerable<EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
         personEvents = personEvents.Where(x => x.Event.IsActive && !x.Paid);
 
-        IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => new PublicEventVm(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event)));
+        // TODO: Decide with events are selectable, for the moment all are selectable
+        IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => new PublicEventVm(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€", true));
 
-        return Response<PersonActiveEventsVm>.Ok(new PersonActiveEventsVm(eventsVm));
+        return Response<PersonActiveEventsVm>.Ok(
+            new PersonActiveEventsVm(eventsVm, new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.Surname1} {person.Surname2}"))
+        );
     }
 }

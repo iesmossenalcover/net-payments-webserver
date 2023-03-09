@@ -8,6 +8,7 @@ public interface IRepository<T> where T : Domain.Entity
     Task InsertAsync(T entity, CancellationToken ct);
     Task InsertManyAsync(IEnumerable<T> entities, CancellationToken ct);
     Task UpdateAsync(T entity, CancellationToken ct);
+    Task UpdateManyAsync(IEnumerable<T> entities, CancellationToken ct);
     Task DeleteAsync(T entity, CancellationToken ct);
     Task DeleteManyAsync(IEnumerable<T> entities, CancellationToken ct);
 }
