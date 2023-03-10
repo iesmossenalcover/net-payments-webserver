@@ -80,7 +80,8 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
 
         await _eventsPeopleRespository.UpdateManyAsync(personEvents, CancellationToken.None);
 
-        // buissness logic
+        // buissness logic: todo move
+        
         // enrollment
         EventPerson? enrollmentEvent = personEvents.FirstOrDefault(x => x.Event.Enrollment);
         if (enrollmentEvent != null)
@@ -97,9 +98,13 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         EventPerson? amipaEvent = personEvents.FirstOrDefault(x => x.Event.Amipa);
         if (amipaEvent != null)
         {
-            // pgc.
+            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(amipaEvent.PersonId, amipaEvent.Event.CourseId, ct);
+            if (pgc != null)
+            {
+                pgc.Amipa = true;
+                await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
+            }
         }
-
 
         return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
     }
