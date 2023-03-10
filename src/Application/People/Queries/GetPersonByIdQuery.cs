@@ -15,12 +15,8 @@ public record PersonVm
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
-    public long GroupId { get; set; }
-}
-
-public record StudentVm : PersonVm
-{
-    public long AcademicRecordNumber { get; set; }
+    public long? GroupId { get; set; }
+    public long? AcademicRecordNumber { get; set; }
     public bool Amipa { get; set; }
     public string? SubjectsInfo { get; set; }
 }
@@ -54,24 +50,16 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         Person? person = await _peopleRepository.GetByIdAsync(request.Id, ct);
         if (person == null) return Response<PersonVm>.Error(ResponseCode.NotFound, "There is no person with this id");
 
-        IEnumerable<PersonGroupCourse> pgc = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(person.Id, ct);
-        PersonGroupCourse group = pgc.First(x => x.Course.Active == true);
+        IEnumerable<PersonGroupCourse> personGroupCourses = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(person.Id, ct);
+        PersonGroupCourse? pgc = personGroupCourses.FirstOrDefault(x => x.Course.Active == true);
 
-        PersonVm personVm;
+        PersonVm personVm = new PersonVm();
         if (person is Student)
         {
             var student = (Student)person;
-            StudentVm studentVm = new StudentVm()
-            {
-                AcademicRecordNumber = student.AcademicRecordNumber,
-                Amipa = group.Amipa,
-                SubjectsInfo = student.SubjectsInfo
-            };
-            personVm = studentVm;
-        }
-        else
-        {
-            personVm = new PersonVm();
+            personVm.AcademicRecordNumber = student.AcademicRecordNumber;
+            personVm.Amipa = pgc?.Amipa ?? false;
+            personVm.SubjectsInfo = student.SubjectsInfo;
         }
 
         personVm.id = person.Id;
@@ -81,7 +69,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.Surname2 = person.Surname2;
         personVm.ContactMail = person.ContactMail;
         personVm.ContactPhone = person.ContactPhone;
-        personVm.GroupId = group.Id;
+        personVm.GroupId = pgc?.GroupId;
 
         return Response<PersonVm>.Ok(personVm);
     }

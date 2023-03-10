@@ -1,11 +1,8 @@
 using Application.Common;
 using Application.Common.Services;
-using Application.People.Commands;
 using Domain.Entities.Events;
 using FluentValidation;
 using MediatR;
-using System.Text;
-using System;
 using Domain.Entities.People;
 using Application.Common.Helpers;
 

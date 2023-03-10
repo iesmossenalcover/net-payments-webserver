@@ -33,8 +33,9 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
         RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
-        RuleFor(x => x.GroupId)
-            .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un group ");
+        // RuleFor(x => x.GroupId)
+        //     .NotEmpty()
+        //     .WithMessage("Com a mínim s'ha d'especificar un group ");
 
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("Text must be not empty")
@@ -52,21 +53,21 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
 {
     private readonly IPeopleRepository _peopleRepo;
     private readonly IStudentsRepository _studentRepo;
+    private readonly IPersonGroupCourseRepository _personGroupCourseRepo;
+    private readonly ICoursesRepository _coursesRespository;
 
-    public UpdatePersonCommandHandler(
-    IPeopleRepository peopleRepo,
-    IStudentsRepository studentRepo)
+    public UpdatePersonCommandHandler(IPeopleRepository peopleRepo, IStudentsRepository studentRepo, IPersonGroupCourseRepository personGroupCourseRepo, ICoursesRepository coursesRespository)
     {
         _peopleRepo = peopleRepo;
         _studentRepo = studentRepo;
+        _personGroupCourseRepo = personGroupCourseRepo;
+        _coursesRespository = coursesRespository;
     }
+
     public async Task<Response<long?>> Handle(UpdatePersonCommand request, CancellationToken ct)
     {
-        //Comprovam que no existeix un usuari amb un DocumentID o Academic Record Number igual a la BBDD que no sigui l'usuari que volem actualitzar.
-
-
+        Course c = await _coursesRespository.GetCurrentCoursAsync(ct);
         Person? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
-
 
         if (p == null)
         {
@@ -97,29 +98,49 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
             else
             {
                 //Crear estudiant
-                s = new Student();
-                s.AcademicRecordNumber = request.AcademicRecordNumber.Value;
-                s.SubjectsInfo = request.SubjectsInfo;
-                s.DocumentId = request.DocumentId;
-                s.Name = request.Name;
-                s.Surname1 = request.Surname1;
-                
-                //Falta crear estudiant i enllaçar estudiant amb persona que ja existeix
-                //await _studentRepo.AddStudentsExistingPersonAsync(s,p,ct);
-                //await _peopleRepo.UpdateAsync(p, ct);
-
+                return Response<long?>.Error(ResponseCode.BadRequest, "Canvi estudiant/person no soportat");
             }
         }
         else
         {
             if (p is Student)
             {
-                //Eliminar estudiant
+                // Eliminar estudiant
+                return Response<long?>.Error(ResponseCode.BadRequest, "Canvi estudiant/persona no soportat");
             }
         }
 
-        //Actualitzar P
+        p.Name = request.Name;
+        p.ContactMail = request.ContactMail;
+        p.ContactPhone = request.ContactPhone;
+        p.DocumentId = request.DocumentId;
+        p.Surname1 = request.Surname1;
+        p.Surname2 = request.Surname2;
         
+        await _peopleRepo.UpdateAsync(p, CancellationToken.None);
+
+        PersonGroupCourse? pgc = await _personGroupCourseRepo.GetCoursePersonGroupById(p.Id, c.Id, CancellationToken.None);
+        if (pgc == null && request.GroupId.HasValue)
+        {
+            pgc = new PersonGroupCourse()
+            {
+                CourseId = c.Id,
+                GroupId = request.GroupId.Value,
+                PersonId = p.Id,
+                Amipa = request.Amipa,
+            };
+            await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
+        }
+        else if (pgc != null && request.GroupId.HasValue)
+        {
+            pgc.GroupId = request.GroupId.Value;
+            pgc.Amipa = request.Amipa;
+            await _personGroupCourseRepo.UpdateAsync(pgc, CancellationToken.None);
+        }
+        else if (pgc != null && !request.GroupId.HasValue)
+        {
+            await _personGroupCourseRepo.DeleteAsync(pgc, CancellationToken.None);
+        }
 
         return Response<long?>.Ok(p.Id);
     }

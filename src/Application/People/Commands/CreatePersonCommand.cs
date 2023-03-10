@@ -15,7 +15,7 @@ public record CreatePersonCommand : IRequest<Response<long?>>
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
-    public long GroupId { get; set; }
+    public long? GroupId { get; set; }
 
     // Options student info
     public long? AcademicRecordNumber { get; set; }
@@ -96,8 +96,11 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
     public async Task<Response<long?>> Handle(CreatePersonCommand request, CancellationToken ct)
     {
+        if (!request.GroupId.HasValue)
+            return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "S'ha d'assignar a un grup.");
+
         Course course = await _coursesRepo.GetCurrentCoursAsync(ct);
-        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId, ct);
+        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId.Value, ct);
 
         if (group == null) return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "Specified group does not exist");
 
