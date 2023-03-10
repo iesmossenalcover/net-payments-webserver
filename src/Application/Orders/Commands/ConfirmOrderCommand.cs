@@ -81,16 +81,25 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         await _eventsPeopleRespository.UpdateManyAsync(personEvents, CancellationToken.None);
 
         // buissness logic
-        EventPerson? enrollment = personEvents.FirstOrDefault(x => x.Event.Enrollment);
-        if (enrollment != null)
+        // enrollment
+        EventPerson? enrollmentEvent = personEvents.FirstOrDefault(x => x.Event.Enrollment);
+        if (enrollmentEvent != null)
         {
-            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(enrollment.PersonId, enrollment.Event.CourseId, ct);
+            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(enrollmentEvent.PersonId, enrollmentEvent.Event.CourseId, ct);
             if (pgc != null)
             {
-                pgc.EnrollmentEvent = enrollment.Event;
+                pgc.EnrollmentEvent = enrollmentEvent.Event;
                 await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
             }
         }
+
+        // amipa
+        EventPerson? amipaEvent = personEvents.FirstOrDefault(x => x.Event.Amipa);
+        if (amipaEvent != null)
+        {
+            // pgc.
+        }
+
 
         return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
     }
