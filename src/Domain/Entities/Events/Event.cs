@@ -9,7 +9,8 @@ public class Event : Entity
     public decimal Price { get; set; }
     public decimal AmipaPrice { get; set; }
 
-    public bool Enrollment { get; set; }
+    public bool Enrollment { get; set; } = false;
+    public bool Amipa { get; set; } = false;
 
     public DateTimeOffset CreationDate { get; set; } = default!;
     public DateTimeOffset PublishDate { get; set; } = default!;
