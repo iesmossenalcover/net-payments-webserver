@@ -43,8 +43,8 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un grup.");
 
         RuleFor(x => x.DocumentId)
-            .NotEmpty().WithMessage("Text must be not empty")
-            .MaximumLength(50).WithMessage("Màxim 50 caràcters")
+            .NotEmpty().WithMessage("El camp no pot ser buid.")
+            .MaximumLength(50).WithMessage("Màxim 50 caràcters.")
             .MustAsync(async (DocumentId, ct) =>
             {
                 return await _peopleRepo.GetPersonByDocumentIdAsync(DocumentId, ct) == null;
