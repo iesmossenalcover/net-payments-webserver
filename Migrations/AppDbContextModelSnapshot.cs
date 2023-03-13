@@ -301,9 +301,6 @@ namespace netpaymentswebserver.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("SubjectsInfo")
-                        .HasColumnType("text");
-
                     b.Property<string>("Surname1")
                         .IsRequired()
                         .HasColumnType("text");
@@ -338,6 +335,9 @@ namespace netpaymentswebserver.Migrations
                     b.Property<long>("CourseId")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("Enrolled")
+                        .HasColumnType("boolean");
+
                     b.Property<long?>("EnrollmentEventId")
                         .HasColumnType("bigint");
 
@@ -346,6 +346,9 @@ namespace netpaymentswebserver.Migrations
 
                     b.Property<long>("PersonId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("SubjectsInfo")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

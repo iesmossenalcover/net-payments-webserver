@@ -15,12 +15,12 @@ public record CreatePersonCommand : IRequest<Response<long?>>
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
-    public long? GroupId { get; set; }
-
-    // Options student info
     public long? AcademicRecordNumber { get; set; }
+    // Current course  data
+    public long? GroupId { get; set; }
     public string? SubjectsInfo { get; set; }
-    public bool Amipa { get; set; }
+    public bool Amipa { get; set; } = false;
+    public bool Enrolled { get; set; } = false;
 }
 
 // Validator
@@ -111,7 +111,6 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             Surname1 = request.Surname1,
             Surname2 = request.Surname2,
             AcademicRecordNumber = request.AcademicRecordNumber,
-            SubjectsInfo = request.SubjectsInfo,
         };
 
         var pgc = new PersonGroupCourse()
@@ -120,6 +119,8 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             Course = course,
             Group = group,
             Amipa = request.Amipa,
+            Enrolled = request.Enrolled,
+            SubjectsInfo = request.SubjectsInfo,
         };
 
         await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);

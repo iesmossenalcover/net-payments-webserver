@@ -11,7 +11,6 @@ public class Person : Entity
     public string? ContactPhone { get; set; }
     public string? ContactMail  { get; set; }
     public long? AcademicRecordNumber { get; set; }
-    public string? SubjectsInfo { get; set; } = default!;
 
     public bool IsStudent => AcademicRecordNumber.HasValue;
 }

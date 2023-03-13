@@ -33,10 +33,6 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
         RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
-        // RuleFor(x => x.GroupId)
-        //     .NotEmpty()
-        //     .WithMessage("Com a mínim s'ha d'especificar un group ");
-
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("Text must be not empty")
             .MaximumLength(50).WithMessage("Màxim 50 caràcters");
@@ -94,7 +90,6 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         p.Surname1 = request.Surname1;
         p.Surname2 = request.Surname2;
         p.AcademicRecordNumber = request.AcademicRecordNumber;
-        p.SubjectsInfo = request.SubjectsInfo;
         
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);
 
@@ -108,6 +103,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
                 GroupId = request.GroupId.Value,
                 PersonId = p.Id,
                 Amipa = request.Amipa,
+                Enrolled = request.Enrolled,
             };
             await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
         }
@@ -115,6 +111,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         {
             pgc.GroupId = request.GroupId.Value;
             pgc.Amipa = request.Amipa;
+            pgc.Enrolled = request.Enrolled;
             await _personGroupCourseRepo.UpdateAsync(pgc, CancellationToken.None);
         }
         else if (pgc != null && !request.GroupId.HasValue)

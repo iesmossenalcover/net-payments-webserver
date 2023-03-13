@@ -99,6 +99,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                     if (pgc.Group.Id != g.Id)
                     {
                         pgc.Group = g;
+                        pgc.SubjectsInfo = r.Assignatures;
                     }
                 }
                 else
@@ -109,6 +110,8 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                         Person = p,
                         Course = course,
                         Amipa = false,
+                        Enrolled = false,
+                        SubjectsInfo = r.Assignatures,
                     };
                     personGroupCourse.Add(p.DocumentId, pgc);
                 }
@@ -147,7 +150,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             {
                 Person p = people[r.Identitat];
                 p.AcademicRecordNumber = r.Expedient;
-                p.SubjectsInfo = r.Assignatures;
                 p.ContactMail = r.EmailContacte;
                 p.ContactPhone = r.TelContacte;
                 p.DocumentId = r.Identitat;
@@ -164,7 +166,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                     ContactPhone = r.TelContacte,
                     DocumentId = r.Identitat,
                     Name = r.Nom,
-                    SubjectsInfo = r.Assignatures,
                     Surname1 = r.Llinatge1,
                     Surname2 = r.Llinatge2,
                 };
