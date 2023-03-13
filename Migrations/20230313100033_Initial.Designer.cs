@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230313070211_Initial")]
+    [Migration("20230313100033_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -304,9 +304,6 @@ namespace netpaymentswebserver.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("SubjectsInfo")
-                        .HasColumnType("text");
-
                     b.Property<string>("Surname1")
                         .IsRequired()
                         .HasColumnType("text");
@@ -341,6 +338,9 @@ namespace netpaymentswebserver.Migrations
                     b.Property<long>("CourseId")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("Enrolled")
+                        .HasColumnType("boolean");
+
                     b.Property<long?>("EnrollmentEventId")
                         .HasColumnType("bigint");
 
@@ -349,6 +349,9 @@ namespace netpaymentswebserver.Migrations
 
                     b.Property<long>("PersonId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("SubjectsInfo")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

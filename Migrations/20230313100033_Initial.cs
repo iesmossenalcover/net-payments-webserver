@@ -68,8 +68,7 @@ namespace netpaymentswebserver.Migrations
                     Surname2 = table.Column<string>(type: "text", nullable: true),
                     ContactPhone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
                     ContactMail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    AcademicRecordNumber = table.Column<long>(type: "bigint", nullable: true),
-                    SubjectsInfo = table.Column<string>(type: "text", nullable: true)
+                    AcademicRecordNumber = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -182,7 +181,9 @@ namespace netpaymentswebserver.Migrations
                     CourseId = table.Column<long>(type: "bigint", nullable: false),
                     GroupId = table.Column<long>(type: "bigint", nullable: false),
                     Amipa = table.Column<bool>(type: "boolean", nullable: false),
-                    EnrollmentEventId = table.Column<long>(type: "bigint", nullable: true)
+                    Enrolled = table.Column<bool>(type: "boolean", nullable: false),
+                    EnrollmentEventId = table.Column<long>(type: "bigint", nullable: true),
+                    SubjectsInfo = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

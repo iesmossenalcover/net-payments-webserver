@@ -18,6 +18,7 @@ public record PersonVm
     public long? GroupId { get; set; }
     public long? AcademicRecordNumber { get; set; }
     public bool Amipa { get; set; }
+    public bool Enrolled { get; set; } = false;
     public string? SubjectsInfo { get; set; }
 }
 
@@ -56,8 +57,6 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         PersonVm personVm = new PersonVm();
 
         personVm.AcademicRecordNumber = person.AcademicRecordNumber;
-        personVm.SubjectsInfo = person.SubjectsInfo;
-        personVm.Amipa = pgc?.Amipa ?? false;
         personVm.id = person.Id;
         personVm.Name = person.Name;
         personVm.DocumentId = person.DocumentId;
@@ -66,6 +65,10 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.ContactMail = person.ContactMail;
         personVm.ContactPhone = person.ContactPhone;
         personVm.GroupId = pgc?.GroupId;
+        // PGC can be null for a person not in the current course.
+        personVm.SubjectsInfo = pgc?.SubjectsInfo ?? "";
+        personVm.Enrolled = pgc?.Enrolled ?? false;
+        personVm.Amipa = pgc?.Amipa ?? false;
 
         return Response<PersonVm>.Ok(personVm);
     }

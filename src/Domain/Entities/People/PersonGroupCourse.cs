@@ -16,8 +16,10 @@ public class PersonGroupCourse : Entity
 
     public bool Amipa { get; set; } = false;
 
+    public bool Enrolled { get; set; } = false;
     public long? EnrollmentEventId { get; set; }
     public Event? EnrollmentEvent { get; set; }
+    public string? SubjectsInfo { get; set; } = default!;
 
     public decimal PriceForEvent(Event e)
     {
