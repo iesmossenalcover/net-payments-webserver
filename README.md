@@ -24,3 +24,7 @@ Inside de project folder, execute:
 1. `dotnet ef migrations script -o update.db`
 
 2. Execute the script into production db.
+
+3. Grant permissions
+    - GRANT ALL ON ALL TABLES IN SCHEMA main TO paymentsapi;
+    - GRANT USAGE ON SCHEMA main to paymentsapi;
