@@ -19,7 +19,7 @@ public record EventData
     public DateTimeOffset? UnpublishDate { get; set; } = default!;
 }
 
-public record CreateEventCommand : EventData, IRequest<Response<long?>>
+public record CreateEventCommand : EventData, IRequest<Response<string?>>
 { }
 
 public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
@@ -41,7 +41,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
     }
 }
 
-public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Response<long?>>
+public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Response<string?>>
 {
     #region IOC
     private readonly int MAX_TRIES = 10;
@@ -55,7 +55,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
     }
     #endregion
 
-    public async Task<Response<long?>> Handle(CreateEventCommand request, CancellationToken ct)
+    public async Task<Response<string?>> Handle(CreateEventCommand request, CancellationToken ct)
     {
         bool foundFreeCode = false;
         string code = string.Empty;
@@ -89,6 +89,6 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
 
         await _eventsRespository.InsertAsync(e, CancellationToken.None);
 
-        return Response<long?>.Ok(e.Id);
+        return Response<string?>.Ok(e.Code);
     }
 }
