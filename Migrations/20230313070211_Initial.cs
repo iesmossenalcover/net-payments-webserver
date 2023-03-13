@@ -67,7 +67,9 @@ namespace netpaymentswebserver.Migrations
                     Surname1 = table.Column<string>(type: "text", nullable: false),
                     Surname2 = table.Column<string>(type: "text", nullable: true),
                     ContactPhone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
-                    ContactMail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
+                    ContactMail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    AcademicRecordNumber = table.Column<long>(type: "bigint", nullable: true),
+                    SubjectsInfo = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -103,6 +105,7 @@ namespace netpaymentswebserver.Migrations
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     Enrollment = table.Column<bool>(type: "boolean", nullable: false),
+                    Amipa = table.Column<bool>(type: "boolean", nullable: false),
                     CreationDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     PublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UnpublishDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -139,27 +142,6 @@ namespace netpaymentswebserver.Migrations
                     table.ForeignKey(
                         name: "FK_order_person_PersonId",
                         column: x => x.PersonId,
-                        principalSchema: "main",
-                        principalTable: "person",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "student",
-                schema: "main",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false),
-                    AcademicRecordNumber = table.Column<long>(type: "bigint", nullable: false),
-                    SubjectsInfo = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_student", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_student_person_Id",
-                        column: x => x.Id,
                         principalSchema: "main",
                         principalTable: "person",
                         principalColumn: "Id",
@@ -371,6 +353,13 @@ namespace netpaymentswebserver.Migrations
                 column: "PersonId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_person_AcademicRecordNumber",
+                schema: "main",
+                table: "person",
+                column: "AcademicRecordNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_person_DocumentId",
                 schema: "main",
                 table: "person",
@@ -409,13 +398,6 @@ namespace netpaymentswebserver.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_student_AcademicRecordNumber",
-                schema: "main",
-                table: "student",
-                column: "AcademicRecordNumber",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_user_Username",
                 schema: "main",
                 table: "user",
@@ -438,10 +420,6 @@ namespace netpaymentswebserver.Migrations
 
             migrationBuilder.DropTable(
                 name: "person_group_course",
-                schema: "main");
-
-            migrationBuilder.DropTable(
-                name: "student",
                 schema: "main");
 
             migrationBuilder.DropTable(

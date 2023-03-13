@@ -54,14 +54,10 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         PersonGroupCourse? pgc = personGroupCourses.FirstOrDefault(x => x.Course.Active == true);
 
         PersonVm personVm = new PersonVm();
-        if (person is Student)
-        {
-            var student = (Student)person;
-            personVm.AcademicRecordNumber = student.AcademicRecordNumber;
-            personVm.Amipa = pgc?.Amipa ?? false;
-            personVm.SubjectsInfo = student.SubjectsInfo;
-        }
 
+        personVm.AcademicRecordNumber = person.AcademicRecordNumber;
+        personVm.SubjectsInfo = person.SubjectsInfo;
+        personVm.Amipa = pgc?.Amipa ?? false;
         personVm.id = person.Id;
         personVm.Name = person.Name;
         personVm.DocumentId = person.DocumentId;

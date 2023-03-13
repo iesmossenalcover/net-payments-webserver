@@ -27,12 +27,10 @@ public record CreatePersonCommand : IRequest<Response<long?>>
 public class CreatePersonCommandValidator : AbstractValidator<CreatePersonCommand>
 {
     private readonly IPeopleRepository _peopleRepo;
-    private readonly IStudentsRepository _studentRepo;
 
-    public CreatePersonCommandValidator(IPeopleRepository peopleRepo, IStudentsRepository studentRepo)
+    public CreatePersonCommandValidator(IPeopleRepository peopleRepo)
     {
         _peopleRepo = peopleRepo;
-        _studentRepo = studentRepo;
 
         RuleFor(x => x.Name)
             .NotEmpty()
@@ -62,7 +60,7 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .MustAsync(async (x, ct) =>
             {
                 if (!x.HasValue) return true;
-                return await studentRepo.GetStudentByAcademicRecordAsync(x.Value, ct) == null;
+                return await _peopleRepo.GetPersonByAcademicRecordAsync(x.Value, ct) == null;
 
             }).WithMessage("Ja existeix un alumne amb aquest número d'expedient.");
 
@@ -104,26 +102,17 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
         if (group == null) return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "Specified group does not exist");
 
-        Person p;
-        if (request.AcademicRecordNumber.HasValue)
+        Person p = new Person()
         {
-            p = new Student()
-            {
-                AcademicRecordNumber = request.AcademicRecordNumber.Value,
-                SubjectsInfo = request.SubjectsInfo,
-            };
-        }
-        else
-        {
-            p = new Person();
-        }
-
-        p.Name = request.Name;
-        p.DocumentId = request.DocumentId;
-        p.ContactMail = request.ContactMail;
-        p.ContactPhone = request.ContactPhone;
-        p.Surname1 = request.Surname1;
-        p.Surname2 = request.Surname2;
+            Name = request.Name,
+            DocumentId = request.DocumentId,
+            ContactMail = request.ContactMail,
+            ContactPhone = request.ContactPhone,
+            Surname1 = request.Surname1,
+            Surname2 = request.Surname2,
+            AcademicRecordNumber = request.AcademicRecordNumber,
+            SubjectsInfo = request.SubjectsInfo,
+        };
 
         var pgc = new PersonGroupCourse()
         {
@@ -133,7 +122,6 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             Amipa = request.Amipa,
         };
 
-        await _peopleRepo.InsertAsync(p, CancellationToken.None);
         await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
 
         return Response<long?>.Ok(p.Id);

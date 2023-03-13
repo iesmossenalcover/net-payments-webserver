@@ -25,7 +25,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     private readonly IPeopleRepository _peopleRepo;
     private readonly ICoursesRepository _coursesRepo;
     private readonly IGroupsRepository _groupsRepo;
-    private readonly IStudentsRepository _studentsRepo;
     private readonly ITransactionsService _transactionsService;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepo;
 
@@ -34,7 +33,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         IPeopleRepository peopleRepo,
         ICoursesRepository coursesRepo,
         IGroupsRepository groupsRepo,
-        IStudentsRepository studentsRepo,
         IPersonGroupCourseRepository personGroupCourseRepo,
         ITransactionsService transactionsService)
     {
@@ -43,7 +41,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         _coursesRepo = coursesRepo;
         _groupsRepo = groupsRepo;
         _transactionsService = transactionsService;
-        _studentsRepo = studentsRepo;
         _personGroupCourseRepo = personGroupCourseRepo;
     }
     #endregion
@@ -60,16 +57,8 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
 
         // Process groups
         IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
-        // Process students
-        IDictionary<long, Student> students = await ProcessStudents(rows.Where(x => x.Expedient.HasValue), ct);
         // Process people
-        IDictionary<string, Person> people = await ProcessPeople(rows.Where(x => !x.Expedient.HasValue), ct);
-        
-        foreach (var s in students)
-        {
-            people[s.Value.DocumentId] = s.Value;
-        }
-
+        IDictionary<string, Person> people = await ProcessPeople(rows, ct);
         // Process PersonGroupCourse
         IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, groups, rows, ct);
 
@@ -156,87 +145,33 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         {
             if (people.ContainsKey(r.Identitat))
             {
-                var existingPerson = people[r.Identitat];
-                var newPerson = CreatePersonFromRow(r);
-                UpdatePersonFields(existingPerson, newPerson);
+                Person p = people[r.Identitat];
+                p.AcademicRecordNumber = r.Expedient;
+                p.SubjectsInfo = r.Assignatures;
+                p.ContactMail = r.EmailContacte;
+                p.ContactPhone = r.TelContacte;
+                p.DocumentId = r.Identitat;
+                p.Name = r.Nom;
+                p.Surname1 = r.Llinatge1;
+                p.Surname2 = r.Llinatge2;
             }
             else
             {
-                var p = CreatePersonFromRow(r);
+                Person p = new Person()
+                {
+                    AcademicRecordNumber = r.Expedient,
+                    ContactMail = r.EmailContacte,
+                    ContactPhone = r.TelContacte,
+                    DocumentId = r.Identitat,
+                    Name = r.Nom,
+                    SubjectsInfo = r.Assignatures,
+                    Surname1 = r.Llinatge1,
+                    Surname2 = r.Llinatge2,
+                };
                 people[r.Identitat] = p;
             }
         }
         return people;
-    }
-
-    private async Task<IDictionary<long, Student>> ProcessStudents(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
-    {
-        IEnumerable<Student> existingStudents = await _studentsRepo.GetStudentsByAcademicRecordAsync(rows.Select(x => x.Expedient ?? 0), ct);
-        IDictionary<long, Student> students = existingStudents.ToDictionary(x => x.AcademicRecordNumber, x => x);
-        foreach (var r in rows)
-        {
-            var number = r.Expedient ?? 0;
-            if (students.ContainsKey(number))
-            {
-                var existingStudent = students[number];
-                var newStudent = CreateStudentFromRow(r);
-                UpdateStudentFields(existingStudent, newStudent);
-            }
-            else
-            {
-                var s = CreateStudentFromRow(r);
-                students[number] = s;
-            }
-        }
-        return students;
-    }
-
-    private Student CreateStudentFromRow(BatchUploadRowModel po)
-    {
-        if (po.Expedient.HasValue)
-        {
-            var s = new Student()
-            {
-                AcademicRecordNumber = po.Expedient.Value,
-                SubjectsInfo = po.Assignatures,
-            };
-
-            var tempPerson = CreatePersonFromRow(po);
-            UpdatePersonFields(s, tempPerson);
-
-            return s;
-        }
-        throw new ArgumentException("Check argument is a student");
-    }
-
-    private void UpdateStudentFields(Student s, Student newStudent)
-    {
-        s.SubjectsInfo = newStudent.SubjectsInfo;
-        UpdatePersonFields(s, newStudent);
-    }
-
-    private void UpdatePersonFields(Person s, Person newPerson)
-    {
-        s.DocumentId = newPerson.DocumentId;
-        s.Name = newPerson.Name;
-        s.Surname1 = newPerson.Surname1;
-        s.Surname2 = newPerson.Surname2;
-        s.ContactMail = newPerson.ContactMail;
-        s.ContactPhone = newPerson.ContactPhone;
-    }
-
-    private Person CreatePersonFromRow(BatchUploadRowModel row)
-    {
-        var p = new Person()
-        {
-            DocumentId = row.Identitat,
-            ContactMail = row.EmailContacte,
-            ContactPhone = row.TelContacte,
-            Name = row.Nom,
-            Surname1 = row.Llinatge1,
-            Surname2 = row.Llinatge2,
-        };
-        return p;
     }
     #endregion
 }

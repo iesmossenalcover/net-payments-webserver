@@ -43,8 +43,6 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
     public static PersonRowVm ToPersonVm(PersonGroupCourse pgc)
     {
         Person p = pgc.Person;
-        Student? s = p as Student;
-        long? academicRecordNumber = s != null ? s.AcademicRecordNumber : null;
         return new PersonRowVm(
             p.Id,
             p.DocumentId,
@@ -52,7 +50,7 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
             $"{p.Surname1} {p.Surname2}",
             pgc.Group.Id,
             pgc.Group.Name,
-            academicRecordNumber
+            p.AcademicRecordNumber
         );
     }
 

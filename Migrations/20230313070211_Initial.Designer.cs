@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230310101913_AmipaToEvent")]
-    partial class AmipaToEvent
+    [Migration("20230313070211_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -284,6 +284,9 @@ namespace netpaymentswebserver.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("AcademicRecordNumber")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ContactMail")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -301,6 +304,9 @@ namespace netpaymentswebserver.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("SubjectsInfo")
+                        .HasColumnType("text");
+
                     b.Property<string>("Surname1")
                         .IsRequired()
                         .HasColumnType("text");
@@ -310,14 +316,15 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AcademicRecordNumber")
+                        .IsUnique();
+
                     b.HasIndex("DocumentId")
                         .IsUnique();
 
                     b.HasIndex("Name");
 
                     b.ToTable("person", "main");
-
-                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Domain.Entities.People.PersonGroupCourse", b =>
@@ -355,22 +362,6 @@ namespace netpaymentswebserver.Migrations
                         .IsUnique();
 
                     b.ToTable("person_group_course", "main");
-                });
-
-            modelBuilder.Entity("Domain.Entities.People.Student", b =>
-                {
-                    b.HasBaseType("Domain.Entities.People.Person");
-
-                    b.Property<long>("AcademicRecordNumber")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("SubjectsInfo")
-                        .HasColumnType("text");
-
-                    b.HasIndex("AcademicRecordNumber")
-                        .IsUnique();
-
-                    b.ToTable("student", "main");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.UserClaim", b =>
@@ -471,15 +462,6 @@ namespace netpaymentswebserver.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("Domain.Entities.People.Student", b =>
-                {
-                    b.HasOne("Domain.Entities.People.Person", null)
-                        .WithOne()
-                        .HasForeignKey("Domain.Entities.People.Student", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Authentication.User", b =>

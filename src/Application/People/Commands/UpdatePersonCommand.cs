@@ -52,14 +52,12 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
 public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, Response<long?>>
 {
     private readonly IPeopleRepository _peopleRepo;
-    private readonly IStudentsRepository _studentRepo;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepo;
     private readonly ICoursesRepository _coursesRespository;
 
-    public UpdatePersonCommandHandler(IPeopleRepository peopleRepo, IStudentsRepository studentRepo, IPersonGroupCourseRepository personGroupCourseRepo, ICoursesRepository coursesRespository)
+    public UpdatePersonCommandHandler(IPeopleRepository peopleRepo, IPersonGroupCourseRepository personGroupCourseRepo, ICoursesRepository coursesRespository)
     {
         _peopleRepo = peopleRepo;
-        _studentRepo = studentRepo;
         _personGroupCourseRepo = personGroupCourseRepo;
         _coursesRespository = coursesRespository;
     }
@@ -82,31 +80,10 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
 
         if (request.AcademicRecordNumber.HasValue)
         {
-            Person? p2 = await _studentRepo.GetStudentByAcademicRecordAsync(request.AcademicRecordNumber.Value, ct);
+            Person? p2 = await _peopleRepo.GetPersonByAcademicRecordAsync(request.AcademicRecordNumber.Value, ct);
             if (p2 != null && p.Id != p2.Id)
             {
                 return Response<long?>.Error(ResponseCode.BadRequest, nameof(request.AcademicRecordNumber), "Ja existeix una persona amb aquest numero d'expedient");
-            }
-            Student? s = p as Student;
-            if (s != null)
-            {
-                //Actualitzar estudiant
-                s.AcademicRecordNumber = request.AcademicRecordNumber.Value;
-                s.SubjectsInfo = request.SubjectsInfo;
-                p = s;
-            }
-            else
-            {
-                //Crear estudiant
-                return Response<long?>.Error(ResponseCode.BadRequest, "Canvi estudiant/person no soportat");
-            }
-        }
-        else
-        {
-            if (p is Student)
-            {
-                // Eliminar estudiant
-                return Response<long?>.Error(ResponseCode.BadRequest, "Canvi estudiant/persona no soportat");
             }
         }
 
@@ -116,9 +93,12 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         p.DocumentId = request.DocumentId;
         p.Surname1 = request.Surname1;
         p.Surname2 = request.Surname2;
+        p.AcademicRecordNumber = request.AcademicRecordNumber;
+        p.SubjectsInfo = request.SubjectsInfo;
         
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);
 
+        // Update / create group
         PersonGroupCourse? pgc = await _personGroupCourseRepo.GetCoursePersonGroupById(p.Id, c.Id, CancellationToken.None);
         if (pgc == null && request.GroupId.HasValue)
         {

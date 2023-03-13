@@ -16,7 +16,6 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Authentication.UserClaim> UserClaims { get; set; } = default!;
 
         public DbSet<Domain.Entities.People.Person> People { get; set; } = default!;
-        public DbSet<Domain.Entities.People.Student> Students { get; set; } = default!;
         public DbSet<Domain.Entities.People.Group> Groups { get; set; } = default!;
         public DbSet<Domain.Entities.People.Course> Courses { get; set; } = default!;
         public DbSet<Domain.Entities.People.PersonGroupCourse> PersonGroupCourses { get; set; } = default!;
@@ -62,6 +61,8 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .HasIndex(x => x.DocumentId).IsUnique();
             modelBuilder.Entity<Domain.Entities.People.Person>()
+                .HasIndex(x => x.AcademicRecordNumber).IsUnique();
+            modelBuilder.Entity<Domain.Entities.People.Person>()
                 .HasIndex(x => x.Name);
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactMail).HasMaxLength(100);
@@ -69,14 +70,6 @@ namespace Infrastructure
                 .Property(x => x.DocumentId).HasMaxLength(50);
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactPhone).HasMaxLength(15);
-
-
-            modelBuilder.Entity<Domain.Entities.People.Student>()
-                .ToTable("student", "main")
-                .Property(x => x.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Domain.Entities.People.Student>()
-                .HasIndex(x => x.AcademicRecordNumber).IsUnique();
-
 
             modelBuilder.Entity<Domain.Entities.People.Group>()
                 .ToTable("group", "main")
