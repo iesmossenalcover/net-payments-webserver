@@ -22,4 +22,17 @@ public class PeopleRepository : Repository<Person>, Application.Common.Services.
     {
         return await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
     }
+
+    public async Task<Person?> GetPersonByAcademicRecordAsync(long academicRecord, CancellationToken ct)
+    {
+        return await _dbSet
+            .FirstOrDefaultAsync(x => x.AcademicRecordNumber == academicRecord, ct);
+    }
+
+    public async Task<IEnumerable<Person>> GetPeopleByAcademicRecordAsync(IEnumerable<long> academicRecords, CancellationToken ct)
+    {
+        return await _dbSet
+            .Where(x => x.AcademicRecordNumber.HasValue && academicRecords.Distinct().Contains(x.AcademicRecordNumber.Value))
+            .ToListAsync(ct);
+    }
 }
