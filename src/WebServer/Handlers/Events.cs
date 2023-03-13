@@ -23,7 +23,7 @@ public class Events
         return await mediator.Send(new GetEventByIdQuery(id));
     }
 
-    public static async Task<Response<long?>> CreateEvent(IMediator mediator, [FromBody]CreateEventCommand cmd)
+    public static async Task<Response<string?>> CreateEvent(IMediator mediator, [FromBody]CreateEventCommand cmd)
     {
         return await mediator.Send(cmd);
     }
