@@ -99,6 +99,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                     if (pgc.Group.Id != g.Id)
                     {
                         pgc.Group = g;
+                        pgc.Amipa = r.Amipa;
                         pgc.SubjectsInfo = r.Assignatures;
                     }
                 }
@@ -109,7 +110,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                         Group = g,
                         Person = p,
                         Course = course,
-                        Amipa = false,
+                        Amipa = r.Amipa,
                         Enrolled = false,
                         SubjectsInfo = r.Assignatures,
                     };
