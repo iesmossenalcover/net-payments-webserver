@@ -96,12 +96,9 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                 if (personGroupCourse.ContainsKey(p.DocumentId))
                 {
                     pgc = personGroupCourse[p.DocumentId];
-                    if (pgc.Group.Id != g.Id)
-                    {
-                        pgc.Group = g;
-                        pgc.Amipa = r.IsAmipa();
-                        pgc.SubjectsInfo = r.Assignatures;
-                    }
+                    pgc.Group = g;
+                    pgc.Amipa = r.IsAmipa();
+                    pgc.SubjectsInfo = r.Assignatures;
                 }
                 else
                 {
