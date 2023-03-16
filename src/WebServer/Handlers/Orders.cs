@@ -31,14 +31,4 @@ public class Orders
     {
         return await mediator.Send(new OrderInfoQuery(signature, merchantParameters, signatureVersion));
     }
-
-    // public static async Task<Response<OrderInfoVm>> GetOrderInfo(
-    //     IMediator mediator,
-    //     HttpContext ctx)
-    // {
-    //     return await mediator.Send(new OrderInfoQuery(
-    //         ctx.Request.Form["signature"].ToString(),
-    //         ctx.Request.Form["merchantParameters"].ToString(),
-    //         ctx.Request.Form["signatureVersion"].ToString()));
-    // }
 }
