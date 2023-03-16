@@ -10,7 +10,9 @@
         public string? EmailContacte { get; set; }
         public string? TelContacte { get; set; }
         public string? Grup { get; set; }
-        public bool Amipa { get; set; }
+        public string? Amipa { get; set; }
         public string? Assignatures { get; set; }
+
+        public bool IsAmipa() => Amipa != null && (Amipa == "Si" || Amipa == "si");
     }
 }

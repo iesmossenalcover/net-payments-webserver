@@ -40,6 +40,7 @@ public class BatchUploadRowModelMap : ClassMap<BatchUploadRowModel>
         Map(m => m.EmailContacte);
         Map(m => m.TelContacte);
         Map(m => m.Grup).Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Amipa);
         Map(m => m.Assignatures);
     }
 }
