@@ -9,7 +9,7 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record EventPersonVm(long Id, string DocumentId, string FullName, long? AcademicRecordNumber, bool inEvent);
-public record EventPeopleGroupVm(long Id, string Name, IList<EventPersonVm> People);
+public record EventPeopleGroupVm(long Id, string Name, int Order, IList<EventPersonVm> People);
 public record EventPeopleVm(long Id, string Code, string Name, IEnumerable<EventPeopleGroupVm> PeopleGroups);
 #endregion
 
@@ -50,7 +50,7 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
             EventPeopleGroupVm group = default!;
             if (!groups.ContainsKey(pgc.GroupId))
             {
-                group = new EventPeopleGroupVm(pgc.GroupId, pgc.Group.Name, new List<EventPersonVm>());
+                group = new EventPeopleGroupVm(pgc.GroupId, pgc.Group.Name, pgc.Group.Order, new List<EventPersonVm>());
                 groups.Add(pgc.GroupId, group);
             }
             else
@@ -68,6 +68,6 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
             group.People.Add(p);
         }
 
-        return Response<EventPeopleVm>.Ok(new EventPeopleVm(e.Id, e.Code, e.Name, groups.Select(x => x.Value)));
+        return Response<EventPeopleVm>.Ok(new EventPeopleVm(e.Id, e.Code, e.Name, groups.Select(x => x.Value).OrderBy(x => x.Order)));
     }
 }
