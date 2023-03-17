@@ -8,7 +8,7 @@ using MediatR;
 namespace Application.Events.Queries;
 
 # region ViewModels
-public record EventPersonVm(long Id, string DocumentId, string FullName, bool inEvent);
+public record EventPersonVm(long Id, string DocumentId, string FullName, long? AcademicRecordNumber, bool inEvent);
 public record EventPeopleGroupVm(long Id, string Name, IList<EventPersonVm> People);
 public record EventPeopleVm(long Id, string Code, string Name, IEnumerable<EventPeopleGroupVm> PeopleGroups);
 #endregion
@@ -62,6 +62,7 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
                 pgc.Person.Id,
                 pgc.Person.DocumentId,
                 $"{pgc.Person.Name} {pgc.Person.Surname1} {pgc.Person.Surname2}",
+                pgc.Person.AcademicRecordNumber,
                 eventPeople.ContainsKey(pgc.PersonId)
             );
             group.People.Add(p);
