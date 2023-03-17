@@ -39,9 +39,17 @@ public class Events
         return await mediator.Send(new DeleteEventCommand(id));
     }
 
-    public static async Task<Response<bool?>> SetPeopleToEvent(IMediator mediator, long eventId, [FromBody]SetPeopleEventCommand cmd)
+    public static async Task<Response<EventPeopleVm>> GetPeopleEvent(IMediator mediator, string eventCode)
     {
-        cmd.EventId = eventId;
+        return await mediator.Send(new EventPeopleQuery(eventCode));
+    }
+
+    public static async Task<Response<bool?>> SetPeopleToEvent(
+        IMediator mediator,
+        string eventCode,
+        [FromBody]SetPeopleEventCommand cmd)
+    {
+        cmd.EventCode = eventCode;
         return await mediator.Send(cmd);
     }
 }
