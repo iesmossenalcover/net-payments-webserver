@@ -13,7 +13,6 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapPost("/api/signup", Authentication.Auth.SignupPost)
-            .RequireAuthorization()
             .WithName("signup")
             .WithOpenApi();
 
@@ -93,7 +92,6 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapPost("/api/events/active", Events.ListActivePersonEvents)
-            .RequireAuthorization()
             .WithName("Get active events by person document Id")
             .WithOpenApi();
 
