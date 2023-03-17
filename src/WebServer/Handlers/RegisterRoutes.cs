@@ -13,109 +13,93 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapPost("/api/signup", Authentication.Auth.SignupPost)
-            .RequireAuthorization()
             .WithName("signup")
             .WithOpenApi();
 
         app.MapGet("/api/identity", Authentication.Auth.GetIdentity)
-            .RequireAuthorization()
             .WithName("identity")
             .WithOpenApi();
 
         // Tasks
         app.MapPost("/api/tasks/people", Tasks.UploadPeople)
-            .RequireAuthorization()
             .WithName("Upload people")
             .WithOpenApi();
 
         // People
         app.MapGet("/api/people/{id}", People.GetPerson)
-            .RequireAuthorization()
             .WithName("Get person by id")
             .WithOpenApi();
 
         app.MapGet("/api/people", People.ListPeople)
-            .RequireAuthorization()
             .WithName("List people by course")
             .WithOpenApi();
 
         app.MapPost("/api/people", People.CreatePerson)
-            .RequireAuthorization()
             .WithName("Create person")
             .WithOpenApi();
 
         app.MapPut("/api/people/{id}", People.UpdatePerson)
-            .RequireAuthorization()
             .WithName("Update person")
             .WithOpenApi();
 
         app.MapDelete("/api/people/{id}", People.DeletePerson)
-            .RequireAuthorization()
             .WithName("Delete person")
             .WithOpenApi();
 
         // Courses
         app.MapGet("/api/courses/selector", Courses.GetCoursesSelector)
-            .RequireAuthorization()
             .WithName("Get courses selector")
             .WithOpenApi();
 
         // Groups
         app.MapGet("/api/groups/selector", Groups.GetGroupsSelector)
-            .RequireAuthorization()
             .WithName("Get groups selector")
             .WithOpenApi();
 
         // Events
         app.MapGet("/api/events", Events.ListCourseEvents)
-            .RequireAuthorization()
             .WithName("List current course events")
             .WithOpenApi();
 
         app.MapGet("/api/events/{id}", Events.GetEvent)
-            .RequireAuthorization()
             .WithName("Get event by id")
             .WithOpenApi();
 
         app.MapPost("/api/events", Events.CreateEvent)
-            .RequireAuthorization()
             .WithName("Create event")
             .WithOpenApi();
 
         app.MapPut("/api/events/{id}", Events.UpdateEvent)
-            .RequireAuthorization()
             .WithName("Update event")
             .WithOpenApi();
 
         app.MapDelete("/api/events/{id}", Events.DeleteEvent)
-            .RequireAuthorization()
             .WithName("Delete event")
             .WithOpenApi();
 
         app.MapPost("/api/events/active", Events.ListActivePersonEvents)
-            .RequireAuthorization()
             .WithName("Get active events by person document Id")
             .WithOpenApi();
 
         // Events People
-        app.MapPost("/api/events/{eventId}/people", Events.SetPeopleToEvent)
-            .RequireAuthorization()
+        app.MapPost("/api/events/{eventCode}/people", Events.SetPeopleToEvent)
             .WithName("Set people to event")
+            .WithOpenApi();
+
+        app.MapGet("/api/events/{eventCode}/people", Events.GetPeopleEvent)
+            .WithName("Get people in event")
             .WithOpenApi();
 
         // Orders
         app.MapPost("/api/orders", Orders.CreateOrder)
-            .RequireAuthorization()
             .WithName("Create order")
             .WithOpenApi();
 
         app.MapPost("/api/orders/confirm", Orders.ConfirmOrderPost)
-            .RequireAuthorization()
             .WithName("Confirm order post")
             .WithOpenApi();
 
         app.MapGet("/api/order/info", Orders.GetOrderInfo)
-            .RequireAuthorization()
             .WithName("Get order info")
             .WithOpenApi();
     }

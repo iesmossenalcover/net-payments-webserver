@@ -10,7 +10,7 @@ namespace Application.Events.Commands;
 
 public record SetPeopleEventCommand : IRequest<Response<bool?>>
 {
-    public long EventId { get; set; }
+    public string EventCode { get; set; } = default!;
     public IEnumerable<long> PeopleIds { get; set; } = Enumerable.Empty<long>();
 }
 
@@ -38,7 +38,7 @@ public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventComman
 
     public async Task<Response<bool?>> Handle(SetPeopleEventCommand request, CancellationToken ct)
     {
-        Event? e = await _eventsRespository.GetByIdAsync(request.EventId, ct);
+        Event? e = await _eventsRespository.GetEventByCodeAsync(request.EventCode, ct);
         if (e == null)
         {
             return Response<bool?>.Error(ResponseCode.BadRequest, "L'esdeveniment no existeix.");
@@ -52,7 +52,7 @@ public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventComman
             return Response<bool?>.Error(ResponseCode.BadRequest, "S'han proporcionat identificaadors de persona que no existeixn.");
         }
 
-        IEnumerable<EventPerson> eventPeople = await _eventsPeopleRepository.GetAllByEventIdAsync(request.EventId, ct);
+        IEnumerable<EventPerson> eventPeople = await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct);
 
         IEnumerable<EventPerson> eventsPeopleToDelte = eventPeople.Where(x => !peopleIds.Contains(x.PersonId));
         if (eventsPeopleToDelte.Any(x => x.Paid))

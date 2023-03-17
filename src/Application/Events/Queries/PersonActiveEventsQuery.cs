@@ -43,7 +43,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         }
 
         Person person = pgc.Person;
-        IEnumerable<EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
+        IEnumerable<Domain.Entities.Events.EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
         personEvents = personEvents.Where(x => x.Event.IsActive && !x.Paid);
 
         // TODO: Decide with events are selectable, for the moment all are selectable
