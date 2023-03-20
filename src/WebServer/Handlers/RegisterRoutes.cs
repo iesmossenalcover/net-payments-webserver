@@ -119,7 +119,6 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapPost("/api/orders/confirm", Orders.ConfirmOrderPost)
-            .RequireAuthorization()
             .WithName("Confirm order post")
             .WithOpenApi();
 
