@@ -114,7 +114,6 @@ public static class RegisterRoutes
 
         // Orders
         app.MapPost("/api/orders", Orders.CreateOrder)
-            .RequireAuthorization()
             .WithName("Create order")
             .WithOpenApi();
 
@@ -123,7 +122,6 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapGet("/api/order/info", Orders.GetOrderInfo)
-            .RequireAuthorization()
             .WithName("Get order info")
             .WithOpenApi();
     }
