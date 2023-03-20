@@ -52,4 +52,9 @@ public class Events
         cmd.EventCode = eventCode;
         return await mediator.Send(cmd);
     }
+
+    public static async Task<Response<ListEventPaymentsVm>> ListEventPayments(IMediator mediator, string eventCode)
+    {
+        return await mediator.Send(new ListEventPaymentsQuery(eventCode));
+    }
 }

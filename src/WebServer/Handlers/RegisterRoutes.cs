@@ -106,6 +106,12 @@ public static class RegisterRoutes
             .WithName("Get people in event")
             .WithOpenApi();
 
+        app.MapGet("/api/events/{eventCode}/payments", Events.ListEventPayments)
+                .RequireAuthorization()
+                .WithName("List event payments")
+                .WithOpenApi();
+
+
         // Orders
         app.MapPost("/api/orders", Orders.CreateOrder)
             .RequireAuthorization()
