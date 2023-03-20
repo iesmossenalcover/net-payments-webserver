@@ -15,6 +15,7 @@ public record EventData
     public decimal AmipaPrice { get; set; }
     public bool Enrollment { get; set; }
     public bool Amipa { get; set; }
+    public string Description { get; set; } = string.Empty;
     public DateTimeOffset? PublishDate { get; set; } = default!;
     public DateTimeOffset? UnpublishDate { get; set; } = default!;
 }
@@ -82,6 +83,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Enrollment = request.Enrollment,
             Amipa = request.Amipa,
             Price = request.Price,
+            Description = request.Description,
             PublishDate = request.PublishDate ?? DateTimeOffset.UtcNow,
             UnpublishDate = request.UnpublishDate,
             Course = course

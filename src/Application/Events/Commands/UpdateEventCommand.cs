@@ -59,6 +59,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.UnpublishDate = request.UnpublishDate;
         e.Enrollment = request.Enrollment;
         e.Amipa = request.Amipa;
+        e.Description = request.Description;
 
         await _eventsRespository.UpdateAsync(e, CancellationToken.None);
 
