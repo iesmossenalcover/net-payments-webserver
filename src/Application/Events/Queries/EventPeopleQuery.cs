@@ -68,6 +68,6 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
             group.People.Add(p);
         }
 
-        return Response<EventPeopleVm>.Ok(new EventPeopleVm(e.Id, e.Code, e.Name, groups.Select(x => x.Value).OrderBy(x => x.Order)));
+        return Response<EventPeopleVm>.Ok(new EventPeopleVm(e.Id, e.Code, e.Name, groups.Select(x => x.Value).OrderBy(x => x.Name)));
     }
 }
