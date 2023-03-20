@@ -55,7 +55,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
         }
 
         decimal totalPrice = payments.Sum(x => x.Price);
-        decimal amiaPrice = payments.Where(x => x.Amipa).Sum(x => x.Price);
+        decimal amiaPrice = payments.Where(x => x.Amipa).Where(x => x.Paid).Sum(x => x.Price);
         int paidCount = payments.Count(x => x.Paid);
 
         var vm = new ListEventPaymentsVm(e.Id, e.Name, e.Code, totalPrice, amiaPrice, eventPeople.Count(), paidCount, payments.Where(x => x.Paid), payments.Where(x => !x.Paid));
