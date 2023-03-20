@@ -90,6 +90,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             if (pgc != null)
             {
                 pgc.EnrollmentEvent = enrollmentEvent.Event;
+                pgc.Enrolled = true;
                 await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
             }
         }
