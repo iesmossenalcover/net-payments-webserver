@@ -13,6 +13,7 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapPost("/api/signup", Authentication.Auth.SignupPost)
+            .RequireAuthorization()        
             .WithName("signup")
             .WithOpenApi();
 
