@@ -45,7 +45,7 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
         Dictionary<long, Person> eventPeople = (await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct)).ToDictionary(x => x.PersonId, x => x.Person);
 
         Dictionary<long, EventPeopleGroupVm> groups = new Dictionary<long, EventPeopleGroupVm>();
-        foreach (var pgc in people)
+        foreach (var pgc in people.OrderBy(x => $"{x.Person.Name} {x.Person.Surname1} {x.Person.Surname2}"))
         {
             EventPeopleGroupVm group = default!;
             if (!groups.ContainsKey(pgc.GroupId))
@@ -68,6 +68,8 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
             group.People.Add(p);
         }
 
-        return Response<EventPeopleVm>.Ok(new EventPeopleVm(e.Id, e.Code, e.Name, groups.Select(x => x.Value).OrderBy(x => x.Name)));
+        return Response<EventPeopleVm>.Ok(
+            new EventPeopleVm(e.Id, e.Code, e.Name, groups.Select(x => x.Value).OrderBy(x => x.Name))
+        );
     }
 }
