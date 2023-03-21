@@ -41,11 +41,15 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
         if (e == null) return Response<EventPeopleVm>.Error(ResponseCode.NotFound, "Esdeveniment no trobat");
 
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
-        IQueryable<PersonGroupCourse> people = _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(course.Id, ct);
+        IQueryable<PersonGroupCourse> people = 
+                            _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(course.Id, ct)
+                            .OrderBy(x => x.Person.Name)
+                            .ThenBy(x => x.Person.Surname1)
+                            .ThenBy(x => x.Person.Surname2);
         Dictionary<long, Person> eventPeople = (await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct)).ToDictionary(x => x.PersonId, x => x.Person);
 
         Dictionary<long, EventPeopleGroupVm> groups = new Dictionary<long, EventPeopleGroupVm>();
-        foreach (var pgc in people.OrderBy(x => $"{x.Person.Name} {x.Person.Surname1} {x.Person.Surname2}"))
+        foreach (var pgc in people)
         {
             EventPeopleGroupVm group = default!;
             if (!groups.ContainsKey(pgc.GroupId))
