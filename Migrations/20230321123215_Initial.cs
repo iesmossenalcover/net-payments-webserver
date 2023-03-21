@@ -66,9 +66,9 @@ namespace netpaymentswebserver.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     DocumentId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Surname1 = table.Column<string>(type: "text", nullable: false),
-                    Surname2 = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false, collation: "no_accent"),
+                    Surname1 = table.Column<string>(type: "text", nullable: false, collation: "no_accent"),
+                    Surname2 = table.Column<string>(type: "text", nullable: true, collation: "no_accent"),
                     ContactPhone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
                     ContactMail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     AcademicRecordNumber = table.Column<long>(type: "bigint", nullable: true)
@@ -375,22 +375,19 @@ namespace netpaymentswebserver.Migrations
                 name: "IX_person_Name",
                 schema: "main",
                 table: "person",
-                column: "Name")
-                .Annotation("Relational:Collation", new[] { "no_accent" });
+                column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_person_Surname1",
                 schema: "main",
                 table: "person",
-                column: "Surname1")
-                .Annotation("Relational:Collation", new[] { "no_accent" });
+                column: "Surname1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_person_Surname2",
                 schema: "main",
                 table: "person",
-                column: "Surname2")
-                .Annotation("Relational:Collation", new[] { "no_accent" });
+                column: "Surname2");
 
             migrationBuilder.CreateIndex(
                 name: "IX_person_group_course_CourseId",
