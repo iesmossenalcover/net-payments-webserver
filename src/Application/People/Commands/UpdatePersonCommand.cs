@@ -111,7 +111,14 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         {
             pgc.GroupId = request.GroupId.Value;
             pgc.Amipa = request.Amipa;
+            if (!request.Enrolled)
+            {
+                pgc.EnrollmentEvent = null;
+                pgc.EnrollmentEventId = null;
+            }
             pgc.Enrolled = request.Enrolled;
+
+
             pgc.SubjectsInfo = request.SubjectsInfo;
             await _personGroupCourseRepo.UpdateAsync(pgc, CancellationToken.None);
         }
