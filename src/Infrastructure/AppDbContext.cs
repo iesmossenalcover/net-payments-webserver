@@ -65,14 +65,17 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .HasIndex(x => x.AcademicRecordNumber).IsUnique();
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .HasIndex(x => x.Name)
-                .UseCollation("no_accent");
+                .HasIndex(x => x.Name);
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .HasIndex(x => x.Surname1)
-                .UseCollation("no_accent");
+                .HasIndex(x => x.Surname1);
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .HasIndex(x => x.Surname2)
-                .UseCollation("no_accent");
+                .HasIndex(x => x.Surname2);
+            modelBuilder.Entity<Domain.Entities.People.Person>()
+                .Property(x => x.Name).UseCollation("no_accent");
+            modelBuilder.Entity<Domain.Entities.People.Person>()
+                .Property(x => x.Surname1).UseCollation("no_accent");
+            modelBuilder.Entity<Domain.Entities.People.Person>()
+                .Property(x => x.Surname2).UseCollation("no_accent");
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactMail).HasMaxLength(100);
             modelBuilder.Entity<Domain.Entities.People.Person>()

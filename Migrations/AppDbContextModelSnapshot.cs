@@ -304,14 +304,17 @@ namespace netpaymentswebserver.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .UseCollation("no_accent");
 
                     b.Property<string>("Surname1")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .UseCollation("no_accent");
 
                     b.Property<string>("Surname2")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .UseCollation("no_accent");
 
                     b.HasKey("Id");
 
@@ -323,15 +326,9 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("Name");
 
-                    NpgsqlIndexBuilderExtensions.UseCollation(b.HasIndex("Name"), new[] { "no_accent" });
-
                     b.HasIndex("Surname1");
 
-                    NpgsqlIndexBuilderExtensions.UseCollation(b.HasIndex("Surname1"), new[] { "no_accent" });
-
                     b.HasIndex("Surname2");
-
-                    NpgsqlIndexBuilderExtensions.UseCollation(b.HasIndex("Surname2"), new[] { "no_accent" });
 
                     b.ToTable("person", "main");
                 });
