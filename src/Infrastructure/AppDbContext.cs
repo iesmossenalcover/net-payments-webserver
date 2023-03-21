@@ -30,6 +30,8 @@ namespace Infrastructure
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.HasCollation("no_accent", locale: "und-u-ks-level1-kc-true'", provider: "icu", deterministic: false);
+
             // Auths
             modelBuilder.Entity<Domain.Entities.Authentication.User>()
                 .ToTable("user", "main")
@@ -63,7 +65,14 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .HasIndex(x => x.AcademicRecordNumber).IsUnique();
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .HasIndex(x => x.Name);
+                .HasIndex(x => x.Name)
+                .UseCollation("no_accent");
+            modelBuilder.Entity<Domain.Entities.People.Person>()
+                .HasIndex(x => x.Surname1)
+                .UseCollation("no_accent");
+            modelBuilder.Entity<Domain.Entities.People.Person>()
+                .HasIndex(x => x.Surname2)
+                .UseCollation("no_accent");
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactMail).HasMaxLength(100);
             modelBuilder.Entity<Domain.Entities.People.Person>()
