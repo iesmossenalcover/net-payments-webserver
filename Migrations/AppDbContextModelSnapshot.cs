@@ -17,7 +17,7 @@ namespace netpaymentswebserver.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:CollationDefinition:no_accent", "und-u-ks-level1-kc-true',und-u-ks-level1-kc-true',icu,False")
+                .HasAnnotation("Npgsql:CollationDefinition:no_accent", "und-u-ks-level1-kc-true,und-u-ks-level1-kc-true,icu,False")
                 .HasAnnotation("ProductVersion", "7.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 

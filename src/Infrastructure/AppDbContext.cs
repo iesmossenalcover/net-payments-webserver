@@ -30,7 +30,7 @@ namespace Infrastructure
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.HasCollation("no_accent", locale: "und-u-ks-level1-kc-true'", provider: "icu", deterministic: false);
+            modelBuilder.HasCollation("no_accent", locale: "und-u-ks-level1-kc-true", provider: "icu", deterministic: false);
 
             // Auths
             modelBuilder.Entity<Domain.Entities.Authentication.User>()
