@@ -34,7 +34,7 @@ public class Events
         return await mediator.Send(cmd);
     }
 
-    public static async Task<Unit> DeleteEvent(IMediator mediator, long id)
+    public static async Task<Response<long?>> DeleteEvent(IMediator mediator, long id)
     {
         return await mediator.Send(new DeleteEventCommand(id));
     }
