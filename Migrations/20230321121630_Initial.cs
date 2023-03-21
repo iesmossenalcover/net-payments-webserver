@@ -15,6 +15,9 @@ namespace netpaymentswebserver.Migrations
             migrationBuilder.EnsureSchema(
                 name: "main");
 
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:CollationDefinition:no_accent", "und-u-ks-level1-kc-true,und-u-ks-level1-kc-true,icu,False");
+
             migrationBuilder.CreateTable(
                 name: "course",
                 schema: "main",
@@ -101,6 +104,7 @@ namespace netpaymentswebserver.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     AmipaPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     Enrollment = table.Column<bool>(type: "boolean", nullable: false),
@@ -371,7 +375,22 @@ namespace netpaymentswebserver.Migrations
                 name: "IX_person_Name",
                 schema: "main",
                 table: "person",
-                column: "Name");
+                column: "Name")
+                .Annotation("Relational:Collation", new[] { "no_accent" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_person_Surname1",
+                schema: "main",
+                table: "person",
+                column: "Surname1")
+                .Annotation("Relational:Collation", new[] { "no_accent" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_person_Surname2",
+                schema: "main",
+                table: "person",
+                column: "Surname2")
+                .Annotation("Relational:Collation", new[] { "no_accent" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_person_group_course_CourseId",
