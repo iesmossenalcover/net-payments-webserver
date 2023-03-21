@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-public record EventPaymentVm(long Id, string FullName, bool Amipa, decimal Price, bool Paid);
+public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid);
 public record ListEventPaymentsVm(long Id,string Name, string Code, decimal TotalPrice, decimal AmipaTotalPrice, decimal NoAmipaTotalPrice, decimal AmipaStudents, decimal NoAmipaStudents, int Count, int PaidCount, IEnumerable<EventPaymentVm> PaidEvents,IEnumerable<EventPaymentVm> UnPaidEvents );
 
 public record ListEventPaymentsQuery(string Code) : IRequest<Response<ListEventPaymentsVm>>;
@@ -47,6 +47,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
 
             var epVm = new EventPaymentVm(
                 ep.Id, $"{person.Name} {person.Surname1} {person.Surname2}",
+                person.DocumentId,
                 pgc.Amipa,
                 pgc.PriceForEvent(ep.Event),
                 ep.Paid
