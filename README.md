@@ -29,5 +29,7 @@ Inside de project folder, execute:
     - GRANT ALL ON ALL TABLES IN SCHEMA main TO paymentsapi;
     - GRANT USAGE ON SCHEMA main to paymentsapi;
 
+4. Add course
+INSERT INTO main.course("Name", "StartDate", "EndDate", "Active") VALUES('22-23', '2022-09-01', '2023-07-30', true);
 
 # DDBB model in docs folder
