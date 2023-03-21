@@ -28,3 +28,6 @@ Inside de project folder, execute:
 3. Grant permissions
     - GRANT ALL ON ALL TABLES IN SCHEMA main TO paymentsapi;
     - GRANT USAGE ON SCHEMA main to paymentsapi;
+
+
+# DDBB model in docs folder
