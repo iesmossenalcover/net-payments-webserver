@@ -15,6 +15,10 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Authentication.User> Users { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.UserClaim> UserClaims { get; set; } = default!;
 
+
+        public DbSet<Domain.Entities.Configuration.AppConfig> AppConfigs { get; set; } = default!;
+
+
         public DbSet<Domain.Entities.People.Person> People { get; set; } = default!;
         public DbSet<Domain.Entities.People.Group> Groups { get; set; } = default!;
         public DbSet<Domain.Entities.People.Course> Courses { get; set; } = default!;
@@ -157,9 +161,13 @@ namespace Infrastructure
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Orders.Order>()
                 .HasIndex(x => x.Created).IsDescending();
+            modelBuilder.Entity<Domain.Entities.Orders.Order>()
+                .HasIndex(x => new { x.PaidDate, x.Status }).IsDescending();
 
 
-
+            modelBuilder.Entity<Domain.Entities.Configuration.AppConfig>()
+                .ToTable("app_config", "main")
+                .Property(x => x.Id).ValueGeneratedOnAdd();
         }
 
         public override int SaveChanges()
@@ -171,7 +179,7 @@ namespace Infrastructure
                     entry.Entity.DocumentId = entry.Entity.DocumentId.ToUpperInvariant();
                 }
             }
-            
+
             return base.SaveChanges();
         }
     }

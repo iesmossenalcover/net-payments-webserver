@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Common.Services;
+using Domain.Entities.Configuration;
 using Domain.Entities.Events;
 using Domain.Entities.People;
 using MediatR;
@@ -22,13 +23,16 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     private readonly IEventsPeopleRespository _eventsPeopleRepository;
     private readonly IPersonGroupCourseRepository _peopleGroupCourseRepository;
     private readonly ICoursesRepository _coursesRepository;
+    private readonly IAppConfigRepository _appConfigRepository;
 
-    public PersonActiveEventsQueryHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository)
+    public PersonActiveEventsQueryHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository, IAppConfigRepository appConfigRepository)
     {
         _eventsPeopleRepository = eventsPeopleRepository;
         _peopleGroupCourseRepository = peopleGroupCourseRepository;
         _coursesRepository = coursesRepository;
+        _appConfigRepository = appConfigRepository;
     }
+
     #endregion
 
     public async Task<Response<PersonActiveEventsVm>> Handle(PersonActiveEventsQuery request, CancellationToken ct)
@@ -45,11 +49,13 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         IEnumerable<Domain.Entities.Events.EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
         personEvents = personEvents.Where(x => x.Event.IsActive && !x.Paid);
 
+        AppConfig config = await _appConfigRepository.GetAsync(ct);
+
         // TODO: Decide with events are selectable, for the moment all are selectable
         IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => ToPublicEventVm(x, pgc));
 
         return Response<PersonActiveEventsVm>.Ok(
-            new PersonActiveEventsVm(eventsVm, ToPersonSummaryVm(person, pgc))
+            new PersonActiveEventsVm(eventsVm, ToPersonSummaryVm(person, pgc, config))
         );
     }
 
@@ -61,8 +67,9 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         );
     }
 
-    public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc)
+    public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)
     {
-        return new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.Surname1} {person.Surname2}", pgc.Enrolled, pgc.Enrolled ? pgc.SubjectsInfo : null);
+        bool displayEnrollment = pgc.Enrolled && config.DisplayEnrollment;
+        return new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.Surname1} {person.Surname2}", displayEnrollment, displayEnrollment ? pgc.SubjectsInfo : null);
     }
 }

@@ -12,4 +12,10 @@ public class OrdersRepository : Repository<Order>, Application.Common.Services.I
     {
         return await _dbSet.FirstOrDefaultAsync(x => x.Code == code, ct);
     }
+
+    public async Task<IEnumerable<Order>> GetTodayPaidOrdersAsync(CancellationToken ct)
+    {
+        return await _dbSet.Where(x => x.Status == OrderStatus.Paid && x.PaidDate == DateTimeOffset.Now).ToListAsync(ct);
+
+    }
 }

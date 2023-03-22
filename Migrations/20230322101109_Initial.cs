@@ -19,6 +19,20 @@ namespace netpaymentswebserver.Migrations
                 .Annotation("Npgsql:CollationDefinition:no_accent", "und-u-ks-level1-kc-true,und-u-ks-level1-kc-true,icu,False");
 
             migrationBuilder.CreateTable(
+                name: "app_config",
+                schema: "main",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DisplayEnrollment = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_app_config", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "course",
                 schema: "main",
                 columns: table => new
@@ -136,6 +150,7 @@ namespace netpaymentswebserver.Migrations
                     Code = table.Column<string>(type: "text", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    PaidDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     PersonId = table.Column<long>(type: "bigint", nullable: false)
                 },
@@ -352,6 +367,13 @@ namespace netpaymentswebserver.Migrations
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
+                name: "IX_order_PaidDate_Status",
+                schema: "main",
+                table: "order",
+                columns: new[] { "PaidDate", "Status" },
+                descending: new bool[0]);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_order_PersonId",
                 schema: "main",
                 table: "order",
@@ -431,6 +453,10 @@ namespace netpaymentswebserver.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "app_config",
+                schema: "main");
+
             migrationBuilder.DropTable(
                 name: "event_person",
                 schema: "main");

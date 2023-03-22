@@ -32,4 +32,7 @@ Inside de project folder, execute:
 4. Add course
 INSERT INTO main.course("Name", "StartDate", "EndDate", "Active") VALUES('22-23', '2022-09-01', '2023-07-30', true);
 
+5. Add appConfig
+insert into main.app_config("DisplayEnrollment") values (false);
+
 # DDBB model in docs folder

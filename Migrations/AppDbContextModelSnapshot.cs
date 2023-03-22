@@ -81,6 +81,22 @@ namespace netpaymentswebserver.Migrations
                     b.ToTable("user_claim", "main");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Configuration.AppConfig", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("DisplayEnrollment")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("app_config", "main");
+                });
+
             modelBuilder.Entity("Domain.Entities.Events.Event", b =>
                 {
                     b.Property<long>("Id")
@@ -195,6 +211,9 @@ namespace netpaymentswebserver.Migrations
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset>("PaidDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<long>("PersonId")
                         .HasColumnType("bigint");
 
@@ -207,6 +226,9 @@ namespace netpaymentswebserver.Migrations
                         .IsDescending();
 
                     b.HasIndex("PersonId");
+
+                    b.HasIndex("PaidDate", "Status")
+                        .IsDescending();
 
                     b.ToTable("order", "main");
                 });
