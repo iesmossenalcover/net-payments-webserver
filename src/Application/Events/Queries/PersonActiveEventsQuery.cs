@@ -2,14 +2,13 @@ using Application.Common;
 using Application.Common.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
-using Infrastructure.Repos;
 using MediatR;
 
 namespace Application.Events.Queries;
 
 # region ViewModels
-public record PersonSummaryVm(string DocumentId, string FullName);
-public record PublicEventVm(string Code, string Name, decimal Price, string CurrencySymbol, bool Selectable, bool Enrolled, string? EnrollmentSubjectsInfo);
+public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo);
+public record PublicEventVm(string Code, string Name, decimal Price, string CurrencySymbol, bool Selectable);
 public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm person);
 #endregion
 
@@ -50,14 +49,20 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => ToPublicEventVm(x, pgc));
 
         return Response<PersonActiveEventsVm>.Ok(
-            new PersonActiveEventsVm(eventsVm, new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.Surname1} {person.Surname2}"))
+            new PersonActiveEventsVm(eventsVm, ToPersonSummaryVm(person, pgc))
         );
     }
 
     public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)
     {
+        // , pgc.Enrolled, pgc.Enrolled ? pgc.SubjectsInfo : null
         return new PublicEventVm(
-            x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€", true, pgc.Enrolled, pgc.Enrolled ? pgc.SubjectsInfo : null
+            x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€", true
         );
+    }
+
+    public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc)
+    {
+        return new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.Surname1} {person.Surname2}", pgc.Enrolled, pgc.Enrolled ? pgc.SubjectsInfo : null);
     }
 }
