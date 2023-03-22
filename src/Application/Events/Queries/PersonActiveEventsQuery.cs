@@ -9,7 +9,7 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record PersonSummaryVm(string DocumentId, string FullName);
-public record PublicEventVm(string Code, string Name, decimal Price, string CurrencySymbol, bool selectable);
+public record PublicEventVm(string Code, string Name, decimal Price, string CurrencySymbol, bool Selectable, bool Enrolled, string? EnrollmentSubjectsInfo);
 public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm person);
 #endregion
 
@@ -36,7 +36,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupByDocumentId(request.DocumentId, course.Id, ct);
-        
+
         if (pgc == null)
         {
             return Response<PersonActiveEventsVm>.Error(ResponseCode.NotFound, "No s'ha trobat cap persona amb aquest document al curs actual.");
@@ -47,10 +47,17 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         personEvents = personEvents.Where(x => x.Event.IsActive && !x.Paid);
 
         // TODO: Decide with events are selectable, for the moment all are selectable
-        IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => new PublicEventVm(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€", true));
+        IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => ToPublicEventVm(x, pgc));
 
         return Response<PersonActiveEventsVm>.Ok(
             new PersonActiveEventsVm(eventsVm, new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.Surname1} {person.Surname2}"))
+        );
+    }
+
+    public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)
+    {
+        return new PublicEventVm(
+            x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€", true, pgc.Enrolled, pgc.Enrolled ? pgc.SubjectsInfo : null
         );
     }
 }
