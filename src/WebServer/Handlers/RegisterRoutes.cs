@@ -128,14 +128,14 @@ public static class RegisterRoutes
 
         // Admin Info
 
-        app.MapGet("/api/admin-info", AdminInfo.GetAdminInfo)
+        app.MapGet("/api/admin", AdminInfo.GetAdminInfo)
             .RequireAuthorization()
             .WithName("Get admin info")
             .WithOpenApi();
 
-        app.MapPut("/api/admin-info", AdminInfo.UpdateAdminInfo)
+        app.MapPut("/api/config", AdminInfo.UpdateAdminInfo)
             .RequireAuthorization()
-            .WithName("Update admin info")
+            .WithName("Update app config")
             .WithOpenApi();
     }
 }
