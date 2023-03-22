@@ -1,5 +1,4 @@
 using Domain.Entities.Orders;
-using Domain.Entities.People;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
@@ -15,7 +14,7 @@ public class OrdersRepository : Repository<Order>, Application.Common.Services.I
 
     public async Task<IEnumerable<Order>> GetTodayPaidOrdersAsync(CancellationToken ct)
     {
-        return await _dbSet.Where(x => x.Status == OrderStatus.Paid && x.PaidDate == DateTimeOffset.UtcNow).ToListAsync(ct);
+        return await _dbSet.Where(x => x.Status == OrderStatus.Paid && x.PaidDate.Date == DateTimeOffset.UtcNow.Date).ToListAsync(ct);
 
     }
 }
