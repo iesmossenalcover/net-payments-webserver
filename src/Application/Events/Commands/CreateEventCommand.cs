@@ -16,8 +16,8 @@ public record EventData
     public bool Enrollment { get; set; }
     public bool Amipa { get; set; }
     public string Description { get; set; } = string.Empty;
-    public DateTimeOffset? PublishDate { get; set; } = default!;
-    public DateTimeOffset? UnpublishDate { get; set; } = default!;
+    public DateTime PublishDate { get; set; }
+    public DateTime? UnpublishDate { get; set; } = default!;
 }
 
 public record CreateEventCommand : EventData, IRequest<Response<string?>>
@@ -25,14 +25,15 @@ public record CreateEventCommand : EventData, IRequest<Response<string?>>
 
 public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
 {
-	public CreateEventCommandValidator()
-	{
+    public CreateEventCommandValidator()
+    {
         RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicaci�");
         RuleFor(x => x.UnpublishDate)
-            .Must((request, unpublish) => {
+            .Must((request, unpublish) =>
+            {
                 if (!unpublish.HasValue) return true;
 
                 if (unpublish.Value < request.PublishDate) return false;
@@ -84,8 +85,8 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Amipa = request.Amipa,
             Price = request.Price,
             Description = request.Description,
-            PublishDate = request.PublishDate ?? DateTimeOffset.UtcNow,
-            UnpublishDate = request.UnpublishDate,
+            PublishDate = new DateTimeOffset(request.PublishDate, TimeSpan.Zero),
+            UnpublishDate = request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value, TimeSpan.Zero) : DateTimeOffset.UtcNow,
             Course = course
         };
 
