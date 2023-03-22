@@ -37,7 +37,12 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
                     .Skip(0);
                     // .Take(10);
 
-        return personGroupCourses.Select(x => ToPersonVm(x));
+        IEnumerable<PersonGroupCourse> respone = personGroupCourses.ToList();
+        return respone
+                .Select(x => ToPersonVm(x))
+                .OrderBy(x => x.GroupName)
+                .ThenBy(x => x.FirstName)
+                .ThenBy(x => x.LastName);
     }
 
     public static PersonRowVm ToPersonVm(PersonGroupCourse pgc)
