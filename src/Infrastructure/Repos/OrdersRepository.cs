@@ -15,7 +15,7 @@ public class OrdersRepository : Repository<Order>, Application.Common.Services.I
 
     public async Task<IEnumerable<Order>> GetTodayPaidOrdersAsync(CancellationToken ct)
     {
-        return await _dbSet.Where(x => x.Status == OrderStatus.Paid && x.PaidDate == DateTimeOffset.Now).ToListAsync(ct);
+        return await _dbSet.Where(x => x.Status == OrderStatus.Paid && x.PaidDate == DateTimeOffset.UtcNow).ToListAsync(ct);
 
     }
 }
