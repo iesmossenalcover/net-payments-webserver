@@ -38,7 +38,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     public async Task<Response<PersonActiveEventsVm>> Handle(PersonActiveEventsQuery request, CancellationToken ct)
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
-        PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupByDocumentId(request.DocumentId, course.Id, ct);
+        PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupByDocumentId(request.DocumentId.Trim(), course.Id, ct);
 
         if (pgc == null)
         {
