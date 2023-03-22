@@ -35,4 +35,7 @@ INSERT INTO main.course("Name", "StartDate", "EndDate", "Active") VALUES('22-23'
 5. Add appConfig
 insert into main.app_config("DisplayEnrollment") values (false);
 
+6. Add AdminUser withHash
+insert into main.user("Username", "HashedPassword", "Firstname", "Lastname") values ('admin','','Administrador', '');
+
 # DDBB model in docs folder
