@@ -64,7 +64,7 @@ public class GetAdminInfoQueryHandler : IRequestHandler<GetAdminInfoQuery, Admin
         return new AdminInfoVm(
             events.Count(),
             events.Count(x => x.IsActive),
-            events.Count(x => x.UnpublishDate == DateTimeOffset.Now),
+            events.Count(x => x.UnpublishDate.HasValue && x.UnpublishDate.Value.Date == DateTime.Now.Date),
             groups.Count(),
             pgcs.Count(),
             orders.Count(),
