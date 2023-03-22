@@ -6,14 +6,14 @@ public static class RegisterRoutes
         app.MapGet("/api/health", () => "up")
             .WithName("Health")
             .WithOpenApi();
-        
+
         // auth related actions are in WebServer layer dueto related session storage.
         app.MapPost("/api/signin", Authentication.Auth.SigninPost)
             .WithName("signin")
             .WithOpenApi();
 
         app.MapPost("/api/signup", Authentication.Auth.SignupPost)
-            .RequireAuthorization()        
+            .RequireAuthorization()
             .WithName("signup")
             .WithOpenApi();
 
@@ -124,6 +124,18 @@ public static class RegisterRoutes
 
         app.MapGet("/api/order/info", Orders.GetOrderInfo)
             .WithName("Get order info")
+            .WithOpenApi();
+
+        // Admin Info
+
+        app.MapGet("/api/admin-info", AdminInfo.GetAdminInfo)
+            .RequireAuthorization()
+            .WithName("Get admin info")
+            .WithOpenApi();
+
+        app.MapPut("/api/admin-info", AdminInfo.UpdateAdminInfo)
+            .RequireAuthorization()
+            .WithName("Update admin info")
             .WithOpenApi();
     }
 }
