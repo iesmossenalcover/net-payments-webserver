@@ -85,8 +85,8 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Amipa = request.Amipa,
             Price = request.Price,
             Description = request.Description,
-            PublishDate = new DateTimeOffset(request.PublishDate, TimeSpan.Zero),
-            UnpublishDate = request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value, TimeSpan.Zero) : DateTimeOffset.UtcNow,
+            PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero),
+            UnpublishDate = request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null,
             Course = course
         };
 

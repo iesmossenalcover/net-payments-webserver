@@ -53,8 +53,8 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.Name = request.Name;
         e.AmipaPrice = request.AmipaPrice;
         e.Price = request.Price;
-        e.PublishDate = new DateTimeOffset(request.PublishDate, TimeSpan.Zero);
-        e.UnpublishDate =  request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value, TimeSpan.Zero) : DateTimeOffset.UtcNow;
+        e.PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero);
+        e.UnpublishDate =  request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
         e.Enrollment = request.Enrollment;
         e.Amipa = request.Amipa;
         e.Description = request.Description;
