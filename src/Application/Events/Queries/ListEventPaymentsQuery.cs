@@ -64,7 +64,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
 
         int paidCount = payments.Count(x => x.Paid);
 
-        var vm = new ListEventPaymentsVm(e.Id, e.Name, e.Code, totalPrice, amipaPrice, noAmipaPrice, amipaStudents, noAmipaStudents, eventPeople.Count(), paidCount, payments.Where(x => x.Paid), payments.Where(x => !x.Paid));
+        var vm = new ListEventPaymentsVm(e.Id, e.Name, e.Code, totalPrice, amipaPrice, noAmipaPrice, amipaStudents, noAmipaStudents, eventPeople.Count(), paidCount, payments.Where(x => x.Paid).OrderBy(x => x.Group), payments.Where(x => !x.Paid).OrderBy(x => x.Group));
         return Response<ListEventPaymentsVm>.Ok(vm);
     }
 }
