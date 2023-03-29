@@ -57,4 +57,9 @@ public class Events
     {
         return await mediator.Send(new ListEventPaymentsQuery(eventCode));
     }
+
+    public static async Task<Response<ListEventSummaryVm>> ListEventSummary(IMediator mediator, string eventCode)
+    {
+        return await mediator.Send(new ListEventSummaryQuery(eventCode));
+    }
 }
