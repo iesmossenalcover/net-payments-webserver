@@ -40,6 +40,8 @@ public class RedsysApi : IRedsys
             UrlRedirectOk = UrlRedirectOk,
             UrlRedirectKo = UrlRedirectKo,
             MerchantCode = MerchantCode,
+            Data = order.Person.DocumentId,
+            Owner = order.Person.FullName,
         };
         string encodedMerchantParameters = Helpers.MerchantParametersBase64Encoded(merchantParameters);
         string signature = Helpers.CreateSignature(MerchantKey, merchantParameters.Code, encodedMerchantParameters);

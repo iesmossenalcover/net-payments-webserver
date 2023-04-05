@@ -13,4 +13,5 @@ public class Person : Entity
     public long? AcademicRecordNumber { get; set; }
 
     public bool IsStudent => AcademicRecordNumber.HasValue;
+    public string FullName => $"{Surname1} {Surname2}, {Name}";
 }

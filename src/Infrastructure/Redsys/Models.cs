@@ -33,6 +33,12 @@ public record MerchantParametersRequest
 
     [JsonPropertyName("DS_MERCHANT_CONSUMERLANGUAGE")]
     public short LanguageCode { get; set; }
+
+    [JsonPropertyName("DS_MERCHANT_DATA")]
+    public string Data { get; set; } = string.Empty;
+
+    [JsonPropertyName("DS_MERCHANT_TITULAR")]
+    public string Owner { get; set; } = string.Empty;
 }
 
 public record MerchantParametersResponse
