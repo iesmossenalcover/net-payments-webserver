@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid);
+public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group);
 public record ListEventPaymentsVm(long Id,string Name, string Code, decimal TotalPrice, decimal AmipaTotalPrice, decimal NoAmipaTotalPrice, decimal AmipaStudents, decimal NoAmipaStudents, int Count, int PaidCount, IEnumerable<EventPaymentVm> PaidEvents,IEnumerable<EventPaymentVm> UnPaidEvents );
 
 public record ListEventPaymentsQuery(string Code) : IRequest<Response<ListEventPaymentsVm>>;
@@ -50,7 +50,8 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                 person.DocumentId,
                 pgc.Amipa,
                 pgc.PriceForEvent(ep.Event),
-                ep.Paid
+                ep.Paid,
+                pgc.Group.Name
             );
             payments.Add(epVm);
         }
@@ -63,7 +64,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
 
         int paidCount = payments.Count(x => x.Paid);
 
-        var vm = new ListEventPaymentsVm(e.Id, e.Name, e.Code, totalPrice, amipaPrice, noAmipaPrice, amipaStudents, noAmipaStudents, eventPeople.Count(), paidCount, payments.Where(x => x.Paid), payments.Where(x => !x.Paid));
+        var vm = new ListEventPaymentsVm(e.Id, e.Name, e.Code, totalPrice, amipaPrice, noAmipaPrice, amipaStudents, noAmipaStudents, eventPeople.Count(), paidCount, payments.Where(x => x.Paid).OrderBy(x => x.Group), payments.Where(x => !x.Paid).OrderBy(x => x.Group));
         return Response<ListEventPaymentsVm>.Ok(vm);
     }
 }
