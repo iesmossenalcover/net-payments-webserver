@@ -62,4 +62,13 @@ public class Events
     {
         return await mediator.Send(new ListEventSummaryQuery(eventCode));
     }
+
+    public static async Task<Response<bool>> SetPersonEventPaid(
+        IMediator mediator,
+        long eventPersonId,
+        [FromBody]SetPersonEventPaidCommand cmd)
+    {
+        cmd.SetId(eventPersonId);
+        return await mediator.Send(cmd);
+    }
 }
