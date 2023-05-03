@@ -9,7 +9,10 @@ public class EventsRepository : Repository<Event>, Application.Common.Services.I
 
     public async Task<IEnumerable<Event>> GetAllEventsByCourseIdAsync(long courseId, CancellationToken ct)
     {
-        return await _dbSet.Where(x => x.CourseId == courseId).ToListAsync(ct);
+        return await _dbSet
+                        .Where(x => x.CourseId == courseId)
+                        .OrderByDescending(x => x.UnpublishDate)
+                        .ToListAsync(ct);
     }
 
     public async Task<Event?> GetEventByCodeAsync(string code, CancellationToken ct)
