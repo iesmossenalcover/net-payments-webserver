@@ -6,8 +6,9 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
+public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal Total, decimal Amipa, decimal NoAmipa, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid);
 public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group);
-public record ListEventPaymentsVm(long Id,string Name, string Code, decimal TotalPrice, decimal AmipaTotalPrice, decimal NoAmipaTotalPrice, decimal AmipaStudents, decimal NoAmipaStudents, int Count, int PaidCount, IEnumerable<EventPaymentVm> PaidEvents,IEnumerable<EventPaymentVm> UnPaidEvents );
+public record ListEventPaymentsVm(long Id,string Name, string Code, PaymentSummaryVm Summary, IEnumerable<EventPaymentVm> PaidEvents,IEnumerable<EventPaymentVm> UnPaidEvents );
 
 public record ListEventPaymentsQuery(string Code) : IRequest<Response<ListEventPaymentsVm>>;
 
@@ -56,15 +57,30 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             payments.Add(epVm);
         }
 
-        decimal totalPrice = payments.Sum(x => x.Price);
-        decimal amipaPrice = payments.Where(x => x.Amipa).Where(x => x.Paid).Sum(x => x.Price);
-        decimal noAmipaPrice = payments.Where(x => !x.Amipa).Where(x => x.Paid).Sum(x => x.Price);
-        decimal amipaStudents = payments.Where(x => x.Amipa).Count();
-        decimal noAmipaStudents = payments.Where(x => !x.Amipa).Count();
+        PaymentSummaryVm summaryVm = new PaymentSummaryVm(
+            payments.Count(),
+            payments.Where(x => x.Amipa).Count(),
+            payments.Where(x => !x.Amipa).Count(),
+            payments.Where(x => x.Paid).Count(),
+            payments.Where(x => x.Amipa && x.Paid).Count(),
+            payments.Where(x => !x.Amipa && x.Paid).Count(),
+            payments.Sum(x => x.Price),
+            payments.Where(x => x.Amipa).Sum(x => x.Price),
+            payments.Where(x => !x.Amipa).Sum(x => x.Price),
+            payments.Where(x => x.Paid).Sum(x => x.Price),
+            payments.Where(x => x.Amipa && x.Paid).Sum(x => x.Price),
+            payments.Where(x => !x.Amipa && x.Paid).Sum(x => x.Price)
+        );
 
-        int paidCount = payments.Count(x => x.Paid);
-
-        var vm = new ListEventPaymentsVm(e.Id, e.Name, e.Code, totalPrice, amipaPrice, noAmipaPrice, amipaStudents, noAmipaStudents, eventPeople.Count(), paidCount, payments.Where(x => x.Paid).OrderBy(x => x.Group), payments.Where(x => !x.Paid).OrderBy(x => x.Group));
+        var vm = new ListEventPaymentsVm(
+            e.Id,
+            e.Name,
+            e.Code,
+            summaryVm,
+            payments.Where(x => x.Paid).OrderBy(x => x.Group),
+            payments.Where(x => !x.Paid).OrderBy(x => x.Group)
+        );
+        
         return Response<ListEventPaymentsVm>.Ok(vm);
     }
 }
