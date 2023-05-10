@@ -73,7 +73,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         }
 
         order.Status = OrderStatus.Paid;
-        order.PaidDate = DateTimeOffset.Now;
+        order.PaidDate = DateTimeOffset.UtcNow;
         foreach (var ep in personEvents)
         {
             ep.Paid = true;
