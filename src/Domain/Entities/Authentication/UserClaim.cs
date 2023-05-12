@@ -1,5 +1,11 @@
 namespace Domain.Entities.Authentication;
 
+public class ClaimValues
+{
+    public const string ADMIN = "admin";
+    public const string READER = "reader";
+}
+
 public class UserClaim : Entity
 {
     public string Type { get; set; } = string.Empty;
