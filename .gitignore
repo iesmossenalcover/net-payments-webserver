@@ -5,6 +5,9 @@ project.lock.json
 *.pyc
 nupkg/
 
+# credentials
+payments-*.json
+
 # Visual Studio Code
 .vscode
 
