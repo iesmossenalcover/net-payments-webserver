@@ -17,6 +17,11 @@ public static class RegisterRoutes
             .WithName("signin")
             .WithOpenApi();
 
+        // auth related actions are in WebServer layer dueto related session storage.
+        app.MapPost("/api/oauth/", Authentication.Auth.SigninOAuth)
+            .WithName("External OAuth Signin")
+            .WithOpenApi();
+
         app.MapPost("/api/signup", Authentication.Auth.SignupPost)
             .RequireAuthorization()
             .WithName("signup")

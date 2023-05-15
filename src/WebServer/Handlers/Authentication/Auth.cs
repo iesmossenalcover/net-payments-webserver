@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Application.Common.Services;
 
 namespace WebServer.Handlers.Authentication;
 
@@ -14,6 +15,7 @@ public enum SigninStatus
 {
     Ok = 1,
     Error = 2,
+    Unauthorized = 3,
 }
 
 public readonly record struct SigninRequest(string Username, string Password);
@@ -31,6 +33,8 @@ public readonly record struct SignupRequest(string Username, string Password, st
 public readonly record struct SignupResult(SignupStatus Status, string? ErrorMessage = null);
 
 public record IdentityResponse(long UserId, string Username, string GivenName);
+
+public record OAuthSignIn(string Token);
 
 #endregion
 
@@ -81,7 +85,6 @@ public class Auth
         IPasswordHasher<User> hasher,
         CancellationToken ct)
     {
-        // TODO: validate model, but this is just for text
         User? user = await usersRepository.GetUserByUsernameAsync(model.Username, ct);
 
         if (user != null)
@@ -129,5 +132,154 @@ public class Auth
 
         var respone = new IdentityResponse(userId ?? 0, userName, givenName);
         await ctx.Response.WriteAsJsonAsync(respone, ct);
+    }
+
+
+    // public class GoogleAuthResponse
+    // {
+    //     [JsonPropertyName("iss")]
+    //     public string Iss { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("nbf")]
+    //     public string Nbf { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("aud")]
+    //     public string Aud { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("sub")]
+    //     public string Sub { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("email")]
+    //     public string Email { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("email_verified")]
+    //     public string EmailVerified { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("azp")]
+    //     public string Azp { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("name")]
+    //     public string Name { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("picture")]
+    //     public string Picture { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("given_name")]
+    //     public string GivenName { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("family_name")]
+    //     public string FamilyName { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("iat")]
+    //     public string Iat { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("exp")]
+    //     public string Exp { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("jti")]
+    //     public string Jti { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("alg")]
+    //     public string Alg { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("kid")]
+    //     public string Kid { get; set; } = string.Empty;
+
+    //     [JsonPropertyName("typ")]
+    //     public string Typ { get; set; } = string.Empty;
+    // }
+
+    public static async Task SigninOAuth(
+        HttpContext ctx,
+        [FromBody] OAuthSignIn model,
+        IOAuthRepository oAuthRepository,
+        IOAuthUsersRepository oAuthUsersRepository,
+        IGoogleAdminApi adminApi,
+        CancellationToken ct)
+    {
+        IDictionary<string, string>? fields = await oAuthRepository.TokenInfoValidation(model.Token, ct);
+        if (fields == null || !fields.Any())
+        {
+            var result = new SigninResponse(SigninStatus.Error, "Invalid token");
+            await ctx.Response.WriteAsJsonAsync(result, ct);
+            return;
+        }
+
+        string? subject = string.Empty;
+        string? email = string.Empty;
+        if (!fields.TryGetValue("sub", out subject) ||
+            !fields.TryGetValue("email", out subject))
+        {
+            var result = new SigninResponse(SigninStatus.Error, "Invalid token");
+            await ctx.Response.WriteAsJsonAsync(result, ct);
+            return;
+        }
+
+        // Try to get user from db.
+        OAuthUser? oAuthUser = await oAuthUsersRepository.GetUserBySubjectAndCodeAsync(subject, "google", ct);
+        User? user = null;
+        if (oAuthUser == null)
+        {
+            IEnumerable<string> claims = await adminApi.GetUserClaims(email, ct);
+            if (!claims.Any())
+            {
+                var result = new SigninResponse(SigninStatus.Unauthorized, "L'usuari no està autoritzat");
+                await ctx.Response.WriteAsJsonAsync(result, ct);
+                return;
+            }
+
+            string? givenName = string.Empty;
+            string? familyName = string.Empty;
+
+            if (!fields.TryGetValue("sub", out subject) ||
+                !fields.TryGetValue("given_name", out subject) ||
+                !fields.TryGetValue("family_name", out subject))
+            {
+                var result = new SigninResponse(SigninStatus.Error, "Invalid token");
+                await ctx.Response.WriteAsJsonAsync(result, ct);
+                return;
+            }
+
+            OAuthUser newOAuthUser = new OAuthUser()
+            {
+                OAuthProviderCode = "google",
+                Subject = subject,
+                User = new User()
+                {
+                    Firstname = givenName,
+                    Lastname = familyName,
+                    Username = email,
+                }
+            };
+
+            if (claims.Contains(ClaimValues.ADMIN))
+            {
+                newOAuthUser.User.UserClaims.Add(new UserClaim()
+                {
+                    Type = "role",
+                    Value = ClaimValues.ADMIN,
+                });
+            }
+            else if (claims.Contains(ClaimValues.READER))
+            {
+                newOAuthUser.User.UserClaims.Add(new UserClaim()
+                {
+                    Type = "role",
+                    Value = ClaimValues.ADMIN,
+                });
+            }
+
+            await oAuthUsersRepository.InsertAsync(newOAuthUser, CancellationToken.None);
+            user = newOAuthUser.User;
+        }
+        else
+        {
+            // TODO: Check if claims should be updated.
+            user = oAuthUser.User;
+        }
+
+        await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user.ToClaimPrincipal());
+        var res = new SigninResponse(SigninStatus.Ok);
+        await ctx.Response.WriteAsJsonAsync(res, ct);
     }
 }

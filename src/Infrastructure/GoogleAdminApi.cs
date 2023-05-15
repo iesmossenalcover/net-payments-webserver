@@ -28,11 +28,12 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
         // Specify the scope of access and enable domain-wide delegation.
-        string[] scopes = new string[] {
-                DirectoryService.Scope.AdminDirectoryUser,
-                DirectoryService.Scope.AdminDirectoryGroupMember,
-                DirectoryService.Scope.AdminDirectoryGroup,
-            };
+        string[] scopes = new string[]
+        {
+            DirectoryService.Scope.AdminDirectoryUser,
+            DirectoryService.Scope.AdminDirectoryGroupMember,
+            DirectoryService.Scope.AdminDirectoryGroup,
+        };
 
         credential = credential.CreateScoped(scopes).CreateWithUser(UserEmailToImpersonate);
 
