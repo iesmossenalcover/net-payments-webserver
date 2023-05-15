@@ -208,7 +208,7 @@ public class Auth
         string? subject = string.Empty;
         string? email = string.Empty;
         if (!fields.TryGetValue("sub", out subject) ||
-            !fields.TryGetValue("email", out subject))
+            !fields.TryGetValue("email", out email))
         {
             var result = new SigninResponse(SigninStatus.Error, "Invalid token");
             await ctx.Response.WriteAsJsonAsync(result, ct);
@@ -231,9 +231,8 @@ public class Auth
             string? givenName = string.Empty;
             string? familyName = string.Empty;
 
-            if (!fields.TryGetValue("sub", out subject) ||
-                !fields.TryGetValue("given_name", out subject) ||
-                !fields.TryGetValue("family_name", out subject))
+            if (!fields.TryGetValue("given_name", out givenName) ||
+                !fields.TryGetValue("family_name", out familyName))
             {
                 var result = new SigninResponse(SigninStatus.Error, "Invalid token");
                 await ctx.Response.WriteAsJsonAsync(result, ct);
