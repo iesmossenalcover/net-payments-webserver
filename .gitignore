@@ -13,6 +13,7 @@ payments-*.json
 
 # SQlite
 *.db
+update.sql
 
 # Rider
 .idea

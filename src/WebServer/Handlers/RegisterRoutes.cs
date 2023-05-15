@@ -1,8 +1,3 @@
-using Application.Common.Services;
-using Google.Apis.Admin.Directory.directory_v1;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-
 namespace WebServer.Handlers;
 public static class RegisterRoutes
 {
@@ -156,26 +151,5 @@ public static class RegisterRoutes
             .RequireAuthorization()
             .WithName("Update app config")
             .WithOpenApi();
-
-
-        app.MapGet("/api/test/{email}", async (
-            IGoogleAdminApi adminApi,
-            string email,
-            CancellationToken ct
-        ) =>
-        {
-            
-            return await adminApi.GetUserClaims(email, ct);
-
-            // // Get the user's groups.
-            // var groupsRequest = service.Users.List();
-            // groupsRequest.Customer = "C02cbqq7a";
-            // // groupsRequest.Domain = "iesmossenalcover.cat";
-            // var users = await groupsRequest.ExecuteAsync();
-
-            // return users;
-        })
-        .WithName("test")
-        .WithOpenApi();
     }
 }
