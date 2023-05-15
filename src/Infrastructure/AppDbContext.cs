@@ -14,6 +14,7 @@ namespace Infrastructure
         #region sets
         public DbSet<Domain.Entities.Authentication.User> Users { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.UserClaim> UserClaims { get; set; } = default!;
+        public DbSet<Domain.Entities.Authentication.OAuthUser> OAuthUsers { get; set; } = default!;
 
 
         public DbSet<Domain.Entities.Configuration.AppConfig> AppConfigs { get; set; } = default!;
@@ -50,8 +51,6 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.Authentication.UserClaim>()
                 .ToTable("user_claim", "main")
                 .HasKey(pc => new { pc.Type, pc.UserId });
-
-
             modelBuilder.Entity<Domain.Entities.Authentication.UserClaim>()
                 .ToTable("user_claim", "main")
                 .HasIndex(x => x.UserId);
@@ -59,6 +58,11 @@ namespace Infrastructure
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Authentication.UserClaim>()
                 .HasOne(x => x.User).WithMany(x => x.UserClaims);
+                
+
+            modelBuilder.Entity<Domain.Entities.Authentication.OAuthUser>()
+                .ToTable("oauth_user", "main")
+                .HasIndex(x => new { x.Subject, x.OAuthProviderCode }).IsUnique();
 
             // People
             modelBuilder.Entity<Domain.Entities.People.Person>()
