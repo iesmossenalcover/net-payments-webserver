@@ -273,8 +273,25 @@ public class Auth
         }
         else
         {
-            // TODO: Check if claims should be updated.
             user = oAuthUser.User;
+
+            // TODO: Clean
+            // This updates the claims into db based on current google groups.
+            var currentClaims = user.UserClaims.Where(x => x.Type == "role").ToList();
+            currentClaims.RemoveAll(x => x.Type == "role");
+            IEnumerable<string> claims = await adminApi.GetUserClaims(email, ct);
+            foreach (var claim in claims)
+            {
+                currentClaims.Add(new UserClaim()
+                {
+                    Type = "role",
+                    Value = claim,
+                    User = oAuthUser.User,
+                    UserId = oAuthUser.UserId,
+                }); 
+            }
+            oAuthUser.User.UserClaims = currentClaims;
+            await oAuthUsersRepository.UpdateAsync(oAuthUser, CancellationToken.None);
         }
 
         await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user.ToClaimPrincipal());

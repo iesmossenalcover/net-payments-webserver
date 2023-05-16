@@ -17,14 +17,14 @@ public static class RegisterRoutes
             .WithName("External OAuth Signin")
             .WithOpenApi();
 
-        app.MapPost("/api/signup", Authentication.Auth.SignupPost)
-            .RequireAuthorization("Admin")
-            .WithName("signup")
-            .WithOpenApi();
-
         app.MapGet("/api/identity", Authentication.Auth.GetIdentity)
             .RequireAuthorization()
             .WithName("identity")
+            .WithOpenApi();
+
+        app.MapPost("/api/signup", Authentication.Auth.SignupPost)
+            .RequireAuthorization("Admin")
+            .WithName("signup")
             .WithOpenApi();
 
         // Tasks

@@ -70,8 +70,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         {
             claims.Add(ClaimValues.ADMIN);
         }
-
-        if (isReader)
+        else if (isReader)
         {
             claims.Add(ClaimValues.READER);
         }
