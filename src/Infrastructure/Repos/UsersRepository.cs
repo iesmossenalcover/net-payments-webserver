@@ -9,6 +9,8 @@ public class UserRepository : Repository<User>, Application.Common.Services.IUse
 
     public Task<User?> GetUserByUsernameAsync(string username, CancellationToken ct)
     {
-        return _dbSet.FirstOrDefaultAsync(x => x.Username == username);
+        return _dbSet
+            .Include(x => x.UserClaims)
+            .FirstOrDefaultAsync(x => x.Username == username);
     }
 }

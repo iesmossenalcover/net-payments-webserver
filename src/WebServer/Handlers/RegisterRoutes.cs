@@ -23,7 +23,7 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapGet("/api/identity", Authentication.Auth.GetIdentity)
-            .RequireAuthorization("Admin")
+            .RequireAuthorization()
             .WithName("identity")
             .WithOpenApi();
 
