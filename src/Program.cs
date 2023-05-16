@@ -42,7 +42,13 @@ builder.Services
         // // o.SessionStore = ...
 
         // IMPORTANT: Disable redirect for js clients
-        o.Events.OnRedirectToAccessDenied = o.Events.OnRedirectToLogin = c =>
+        o.Events.OnRedirectToAccessDenied = c =>
+        {
+            c.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
+
+        o.Events.OnRedirectToLogin = c =>
         {
             c.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;

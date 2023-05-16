@@ -264,7 +264,7 @@ public class Auth
                 newOAuthUser.User.UserClaims.Add(new UserClaim()
                 {
                     Type = "role",
-                    Value = ClaimValues.ADMIN,
+                    Value = ClaimValues.READER,
                 });
             }
 
