@@ -8,6 +8,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Domain.Entities.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +49,11 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+   options.AddPolicy("Admin", policy => policy.RequireClaim("role", ClaimValues.ADMIN));
+   options.AddPolicy("Reader", policy => policy.RequireClaim("role", ClaimValues.ADMIN, ClaimValues.READER));
+});
 
 // CORS service
 builder.Services.AddCors(options =>
