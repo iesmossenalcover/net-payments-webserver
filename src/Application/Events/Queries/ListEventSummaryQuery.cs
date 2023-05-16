@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Models;
 using Application.Common.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
@@ -6,8 +7,8 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-public record EventSummaryVm(long Id, string FullName, string DocumentId, bool Paid, string Group);
-public record ListEventSummaryVm(long Id,string Name, string Code, IEnumerable<EventSummaryVm> PaidEvents,IEnumerable<EventSummaryVm> UnPaidEvents );
+public record EventSummaryVm(long Id, string FullName, string DocumentId, bool Paid, long GroupId, string GroupName);
+public record ListEventSummaryVm(long Id,string Name, string Code, IEnumerable<SelectOptionVm> Groups, IEnumerable<EventSummaryVm> Events);
 
 public record ListEventSummaryQuery(string Code) : IRequest<Response<ListEventSummaryVm>>;
 
@@ -46,16 +47,20 @@ public class ListEventSummarysQueryHandler : IRequestHandler<ListEventSummaryQue
             PersonGroupCourse pgc = pgcs[person.Id];
 
             var epVm = new EventSummaryVm(
-                ep.Id, $"{person.Name} {person.Surname1} {person.Surname2}",
+                ep.Id, $"{person.Surname1} {person.Surname2}, {person.Name}",
                 person.DocumentId,
                 ep.Paid,
+                pgc.Group.Id,
                 pgc.Group.Name
             );
             payments.Add(epVm);
         }
 
-
-        var vm = new ListEventSummaryVm(e.Id, e.Name, e.Code, payments.Where(x => x.Paid).OrderBy(x => x.Group), payments.Where(x => !x.Paid).OrderBy(x => x.Group));
+        var vm = new ListEventSummaryVm(
+            e.Id, e.Name, e.Code,
+            pgcs.Values.DistinctBy(x => x.GroupId).Select(x => new SelectOptionVm(x.Group.Id.ToString(), x.Group.Name)),
+            payments.OrderBy(x => x.GroupName).ThenBy(x => x.FullName)
+        );
         return Response<ListEventSummaryVm>.Ok(vm);
     }
 }
