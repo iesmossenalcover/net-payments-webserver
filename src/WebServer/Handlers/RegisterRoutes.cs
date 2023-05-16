@@ -18,82 +18,82 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapPost("/api/signup", Authentication.Auth.SignupPost)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("signup")
             .WithOpenApi();
 
         app.MapGet("/api/identity", Authentication.Auth.GetIdentity)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("identity")
             .WithOpenApi();
 
         // Tasks
         app.MapPost("/api/tasks/people", Tasks.UploadPeople)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Upload people")
             .WithOpenApi();
 
         // People
         app.MapGet("/api/people/{id}", People.GetPerson)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Get person by id")
             .WithOpenApi();
 
         app.MapGet("/api/people", People.ListPeople)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("List people by course")
             .WithOpenApi();
 
         app.MapPost("/api/people", People.CreatePerson)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Create person")
             .WithOpenApi();
 
         app.MapPut("/api/people/{id}", People.UpdatePerson)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Update person")
             .WithOpenApi();
 
         app.MapDelete("/api/people/{id}", People.DeletePerson)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Delete person")
             .WithOpenApi();
 
         // Courses
         app.MapGet("/api/courses/selector", Courses.GetCoursesSelector)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Get courses selector")
             .WithOpenApi();
 
         // Groups
         app.MapGet("/api/groups/selector", Groups.GetGroupsSelector)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Get groups selector")
             .WithOpenApi();
 
         // Events
         app.MapGet("/api/events", Events.ListCourseEvents)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("List current course events")
             .WithOpenApi();
 
         app.MapGet("/api/events/{id}", Events.GetEvent)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Get event by id")
             .WithOpenApi();
 
         app.MapPost("/api/events", Events.CreateEvent)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Create event")
             .WithOpenApi();
 
         app.MapPut("/api/events/{id}", Events.UpdateEvent)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Update event")
             .WithOpenApi();
 
         app.MapDelete("/api/events/{id}", Events.DeleteEvent)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Delete event")
             .WithOpenApi();
 
@@ -103,28 +103,29 @@ public static class RegisterRoutes
 
         // Events People
         app.MapPost("/api/events/{eventCode}/people", Events.SetPeopleToEvent)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Set people to event")
             .WithOpenApi();
 
         app.MapGet("/api/events/{eventCode}/people", Events.GetPeopleEvent)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Get people in event")
             .WithOpenApi();
 
         app.MapGet("/api/events/{eventCode}/payments", Events.ListEventPayments)
-                .RequireAuthorization()
+                .RequireAuthorization("Admin")
                 .WithName("List event payments")
                 .WithOpenApi();
 
         app.MapPut("/api/events/{eventPersonId}/payment", Events.SetPersonEventPaid)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Set person event paid/not paid")
             .WithOpenApi();
 
         app.MapGet("/api/events/{eventCode}/summary", Events.ListEventSummary)
-                .WithName("List event summary")
-                .WithOpenApi();
+            .RequireAuthorization("Reader")
+            .WithName("List event summary")
+            .WithOpenApi();
 
 
         // Orders
@@ -143,12 +144,12 @@ public static class RegisterRoutes
         // Admin Info
 
         app.MapGet("/api/admin", AdminInfo.GetAdminInfo)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Get admin info")
             .WithOpenApi();
 
         app.MapPut("/api/config", AdminInfo.UpdateAdminInfo)
-            .RequireAuthorization()
+            .RequireAuthorization("Admin")
             .WithName("Update app config")
             .WithOpenApi();
     }
