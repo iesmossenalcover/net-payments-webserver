@@ -16,6 +16,7 @@ public record EventData
     public bool Enrollment { get; set; }
     public bool Amipa { get; set; }
     public string Description { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
     public DateTime PublishDate { get; set; }
     public DateTime? UnpublishDate { get; set; } = default!;
 }
@@ -30,6 +31,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
         RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
+        RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
         RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicaci�");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
@@ -85,6 +87,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Amipa = request.Amipa,
             Price = request.Price,
             Description = request.Description,
+            Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero),
             PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero),
             UnpublishDate = request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null,
             Course = course

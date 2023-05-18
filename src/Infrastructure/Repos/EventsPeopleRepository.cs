@@ -11,7 +11,7 @@ public class EventsRepository : Repository<Event>, Application.Common.Services.I
     {
         return await _dbSet
                         .Where(x => x.CourseId == courseId)
-                        .OrderByDescending(x => x.UnpublishDate)
+                        .OrderByDescending(x => x.Date)
                         .ToListAsync(ct);
     }
 

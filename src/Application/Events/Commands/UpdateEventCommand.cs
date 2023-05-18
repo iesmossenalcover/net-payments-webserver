@@ -21,6 +21,7 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
         RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
+        RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
         RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
@@ -53,6 +54,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.Name = request.Name;
         e.AmipaPrice = request.AmipaPrice;
         e.Price = request.Price;
+        e.Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero);
         e.PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero);
         e.UnpublishDate =  request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
         e.Enrollment = request.Enrollment;
