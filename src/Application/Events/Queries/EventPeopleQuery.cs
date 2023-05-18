@@ -10,7 +10,7 @@ namespace Application.Events.Queries;
 # region ViewModels
 public record EventPersonVm(long Id, string DocumentId, string FullName, long? AcademicRecordNumber, bool inEvent);
 public record EventPeopleGroupVm(long Id, string Name, int Order, IList<EventPersonVm> People);
-public record EventPeopleVm(long Id, string Code, string Name, IEnumerable<EventPeopleGroupVm> PeopleGroups);
+public record EventPeopleVm(long Id, string Code, string Name, DateTimeOffset Date, IEnumerable<EventPeopleGroupVm> PeopleGroups);
 #endregion
 
 #region Query
@@ -73,7 +73,7 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
         }
 
         return Response<EventPeopleVm>.Ok(
-            new EventPeopleVm(e.Id, e.Code, e.Name, groups.Select(x => x.Value).OrderBy(x => x.Name))
+            new EventPeopleVm(e.Id, e.Code, e.Name, e.Date, groups.Select(x => x.Value).OrderBy(x => x.Name))
         );
     }
 }
