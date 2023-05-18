@@ -9,7 +9,7 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo);
-public record PublicEventVm(string Code, string Name, decimal Price, string CurrencySymbol, bool Selectable);
+public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable);
 public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm person);
 #endregion
 
@@ -63,7 +63,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     {
         // , pgc.Enrolled, pgc.Enrolled ? pgc.SubjectsInfo : null
         return new PublicEventVm(
-            x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€", true
+            x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true
         );
     }
 
