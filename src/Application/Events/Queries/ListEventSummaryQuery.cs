@@ -58,7 +58,7 @@ public class ListEventSummarysQueryHandler : IRequestHandler<ListEventSummaryQue
 
         var vm = new ListEventSummaryVm(
             e.Id, e.Name, e.Date, e.Code,
-            pgcs.Values.DistinctBy(x => x.GroupId).Select(x => new SelectOptionVm(x.Group.Id.ToString(), x.Group.Name)),
+            pgcs.Values.DistinctBy(x => x.GroupId).Select(x => new SelectOptionVm(x.Group.Id.ToString(), x.Group.Name)).OrderBy(x => x.Value),
             payments.OrderBy(x => x.GroupName).ThenBy(x => x.FullName)
         );
         return Response<ListEventSummaryVm>.Ok(vm);
