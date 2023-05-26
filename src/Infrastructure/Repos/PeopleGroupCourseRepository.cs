@@ -16,7 +16,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Include(x => x.Course)
                 .Where(x => 
                     (
-                        EF.Functions.Like(x.Person.DocumentId.ToUpperInvariant(), $"%{filter.Query}%") ||
+                        EF.Functions.Like(x.Person.DocumentId, $"%{filter.Query.ToUpperInvariant()}%") ||
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{filter.Query}%") ||
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{filter.Query}%") ||
                         (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{filter.Query}%")) ||
