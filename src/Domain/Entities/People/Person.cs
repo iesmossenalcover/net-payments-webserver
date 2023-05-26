@@ -14,4 +14,5 @@ public class Person : Entity
 
     public bool IsStudent => AcademicRecordNumber.HasValue;
     public string FullName => $"{Surname1} {Surname2}, {Name}";
+    public string LastName => $"{Surname1} {Surname2}";
 }
