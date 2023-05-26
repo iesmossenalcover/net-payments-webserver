@@ -15,6 +15,13 @@ public class People
         return await mediator.Send(new ListPeopleByCourseQuery(courseId));
     }
 
+    public static async Task<IEnumerable<PersonRowVm>> FilterPeople(
+        [FromQuery]string query,
+        IMediator mediator)
+    {
+        return await mediator.Send(new GetPeopleQuery(query));
+    }
+
     public static async Task<Response<PersonVm>> GetPerson(
         long id,
         IMediator mediator)

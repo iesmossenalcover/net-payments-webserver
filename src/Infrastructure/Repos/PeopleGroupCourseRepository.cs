@@ -1,3 +1,4 @@
+using Application.Common.Services;
 using Domain.Entities.People;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,27 @@ namespace Infrastructure.Repos;
 public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Application.Common.Services.IPersonGroupCourseRepository
 {
     public PeopleGroupCourseRepository(AppDbContext dbContext) : base(dbContext, dbContext.PersonGroupCourses) {}
+
+    public async Task<IEnumerable<PersonGroupCourse>> FilterPeople(FilterPeople filter, CancellationToken ct)
+    {
+        return await _dbSet
+                .Include(x => x.Person)
+                .Include(x => x.Group)
+                .Include(x => x.Course)
+                .Where(x => 
+                    (
+                        x.Person.FullName.Contains(filter.Query) ||
+                        x.Person.Surname1.Contains(filter.Query) ||
+                        (x.Person.Surname2 != null && x.Person.Surname2.Contains(filter.Query)) ||
+                        x.Group.Name.Contains(filter.Query)
+                    ) && x.Course.Active == true
+                )
+                .OrderBy(x => x.Course.Name)
+                .ThenBy(x => x.Person.Surname1)
+                .ThenBy(x => x.Person.Surname2)
+                .ThenBy(x => x.Person.Name)
+                .ToListAsync(ct);
+    }
 
     public async Task<PersonGroupCourse?> GetCoursePersonGroupByDocumentId(string documentId, long courseId, CancellationToken ct)
     {
