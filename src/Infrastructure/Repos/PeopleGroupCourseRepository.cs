@@ -16,10 +16,11 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Include(x => x.Course)
                 .Where(x => 
                     (
-                        x.Person.Name.Contains(filter.Query) ||
-                        x.Person.Surname1.Contains(filter.Query) ||
-                        (x.Person.Surname2 != null && x.Person.Surname2.Contains(filter.Query)) ||
-                        x.Group.Name.Contains(filter.Query)
+                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{filter.Query}%") ||
+                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{filter.Query}%") ||
+                        (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{filter.Query}%")) ||
+                        (x.Person.AcademicRecordNumber.HasValue && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.AcademicRecordNumber.Value.ToString()), $"%{filter.Query}%")) ||
+                        EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{filter.Query}%")
                     ) && x.Course.Active == true
                 )
                 .OrderBy(x => x.Course.Name)

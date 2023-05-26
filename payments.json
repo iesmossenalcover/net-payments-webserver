@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "payments-386408",
+  "private_key_id": "41e07e05a7bc1ff89ada28efa5a0f29f505f2291",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDdYw/i56qp5Ndz\nD/mCyhRlM6ftAarv5BJJdjEAuqYUu2s+WYjHdEOuw93X6+4eOMiVFGL/JAxp0SI4\nzFDG/Kew13e7/VkufOC0bv6ivENSDOhwvJxnRVWtWeEqyxmg5Emr6GeZsYd88kGD\noFLIjm2doy86qqrHd1vEoX9MjjqNsx4cYZR2wfckGHnAD3xIpIrHkzCfwV9GShX3\nHUlJb0JL3x/cmo/XumGXxL9oKlowjO/g1V2REXbidlOK7OHuJO3aK7X+kNiAldx8\nQ08nWg19BkBnGDi4h1OsIEaOe8p/zQIGrMCobEmzkvu68NcQ0yMen+Bz+Px7z02P\nEbjtJCO1AgMBAAECggEACUBX1vDnaNdvSWz5eEW0OdEWy14Dzqfb5nCnS5Mr2DdH\ncVY8fllAGtAvN76xjKxtdWK3YFduorK37g0GXcphF5AUKNRFeHPaJVrIuUmKEVEI\nxZfxe+n3J+9W7CWLRKCa6NwlYtQlsqBNAeXJOn2j3FqIDA47D2rQIuoSGm43HtoG\nxAcdEe1ZYjsmOn2ppBkY+YVZR2fpebFrETfS3FBPCLMnSndbXe8OQwJ6Cj1yV6Rb\nxZdemiv3+1VJFlSHDYKH52q0SZ8pzuuNiHHG9zxYfaw/a66FGTmkWxBqASViKuMj\n2Ve4pFd5iBCJaWpdyjPL7wSR6KMi7d4cgP6DVFCqAQKBgQDzIvfSpCB29ItqEsGX\nSBpLo1Fkw9tVuRQ0lQJxfUijzBD/bl5uiCNhykZJiVeNKxTX9gaVSQ3wZYnhysxH\nRVVP4Cdc93OA90tYuiV6ELnQw2ZCSRTGHeZltVP76RaGckNPhiHgGlvMxRXQ2jIK\n41Z8HWNsUgJXABkWFYqrqUdo0QKBgQDpGYSTXIAJ0mYh2FBAEftwgGTuT/JrHYQ0\nZJObVjME2tVbO0LQTV6Fd60ZssAtA1jdZ+WSi1NW8Va39LJsGtQYrz3VAk4goHh2\nbC7WfUPIoEFK5h7LXix/WNBN/XHrCc0eRCJ/NZAQSwYguYGNLxVhMgvCakdTYTEi\nXtKsyFmFpQKBgAtLAH/EJ83epesTW/KO4snImCs5/aIJqqqWkTp8OzeAbvmuQqyX\nni0YnBMmUe64pYsyXjPo5MDZtoHKTZqx2biQDMQAqli/I7zHSJ5W0IqlyMYjZtec\n4+qtdW0p8mXkQMQc0s3563GjZdQBjnl6/bVeGBQb6wfndULVVU+L2UlBAoGBALPm\nsd9ZgKgT7ico36bTOg+1yC/1G8931FTrWtCEUpPooMnsjsBdNhokJ0CyKIeVEbyv\nNwtG5GcxlBAdlqbAffkfJsWDJfEgaFhdXjjELNBmfn3j5NhoMkeGsB3BAW64/cni\nJA2xtSIeBPi0szvXntSI33KIu8uqM1WngUlAx3bRAoGBALKDYi6cCUXf1QPsy5Hc\nBWGYZG4S+IPRTU8TB2cmPXSjOgQGB5Aw6ljGMYTfbi8o6Nbh/nIN2ulNAEeoQ9og\nPFhkOvHajxsPaP0q6y9kuECe785OVE6IF05E7lSjMF4mcY/RjEUEYsLx8fETDAgk\nOAhfN1wa/KxLX8BnYrePDSW1\n-----END PRIVATE KEY-----\n",
+  "client_email": "net-payments-webserver@payments-386408.iam.gserviceaccount.com",
+  "client_id": "115700091814115361830",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/net-payments-webserver%40payments-386408.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
