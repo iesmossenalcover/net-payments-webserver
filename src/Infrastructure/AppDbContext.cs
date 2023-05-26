@@ -87,7 +87,7 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactMail).HasMaxLength(100);
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .Property(x => x.DocumentId).HasMaxLength(50);
+                .Property(x => x.DocumentId).UseCollation("no_accent").HasMaxLength(50);
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactPhone).HasMaxLength(15);
 
@@ -95,11 +95,9 @@ namespace Infrastructure
                 .ToTable("group", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.People.Group>()
-            .HasIndex(x => x.Name).IsUnique();
+                .HasIndex(x => x.Name).IsUnique();
             modelBuilder.Entity<Domain.Entities.People.Group>()
-                .Property(x => x.Name).HasMaxLength(50);
-            modelBuilder.Entity<Domain.Entities.People.Group>()
-                .Property(x => x.Name).HasMaxLength(50);
+                .Property(x => x.Name).UseCollation("no_accent").HasMaxLength(50);
 
             modelBuilder.Entity<Domain.Entities.People.Course>()
                 .ToTable("course", "main")
