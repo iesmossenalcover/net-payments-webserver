@@ -16,7 +16,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Include(x => x.Course)
                 .Where(x => 
                     (
-                        x.Person.FullName.Contains(filter.Query) ||
+                        x.Person.Name.Contains(filter.Query) ||
                         x.Person.Surname1.Contains(filter.Query) ||
                         (x.Person.Surname2 != null && x.Person.Surname2.Contains(filter.Query)) ||
                         x.Group.Name.Contains(filter.Query)
