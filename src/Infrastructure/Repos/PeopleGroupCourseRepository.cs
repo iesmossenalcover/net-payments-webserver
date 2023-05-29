@@ -8,7 +8,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
 {
     public PeopleGroupCourseRepository(AppDbContext dbContext) : base(dbContext, dbContext.PersonGroupCourses) {}
 
-    public async Task<IEnumerable<PersonGroupCourse>> FilterPeople(FilterPeople filter, CancellationToken ct)
+    public async Task<IEnumerable<PersonGroupCourse>> FilterPeople(FilterPeople filter, int maxResults, CancellationToken ct)
     {
         return await _dbSet
                 .Include(x => x.Person)
@@ -28,6 +28,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .ThenBy(x => x.Person.Surname1)
                 .ThenBy(x => x.Person.Surname2)
                 .ThenBy(x => x.Person.Name)
+                .Take(maxResults)
                 .ToListAsync(ct);
     }
 
