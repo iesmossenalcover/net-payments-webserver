@@ -24,8 +24,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{filter.Query}%")
                     ) && x.Course.Active == true
                 )
-                .OrderBy(x => x.Course.Name)
-                .ThenBy(x => x.Person.Surname1)
+                .OrderBy(x => x.Person.Surname1)
                 .ThenBy(x => x.Person.Surname2)
                 .ThenBy(x => x.Person.Name)
                 .Take(maxResults)
