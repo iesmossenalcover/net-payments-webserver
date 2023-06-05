@@ -87,8 +87,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         p.ContactMail = request.ContactMail;
         p.ContactPhone = request.ContactPhone;
         p.DocumentId = request.DocumentId;
-        p.Surname1 = request.Surname1;
-        p.Surname2 = request.Surname2;
+        p.LastName = request.Surname1;
         p.AcademicRecordNumber = request.AcademicRecordNumber;
         
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);

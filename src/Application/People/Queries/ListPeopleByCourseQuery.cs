@@ -33,7 +33,7 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
 
         IQueryable<PersonGroupCourse> personGroupCourses = _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(course.Id, ct);
         personGroupCourses = personGroupCourses
-                    .OrderBy(x => x.Person.Surname1)
+                    .OrderBy(x => x.Person.LastName)
                     .Skip(0);
                     // .Take(10);
 
@@ -52,7 +52,7 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
             p.Id,
             p.DocumentId,
             p.Name,
-            $"{p.Surname1} {p.Surname2}",
+            p.LastName,
             pgc.Group.Id,
             pgc.Group.Name,
             pgc.Amipa,

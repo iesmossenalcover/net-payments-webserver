@@ -47,7 +47,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             PersonGroupCourse pgc = pgcs[person.Id];
 
             var epVm = new EventPaymentVm(
-                ep.Id, $"{person.Name} {person.Surname1} {person.Surname2}",
+                ep.Id, $"{person.Name} {person.LastName}",
                 person.DocumentId,
                 pgc.Amipa,
                 pgc.PriceForEvent(ep.Event),

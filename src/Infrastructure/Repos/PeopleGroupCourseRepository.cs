@@ -17,15 +17,13 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Where(x => 
                     (
                         EF.Functions.Like(x.Person.DocumentId, $"%{filter.Query.ToUpperInvariant()}%") ||
-                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{filter.Query}%") ||
+                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.LastName), $"%{filter.Query}%") ||
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{filter.Query}%") ||
-                        (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{filter.Query}%")) ||
                         (x.Person.AcademicRecordNumber.HasValue && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.AcademicRecordNumber.Value.ToString()), $"%{filter.Query}%")) ||
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{filter.Query}%")
                     ) && x.Course.Active == true
                 )
-                .OrderBy(x => x.Person.Surname1)
-                .ThenBy(x => x.Person.Surname2)
+                .OrderBy(x => x.Person.LastName)
                 .ThenBy(x => x.Person.Name)
                 .Take(maxResults)
                 .ToListAsync(ct);

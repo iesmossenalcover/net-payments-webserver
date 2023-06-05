@@ -44,8 +44,7 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
         IQueryable<PersonGroupCourse> people = 
                             _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(course.Id, ct)
                             .OrderBy(x => x.Person.Name)
-                            .ThenBy(x => x.Person.Surname1)
-                            .ThenBy(x => x.Person.Surname2);
+                            .ThenBy(x => x.Person.LastName);
         Dictionary<long, Person> eventPeople = (await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct)).ToDictionary(x => x.PersonId, x => x.Person);
 
         Dictionary<long, EventPeopleGroupVm> groups = new Dictionary<long, EventPeopleGroupVm>();
@@ -65,7 +64,7 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
             EventPersonVm p = new EventPersonVm(
                 pgc.Person.Id,
                 pgc.Person.DocumentId,
-                $"{pgc.Person.Name} {pgc.Person.Surname1} {pgc.Person.Surname2}",
+                $"{pgc.Person.Name} {pgc.Person.LastName}",
                 pgc.Person.AcademicRecordNumber,
                 eventPeople.ContainsKey(pgc.PersonId)
             );
