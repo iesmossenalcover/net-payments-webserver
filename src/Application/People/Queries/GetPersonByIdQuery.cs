@@ -10,8 +10,7 @@ public record PersonVm
 {
     public long id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Surname1 { get; set; } = string.Empty;
-    public string? Surname2 { get; set; }
+    public string LastName { get; set; } = string.Empty;
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
@@ -60,7 +59,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.id = person.Id;
         personVm.Name = person.Name;
         personVm.DocumentId = person.DocumentId;
-        personVm.Surname1 = person.LastName;
+        personVm.LastName = person.LastName;
         personVm.ContactMail = person.ContactMail;
         personVm.ContactPhone = person.ContactPhone;
         personVm.GroupId = pgc?.GroupId;
