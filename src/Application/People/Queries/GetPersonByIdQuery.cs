@@ -60,8 +60,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.id = person.Id;
         personVm.Name = person.Name;
         personVm.DocumentId = person.DocumentId;
-        personVm.Surname1 = person.Surname1;
-        personVm.Surname2 = person.Surname2;
+        personVm.Surname1 = person.LastName;
         personVm.ContactMail = person.ContactMail;
         personVm.ContactPhone = person.ContactPhone;
         personVm.GroupId = pgc?.GroupId;

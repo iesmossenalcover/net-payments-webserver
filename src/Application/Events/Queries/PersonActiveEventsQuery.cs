@@ -70,6 +70,6 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)
     {
         bool displayEnrollment = pgc.Enrolled && config.DisplayEnrollment;
-        return new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.Surname1} {person.Surname2}", displayEnrollment, displayEnrollment ? pgc.SubjectsInfo : null);
+        return new PersonSummaryVm(person.DocumentId, $"{person.Name} {person.LastName}", displayEnrollment, displayEnrollment ? pgc.SubjectsInfo : null);
     }
 }

@@ -11,7 +11,6 @@ public record CreatePersonCommand : IRequest<Response<long?>>
 {
     public string Name { get; set; } = string.Empty;
     public string Surname1 { get; set; } = string.Empty;
-    public string? Surname2 { get; set; }
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
@@ -108,8 +107,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             DocumentId = request.DocumentId,
             ContactMail = request.ContactMail,
             ContactPhone = request.ContactPhone,
-            Surname1 = request.Surname1,
-            Surname2 = request.Surname2,
+            LastName = request.Surname1,
             AcademicRecordNumber = request.AcademicRecordNumber,
         };
 

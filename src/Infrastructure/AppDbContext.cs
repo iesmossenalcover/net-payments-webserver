@@ -75,15 +75,11 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .HasIndex(x => x.Name);
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .HasIndex(x => x.Surname1);
-            modelBuilder.Entity<Domain.Entities.People.Person>()
-                .HasIndex(x => x.Surname2);
+                .HasIndex(x => x.LastName);
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.Name);
             modelBuilder.Entity<Domain.Entities.People.Person>()
-                .Property(x => x.Surname1);
-            modelBuilder.Entity<Domain.Entities.People.Person>()
-                .Property(x => x.Surname2);
+                .Property(x => x.LastName);
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactMail).HasMaxLength(100);
             modelBuilder.Entity<Domain.Entities.People.Person>()
