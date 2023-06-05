@@ -149,9 +149,9 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                 p.AcademicRecordNumber = r.Expedient;
                 p.ContactMail = r.EmailContacte;
                 p.ContactPhone = r.TelContacte;
-                p.DocumentId = r.Identitat;
-                p.Name = r.Nom;
-                p.LastName = r.Llinatges;
+                p.DocumentId = r.Identitat.Trim();
+                p.Name = r.Nom.Trim();
+                p.LastName = r.Llinatges.Trim();
             }
             else
             {
@@ -160,9 +160,9 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                     AcademicRecordNumber = r.Expedient,
                     ContactMail = r.EmailContacte,
                     ContactPhone = r.TelContacte,
-                    DocumentId = r.Identitat,
-                    Name = r.Nom,
-                    LastName = r.Llinatges,
+                    DocumentId = r.Identitat.Trim(),
+                    Name = r.Nom.Trim(),
+                    LastName = r.Llinatges.Trim(),
                 };
                 people[r.Identitat] = p;
             }
