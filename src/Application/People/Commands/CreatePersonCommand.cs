@@ -10,7 +10,7 @@ namespace Application.People.Commands;
 public record CreatePersonCommand : IRequest<Response<long?>>
 {
     public string Name { get; set; } = string.Empty;
-    public string Surname1 { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
@@ -35,7 +35,7 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
 
-        RuleFor(x => x.Surname1)
+        RuleFor(x => x.LastName)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
         RuleFor(x => x.GroupId)
@@ -107,7 +107,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             DocumentId = request.DocumentId,
             ContactMail = request.ContactMail,
             ContactPhone = request.ContactPhone,
-            LastName = request.Surname1,
+            LastName = request.LastName,
             AcademicRecordNumber = request.AcademicRecordNumber,
         };
 

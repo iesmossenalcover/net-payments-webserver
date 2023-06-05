@@ -360,11 +360,8 @@ namespace netpaymentswebserver.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Surname1")
+                    b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Surname2")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -377,9 +374,7 @@ namespace netpaymentswebserver.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("Surname1");
-
-                    b.HasIndex("Surname2");
+                    b.HasIndex("LastName");
 
                     b.ToTable("person", "main");
                 });
