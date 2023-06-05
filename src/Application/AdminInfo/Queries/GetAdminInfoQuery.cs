@@ -15,6 +15,7 @@ public record AppConfigVm(
 );
 
 public record AdminInfoVm(
+    string CurrentCurs,
     int Events,
     int ActiveEvents,
     int EventsEndToday,
@@ -62,6 +63,7 @@ public class GetAdminInfoQueryHandler : IRequestHandler<GetAdminInfoQuery, Admin
         AppConfig appConfig = await _appConfigReposiroty.GetAsync(ct);
 
         return new AdminInfoVm(
+            c.Name,
             events.Count(),
             events.Count(x => x.IsActive),
             events.Count(x => x.UnpublishDate.HasValue && x.UnpublishDate.Value.Date == DateTime.Now.Date),
