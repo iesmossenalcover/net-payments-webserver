@@ -29,4 +29,9 @@ public class Tasks
         fileStream.Close();
         return result;
     }
+
+    public async static Task<Response<ProcessUsersCommandVm>> ProcessPeople(HttpContext ctx, IMediator m)
+    {
+        return await m.Send(new ProcessUsersCommand());
+    }
 }

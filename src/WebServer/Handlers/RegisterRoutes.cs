@@ -33,6 +33,10 @@ public static class RegisterRoutes
             .WithName("Upload people")
             .WithOpenApi();
 
+        app.MapPost("/api/tasks/process", Tasks.ProcessPeople)
+            .WithName("Process people")
+            .WithOpenApi();
+
         // People
         app.MapGet("/api/people/{id}", People.GetPerson)
             .RequireAuthorization("Admin")
