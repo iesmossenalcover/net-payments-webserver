@@ -9,30 +9,30 @@ using MediatR;
 namespace Application.Tasks.Commands;
 
 // Model we receive
-public record ProcessUsersCommand() : IRequest<Response<ProcessUsersCommandVm>>;
+public record ProcessPeopleCommand() : IRequest<Response<ProcessPeopleCommandVm>>;
 
 // Validator for the model
 
 // Optionally define a view model
-public record ProcessUsersCommandVm();
+public record ProcessPeopleCommandVm();
 
 // Handler
-public class ProcessUsersCommandHandler : IRequestHandler<ProcessUsersCommand, Response<ProcessUsersCommandVm>>
+public class ProcessPeopleCommandHandler : IRequestHandler<ProcessPeopleCommand, Response<ProcessPeopleCommandVm>>
 {
     #region props
 
     private readonly IGoogleAdminApi _googleAdminApi;
 
-    public ProcessUsersCommandHandler(IGoogleAdminApi googleAdminApi)
+    public ProcessPeopleCommandHandler(IGoogleAdminApi googleAdminApi)
     {
         _googleAdminApi = googleAdminApi;
     }
 
-    public async Task<Response<ProcessUsersCommandVm>> Handle(ProcessUsersCommand request, CancellationToken ct)
+    public async Task<Response<ProcessPeopleCommandVm>> Handle(ProcessPeopleCommand request, CancellationToken ct)
     {
         await _googleAdminApi.Test(ct);
 
-        return Response<ProcessUsersCommandVm>.Ok(new ProcessUsersCommandVm());
+        return Response<ProcessPeopleCommandVm>.Ok(new ProcessPeopleCommandVm());
     }
     #endregion
 

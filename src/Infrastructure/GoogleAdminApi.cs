@@ -161,7 +161,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         string lastName,
         string password,
         string ouPath,
-        bool changePasswordNexLogin = true
+        bool changePasswordNexLogin = false
         )
     {
         Google.Apis.Admin.Directory.directory_v1.Data.User newUser = new Google.Apis.Admin.Directory.directory_v1.Data.User()

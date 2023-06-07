@@ -30,8 +30,8 @@ public class Tasks
         return result;
     }
 
-    public async static Task<Response<ProcessUsersCommandVm>> ProcessPeople(HttpContext ctx, IMediator m)
+    public async static Task<Response<ProcessPeopleCommandVm>> ProcessPeople(HttpContext ctx, IMediator m)
     {
-        return await m.Send(new ProcessUsersCommand());
+        return await m.Send(new ProcessPeopleCommand());
     }
 }
