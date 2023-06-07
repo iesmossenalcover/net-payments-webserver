@@ -35,6 +35,7 @@ public static class RegisterRoutes
 
         app.MapPost("/api/tasks/process", Tasks.ProcessPeople)
             .WithName("Process people")
+            // .RequireAuthorization("Superuser")
             .WithOpenApi();
 
         // People

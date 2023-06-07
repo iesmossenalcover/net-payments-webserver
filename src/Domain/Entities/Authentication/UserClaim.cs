@@ -2,6 +2,7 @@ namespace Domain.Entities.Authentication;
 
 public class ClaimValues
 {
+    public const string SUPER_USER = "superuser";
     public const string ADMIN = "admin";
     public const string READER = "reader";
 }
