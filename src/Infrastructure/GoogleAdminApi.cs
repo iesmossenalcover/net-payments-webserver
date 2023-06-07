@@ -118,7 +118,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             UsersResource.ListRequest userListRequest = service.Users.List();
             userListRequest.Query = $"orgUnitPath='{ouPath}'";
             userListRequest.Domain = Domain;
-            userListRequest.MaxResults = 10;
+            userListRequest.MaxResults = 50;
             Users users;
             do
             {
