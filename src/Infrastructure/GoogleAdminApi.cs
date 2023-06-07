@@ -13,6 +13,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     private readonly string UserEmailToImpersonate;
     private readonly string Domain;
     private readonly string ApplicationName;
+    private readonly string SuperuserGroupEmail;
     private readonly string AdminGroupEmail;
     private readonly string ReaderGroupEmail;
 
@@ -21,6 +22,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         CredentialFilePath = configuration.GetValue<string>("GoogleApiCredentialFilePath") ?? throw new Exception("GoogleApiCredentialFilePath");
         UserEmailToImpersonate = configuration.GetValue<string>("GoogleApiUserEmailToImpersonate") ?? throw new Exception("GoogleApiUserEmailToImpersonate");
         ApplicationName = configuration.GetValue<string>("GoogleApiApplicationName") ?? throw new Exception("GoogleApiApplicationName");
+        SuperuserGroupEmail = configuration.GetValue<string>("GoogleApiSuperuserGroupEmail") ?? throw new Exception("GoogleApiSuperuserGroupEmail");
         AdminGroupEmail = configuration.GetValue<string>("GoogleApiAdminGroupEmail") ?? throw new Exception("GoogleApiAdminGroupEmail");
         ReaderGroupEmail = configuration.GetValue<string>("GoogleApiEmailGroupReader") ?? throw new Exception("GoogleApiEmailGroupReader");
         Domain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
@@ -51,24 +53,32 @@ public class GoogleAdminApi : IGoogleAdminApi
         // TODO: move this mapping to db. For the moment hard coded.
         bool isReader = false;
         bool isAdmin = false;
+        bool isSuperuser = false;
         try
         {
             var readerResponseTask = service.Members.HasMember(ReaderGroupEmail, email).ExecuteAsync(ct);
             var adminResponseTask = service.Members.HasMember(AdminGroupEmail, email).ExecuteAsync(ct);
-            Task.WaitAll(readerResponseTask, adminResponseTask);
+            var superuserResponseTask = service.Members.HasMember(SuperuserGroupEmail, email).ExecuteAsync(ct);
+            Task.WaitAll(readerResponseTask, adminResponseTask, superuserResponseTask);
 
             var readerResponse = await readerResponseTask;
             var adminResponse = await adminResponseTask;
+            var superUserResponse = await superuserResponseTask;
 
             isReader = readerResponse.IsMember ?? false;
             isAdmin = adminResponse.IsMember ?? false;
+            isSuperuser = superUserResponse.IsMember ?? false;
         }
         catch (System.Exception)
         { }
 
 
         var claims = new List<string>(2);
-        if (isAdmin)
+        if (isSuperuser)
+        {
+            claims.Add(ClaimValues.SUPER_USER);
+        }
+        else if (isAdmin)
         {
             claims.Add(ClaimValues.ADMIN);
         }
