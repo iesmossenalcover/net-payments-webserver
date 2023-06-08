@@ -68,11 +68,11 @@ public class GoogleAdminApi : IGoogleAdminApi
         var claims = new List<string>(2);
         if (isAdmin)
         {
-            claims.Add(ClaimValues.ADMIN);
+            claims.Add(RoleClaimValues.ADMIN);
         }
         else if (isReader)
         {
-            claims.Add(ClaimValues.READER);
+            claims.Add(RoleClaimValues.READER);
         }
 
         return claims;

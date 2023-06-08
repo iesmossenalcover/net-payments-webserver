@@ -30,7 +30,7 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
 
-        RuleFor(x => x.LastName)
+        RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
         RuleFor(x => x.DocumentId)
@@ -87,7 +87,8 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         p.ContactMail = request.ContactMail;
         p.ContactPhone = request.ContactPhone;
         p.DocumentId = request.DocumentId;
-        p.LastName = request.LastName;
+        p.Surname1 = request.Surname1;
+        p.Surname2 = request.Surname2;
         p.AcademicRecordNumber = request.AcademicRecordNumber;
         
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);

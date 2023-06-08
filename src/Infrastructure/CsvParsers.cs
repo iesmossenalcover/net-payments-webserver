@@ -35,7 +35,7 @@ public class BatchUploadRowModelMap : ClassMap<BatchUploadRowModel>
         Map(m => m.Expedient);
         Map(m => m.Identitat).Validate(x => !string.IsNullOrEmpty(x.Field));
         Map(m => m.Nom).Validate(x => !string.IsNullOrEmpty(x.Field));
-        Map(m => m.Llinatges).Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Llinatge1).Validate(x => !string.IsNullOrEmpty(x.Field));
         Map(m => m.EmailContacte);
         Map(m => m.TelContacte);
         Map(m => m.Grup).Validate(x => !string.IsNullOrEmpty(x.Field));

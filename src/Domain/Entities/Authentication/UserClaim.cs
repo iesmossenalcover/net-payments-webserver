@@ -1,6 +1,6 @@
 namespace Domain.Entities.Authentication;
 
-public class ClaimValues
+public class RoleClaimValues
 {
     public const string ADMIN = "admin";
     public const string READER = "reader";
