@@ -151,7 +151,8 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                 p.ContactPhone = r.TelContacte;
                 p.DocumentId = r.Identitat.Trim();
                 p.Name = r.Nom.Trim();
-                p.LastName = r.Llinatges.Trim();
+                p.Surname1 = r.Llinatge1.Trim();
+                p.Surname2 = r.Llinatge2 != null ? r.Llinatge2.Trim() : null;
             }
             else
             {
@@ -162,7 +163,8 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                     ContactPhone = r.TelContacte,
                     DocumentId = r.Identitat.Trim(),
                     Name = r.Nom.Trim(),
-                    LastName = r.Llinatges.Trim(),
+                    Surname1 = r.Llinatge1.Trim(),
+                    Surname2 = r.Llinatge2 != null ? r.Llinatge2.Trim() : null,
                 };
                 people[r.Identitat] = p;
             }

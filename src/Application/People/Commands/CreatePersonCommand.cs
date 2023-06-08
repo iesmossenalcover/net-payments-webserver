@@ -10,7 +10,8 @@ namespace Application.People.Commands;
 public record CreatePersonCommand : IRequest<Response<long?>>
 {
     public string Name { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
+    public string Surname1 { get; set; } = string.Empty;
+    public string? Surname2 { get; set; }
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public string? ContactMail { get; set; }
@@ -35,7 +36,7 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
 
-        RuleFor(x => x.LastName)
+        RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
         RuleFor(x => x.GroupId)
@@ -50,7 +51,8 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             }).WithMessage("Ja existeix una persona amb aquest document identificatiu.");
 
         RuleFor(x => x.AcademicRecordNumber)
-            .Must(x => {
+            .Must(x =>
+            {
                 if (x.HasValue && x.Value == 0) return false;
 
                 return true;
@@ -107,7 +109,8 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             DocumentId = request.DocumentId,
             ContactMail = request.ContactMail,
             ContactPhone = request.ContactPhone,
-            LastName = request.LastName,
+            Surname1 = request.Surname1,
+            Surname2 = request.Surname2,
             AcademicRecordNumber = request.AcademicRecordNumber,
         };
 

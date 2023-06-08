@@ -8,7 +8,7 @@ namespace Application.Events.Queries;
 
 public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal Total, decimal Amipa, decimal NoAmipa, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid);
 public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group);
-public record ListEventPaymentsVm(long Id,string Name, string Code, DateTimeOffset Date, PaymentSummaryVm Summary, IEnumerable<EventPaymentVm> PaidEvents,IEnumerable<EventPaymentVm> UnPaidEvents );
+public record ListEventPaymentsVm(long Id, string Name, string Code, DateTimeOffset Date, PaymentSummaryVm Summary, IEnumerable<EventPaymentVm> PaidEvents, IEnumerable<EventPaymentVm> UnPaidEvents);
 
 public record ListEventPaymentsQuery(string Code) : IRequest<Response<ListEventPaymentsVm>>;
 
@@ -47,7 +47,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             PersonGroupCourse pgc = pgcs[person.Id];
 
             var epVm = new EventPaymentVm(
-                ep.Id, $"{person.Name} {person.LastName}",
+                ep.Id, person.FullName,
                 person.DocumentId,
                 pgc.Amipa,
                 pgc.PriceForEvent(ep.Event),
@@ -81,7 +81,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             payments.Where(x => x.Paid).OrderBy(x => x.Group),
             payments.Where(x => !x.Paid).OrderBy(x => x.Group)
         );
-        
+
         return Response<ListEventPaymentsVm>.Ok(vm);
     }
 }
