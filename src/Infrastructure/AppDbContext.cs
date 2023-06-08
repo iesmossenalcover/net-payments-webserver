@@ -15,7 +15,7 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Authentication.User> Users { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.UserClaim> UserClaims { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.OAuthUser> OAuthUsers { get; set; } = default!;
-        public DbSet<Domain.Entities.Authentication.GoogleGroupClaimRelation> GoogleGroupClaimRelations { get; set; } = default!;
+        // public DbSet<Domain.Entities.Authentication.GoogleGroupClaimRelation> GoogleGroupClaimRelations { get; set; } = default!;
 
 
         public DbSet<Domain.Entities.Configuration.AppConfig> AppConfigs { get; set; } = default!;
@@ -64,9 +64,9 @@ namespace Infrastructure
                 .ToTable("oauth_user", "main")
                 .HasIndex(x => new { x.Subject, x.OAuthProviderCode }).IsUnique();
 
-            modelBuilder.Entity<Domain.Entities.Authentication.GoogleGroupClaimRelation>()
-                .ToTable("google_group_claim_relation", "main")
-                .HasIndex(x => x.GroupEmail).IsUnique();
+            // modelBuilder.Entity<Domain.Entities.Authentication.GoogleGroupClaimRelation>()
+            //     .ToTable("google_group_claim_relation", "main")
+            //     .HasIndex(x => x.GroupEmail).IsUnique();
 
             // People
             modelBuilder.Entity<Domain.Entities.People.Person>()
