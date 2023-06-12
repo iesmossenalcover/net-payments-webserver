@@ -103,28 +103,6 @@ public class GoogleAdminApi : IGoogleAdminApi
         Console.WriteLine(suspendResult.Success);
     }
 
-    public DirectoryService CreateService()
-    {
-        GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
-        // Specify the scope of access and enable domain-wide delegation.
-        string[] scopes = new string[]
-        {
-            DirectoryService.Scope.AdminDirectoryUser,
-            DirectoryService.Scope.AdminDirectoryGroupMember,
-            DirectoryService.Scope.AdminDirectoryGroup,
-        };
-
-        credential = credential.CreateScoped(scopes).CreateWithUser(UserEmailToImpersonate);
-
-        // Use the credential to authenticate your API requests.
-        DirectoryService service = new DirectoryService(new BaseClientService.Initializer()
-        {
-            HttpClientInitializer = credential,
-            ApplicationName = ApplicationName,
-        });
-        return service;
-    }
-
     public async Task<GoogleApiResult<bool>> SuspendByOU(
         string ouPath
         )
@@ -247,5 +225,25 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
     }
 
+    private DirectoryService CreateService()
+    {
+        GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
+        // Specify the scope of access and enable domain-wide delegation.
+        string[] scopes = new string[]
+        {
+            DirectoryService.Scope.AdminDirectoryUser,
+            DirectoryService.Scope.AdminDirectoryGroupMember,
+            DirectoryService.Scope.AdminDirectoryGroup,
+        };
 
+        credential = credential.CreateScoped(scopes).CreateWithUser(UserEmailToImpersonate);
+
+        // Use the credential to authenticate your API requests.
+        DirectoryService service = new DirectoryService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = ApplicationName,
+        });
+        return service;
+    }
 }
