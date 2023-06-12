@@ -196,28 +196,28 @@ public class Auth
                 }
             };
 
-            if (claims.Contains(ClaimValues.SUPER_USER))
+            if (claims.Contains(RoleClaimValues.SUPER_USER))
             {
                 newOAuthUser.User.UserClaims.Add(new UserClaim()
                 {
                     Type = "role",
-                    Value = ClaimValues.SUPER_USER,
+                    Value = RoleClaimValues.SUPER_USER,
                 });
             }
-            else if (claims.Contains(ClaimValues.ADMIN))
+            else if (claims.Contains(RoleClaimValues.ADMIN))
             {
                 newOAuthUser.User.UserClaims.Add(new UserClaim()
                 {
                     Type = "role",
-                    Value = ClaimValues.ADMIN,
+                    Value = RoleClaimValues.ADMIN,
                 });
             }
-            else if (claims.Contains(ClaimValues.READER))
+            else if (claims.Contains(RoleClaimValues.READER))
             {
                 newOAuthUser.User.UserClaims.Add(new UserClaim()
                 {
                     Type = "role",
-                    Value = ClaimValues.READER,
+                    Value = RoleClaimValues.READER,
                 });
             }
 

@@ -40,7 +40,7 @@ public class RedsysApi : IRedsys
             UrlRedirectOk = UrlRedirectOk,
             UrlRedirectKo = UrlRedirectKo,
             MerchantCode = MerchantCode,
-            Owner = order.Person.FullName.Substring(0, Math.Min(order.Person.FullName.Length, 60)),
+            Owner = order.Person.FormalFullName.Substring(0, Math.Min(order.Person.FormalFullName.Length, 60)),
         };
         string encodedMerchantParameters = Helpers.MerchantParametersBase64Encoded(merchantParameters);
         string signature = Helpers.CreateSignature(MerchantKey, merchantParameters.Code, encodedMerchantParameters);

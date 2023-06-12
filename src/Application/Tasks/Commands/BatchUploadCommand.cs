@@ -147,22 +147,22 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             {
                 Person p = people[r.Identitat];
                 p.AcademicRecordNumber = r.Expedient;
-                p.ContactMail = r.EmailContacte;
                 p.ContactPhone = r.TelContacte;
                 p.DocumentId = r.Identitat.Trim();
                 p.Name = r.Nom.Trim();
-                p.LastName = r.Llinatges.Trim();
+                p.Surname1 = r.Llinatge1.Trim();
+                p.Surname2 = r.Llinatge2 != null ? r.Llinatge2.Trim() : null;
             }
             else
             {
                 Person p = new Person()
                 {
                     AcademicRecordNumber = r.Expedient,
-                    ContactMail = r.EmailContacte,
                     ContactPhone = r.TelContacte,
                     DocumentId = r.Identitat.Trim(),
                     Name = r.Nom.Trim(),
-                    LastName = r.Llinatges.Trim(),
+                    Surname1 = r.Llinatge1.Trim(),
+                    Surname2 = r.Llinatge2 != null ? r.Llinatge2.Trim() : null,
                 };
                 people[r.Identitat] = p;
             }

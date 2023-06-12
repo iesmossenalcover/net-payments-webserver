@@ -6,7 +6,7 @@ namespace Infrastructure.Repos;
 
 public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Application.Common.Services.IPersonGroupCourseRepository
 {
-    public PeopleGroupCourseRepository(AppDbContext dbContext) : base(dbContext, dbContext.PersonGroupCourses) {}
+    public PeopleGroupCourseRepository(AppDbContext dbContext) : base(dbContext, dbContext.PersonGroupCourses) { }
 
     public async Task<IEnumerable<PersonGroupCourse>> FilterPeople(FilterPeople filter, int maxResults, CancellationToken ct)
     {
@@ -14,16 +14,18 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Include(x => x.Person)
                 .Include(x => x.Group)
                 .Include(x => x.Course)
-                .Where(x => 
+                .Where(x =>
                     (
                         EF.Functions.Like(x.Person.DocumentId, $"%{filter.Query.ToUpperInvariant()}%") ||
-                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.LastName), $"%{filter.Query}%") ||
+                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{filter.Query}%") ||
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{filter.Query}%") ||
+                        (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{filter.Query}%")) ||
                         (x.Person.AcademicRecordNumber.HasValue && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.AcademicRecordNumber.Value.ToString()), $"%{filter.Query}%")) ||
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{filter.Query}%")
                     ) && x.Course.Active == true
                 )
-                .OrderBy(x => x.Person.LastName)
+                .OrderBy(x => x.Person.Surname1)
+                .ThenBy(x => x.Person.Surname2)
                 .ThenBy(x => x.Person.Name)
                 .Take(maxResults)
                 .ToListAsync(ct);
@@ -35,7 +37,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Include(x => x.Person)
                 .Include(x => x.Group)
                 .Include(x => x.Course)
-                .FirstOrDefaultAsync(x => x.Person.DocumentId == documentId.ToUpperInvariant() && x.CourseId== courseId, ct);
+                .FirstOrDefaultAsync(x => x.Person.DocumentId == documentId.ToUpperInvariant() && x.CourseId == courseId, ct);
     }
 
     public async Task<PersonGroupCourse?> GetCoursePersonGroupById(long personId, long courseId, CancellationToken ct)
@@ -44,7 +46,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                 .Include(x => x.Person)
                 .Include(x => x.Group)
                 .Include(x => x.Course)
-                .FirstOrDefaultAsync(x => x.PersonId == personId && x.CourseId== courseId, ct);
+                .FirstOrDefaultAsync(x => x.PersonId == personId && x.CourseId == courseId, ct);
     }
 
     public async Task<IEnumerable<PersonGroupCourse>> GetCurrentCourseGroupByPeopleIdsAsync(IEnumerable<long> peopleIds, CancellationToken ct)
@@ -53,7 +55,11 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                     .Include(x => x.Person)
                     .Include(x => x.Group)
                     .Include(x => x.Course)
-                    .Where(x => x.Course.Active == true && peopleIds.Distinct().Contains(x.PersonId)).ToListAsync(ct);
+                    .Where(x => x.Course.Active == true && peopleIds.Distinct().Contains(x.PersonId))
+                    .OrderBy(x => x.Person.Surname1)
+                    .ThenBy(x => x.Person.Surname2)
+                    .ThenBy(x => x.Person.Name)
+                    .ToListAsync(ct);
     }
 
     public IQueryable<PersonGroupCourse> GetPersonGroupCourseByCourseAsync(long courseId, CancellationToken ct)
@@ -62,7 +68,10 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                     .Where(x => x.CourseId == courseId)
                     .Include(x => x.Person)
                     .Include(x => x.Group)
-                    .Include(x => x.Course);
+                    .Include(x => x.Course)
+                    .OrderBy(x => x.Person.Surname1)
+                    .ThenBy(x => x.Person.Surname2)
+                    .ThenBy(x => x.Person.Name);
     }
 
     public async Task<IEnumerable<PersonGroupCourse>> GetPersonGroupCoursesByPersonIdAsync(long personId, CancellationToken ct)
@@ -71,6 +80,10 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Applic
                     .Where(x => x.PersonId == personId)
                     .Include(x => x.Person)
                     .Include(x => x.Group)
-                    .Include(x => x.Course).ToListAsync(ct);
+                    .Include(x => x.Course)
+                    .OrderBy(x => x.Person.Surname1)
+                    .ThenBy(x => x.Person.Surname2)
+                    .ThenBy(x => x.Person.Name)
+                    .ToListAsync(ct);
     }
 }
