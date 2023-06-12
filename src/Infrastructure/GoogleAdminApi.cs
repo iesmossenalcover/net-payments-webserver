@@ -76,7 +76,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         var claims = new List<string>(2);
         if (isSuperuser)
         {
-            claims.Add(ClaimValues.SUPER_USER);
+            claims.Add(RoleClaimValues.SUPER_USER);
         }
         else if (isAdmin)
         {
