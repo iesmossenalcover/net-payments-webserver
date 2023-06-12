@@ -147,7 +147,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
             {
                 Person p = people[r.Identitat];
                 p.AcademicRecordNumber = r.Expedient;
-                p.ContactMail = r.EmailContacte;
                 p.ContactPhone = r.TelContacte;
                 p.DocumentId = r.Identitat.Trim();
                 p.Name = r.Nom.Trim();
@@ -159,7 +158,6 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
                 Person p = new Person()
                 {
                     AcademicRecordNumber = r.Expedient,
-                    ContactMail = r.EmailContacte,
                     ContactPhone = r.TelContacte,
                     DocumentId = r.Identitat.Trim(),
                     Name = r.Nom.Trim(),
