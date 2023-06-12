@@ -38,23 +38,8 @@ public class GoogleAdminApi : IGoogleAdminApi
 
     public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
     {
-        GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
-        // Specify the scope of access and enable domain-wide delegation.
-        string[] scopes = new string[]
-        {
-            DirectoryService.Scope.AdminDirectoryUser,
-            DirectoryService.Scope.AdminDirectoryGroupMember,
-            DirectoryService.Scope.AdminDirectoryGroup,
-        };
+        DirectoryService service = CreateService();
 
-        credential = credential.CreateScoped(scopes).CreateWithUser(UserEmailToImpersonate);
-
-        // Use the credential to authenticate your API requests.
-        DirectoryService service = new DirectoryService(new BaseClientService.Initializer()
-        {
-            HttpClientInitializer = credential,
-            ApplicationName = ApplicationName,
-        });
         var request = service.Groups.List();
         request.UserKey = email;
 
@@ -96,18 +81,6 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
 
         return claims;
-    }
-
-    public async Task Test(CancellationToken ct)
-    {
-        DirectoryService service = CreateService();
-
-        // Move to UO
-        // GoogleApiResult<bool> response = await MoveUserToOU(service, "noreply@iesmossenalcover.cat", "/exalumnes");
-        // var userResult = await CreateUser(service, "test1234@iesmossenalcover.cat", "Prova", "Prova1 Prova2", "12345678", "/alumnes/bat/1rbat/grup L");
-        // Console.WriteLine(userResult.Success);
-        var suspendResult = await GetAllUsers("/alumnes");
-        Console.WriteLine(suspendResult.Success);
     }
 
     public async Task<GoogleApiResult<bool>> SuspendByOU(
@@ -168,6 +141,129 @@ public class GoogleAdminApi : IGoogleAdminApi
             DirectoryService service = CreateService();
             newUser = await service.Users.Insert(newUser).ExecuteAsync();
             return new GoogleApiResult<bool>(true);
+        }
+        catch (System.Exception e)
+        {
+            return new GoogleApiResult<bool>(e.Message);
+        }
+    }
+
+
+    public async Task<GoogleApiResult<bool>> AddUserToGroup(string email, string group)
+    {
+        try
+        {
+
+
+            DirectoryService service = CreateService();
+
+            string memberId = email;
+            var memberRequest = service.Users.Get(memberId);
+            var m = await memberRequest.ExecuteAsync();
+            if (m == null)
+            {
+                return new GoogleApiResult<bool>("user not found");
+            }
+
+            Member member = new Member()
+            {
+                Email = email
+            };
+
+
+            string groupId = group;
+            var groupRequest = service.Groups.Get(groupId);
+            var gp = await groupRequest.ExecuteAsync();
+            if (gp == null)
+            {
+                return new GoogleApiResult<bool>("group not found");
+            }
+
+
+            var addRequest = service.Members.Insert(member, gp.Id);
+            member = await addRequest.ExecuteAsync();
+            return new GoogleApiResult<bool>(true);
+        }
+        catch (System.Exception e)
+        {
+            return new GoogleApiResult<bool>(e.Message);
+        }
+    }
+
+    public async Task<GoogleApiResult<bool>> DeleteUserOfGroup(string email, string group)
+    {
+        try
+        {
+
+
+            DirectoryService service = CreateService();
+
+            string memberId = email;
+            var memberRequest = service.Users.Get(memberId);
+            var m = await memberRequest.ExecuteAsync();
+            if (m == null)
+            {
+                return new GoogleApiResult<bool>("user not found");
+            }
+
+
+
+
+            string groupId = group;
+            var groupRequest = service.Groups.Get(groupId);
+            var gp = await groupRequest.ExecuteAsync();
+            if (gp == null)
+            {
+                return new GoogleApiResult<bool>("group not found");
+            }
+
+            MembersResource.GetRequest getRequest = service.Members.Get(groupId, email);
+            Member member = await getRequest.ExecuteAsync();
+
+            // Delete the member from the group.
+            await service.Members.Delete(groupId, member.Id).ExecuteAsync();
+
+            return new GoogleApiResult<bool>(true);
+        }
+        catch (System.Exception e)
+        {
+            return new GoogleApiResult<bool>(e.Message);
+        }
+    }
+
+    public async Task<GoogleApiResult<bool>> DeleteAllMembersOfGroup(string group)
+    {
+        try
+        {
+            DirectoryService service = CreateService();
+
+            string groupId = group;
+            var groupRequest = service.Groups.Get(groupId);
+            var gp = await groupRequest.ExecuteAsync();
+            if (gp == null)
+            {
+                return new GoogleApiResult<bool>("group not found");
+            }
+
+            MembersResource.ListRequest listRequest = service.Members.List(groupId);
+            Members members = await listRequest.ExecuteAsync();
+
+            // Delete each member from the group.
+            try
+            {
+                foreach (Member member in members.MembersValue)
+                {
+                    await service.Members.Delete(groupId, member.Id).ExecuteAsync();
+                }
+
+                return new GoogleApiResult<bool>(true);
+            }
+            catch (System.Exception)
+            {
+
+                return new GoogleApiResult<bool>("Error");
+            }
+
         }
         catch (System.Exception e)
         {
