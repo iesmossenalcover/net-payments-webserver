@@ -57,9 +57,9 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Superuser", policy => policy.RequireClaim("role", ClaimValues.SUPER_USER));
-   options.AddPolicy("Admin", policy => policy.RequireClaim("role", ClaimValues.ADMIN));
-   options.AddPolicy("Reader", policy => policy.RequireClaim("role", ClaimValues.ADMIN, ClaimValues.READER));
+    options.AddPolicy("Superuser", policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER));
+    options.AddPolicy("Admin", policy => policy.RequireClaim("role", RoleClaimValues.ADMIN));
+    options.AddPolicy("Reader", policy => policy.RequireClaim("role", RoleClaimValues.ADMIN, RoleClaimValues.READER));
 });
 
 // CORS service

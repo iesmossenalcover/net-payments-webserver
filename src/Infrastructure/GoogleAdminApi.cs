@@ -80,11 +80,11 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
         else if (isAdmin)
         {
-            claims.Add(ClaimValues.ADMIN);
+            claims.Add(RoleClaimValues.ADMIN);
         }
         else if (isReader)
         {
-            claims.Add(ClaimValues.READER);
+            claims.Add(RoleClaimValues.READER);
         }
 
         return claims;

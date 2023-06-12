@@ -32,17 +32,9 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
         Course course = request.CourseId.HasValue ? courses.First(x => x.Id == request.CourseId.Value) : courses.First(x => x.Active);
 
         IQueryable<PersonGroupCourse> personGroupCourses = _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(course.Id, ct);
-        personGroupCourses = personGroupCourses
-                    .OrderBy(x => x.Person.LastName)
-                    .Skip(0);
-                    // .Take(10);
 
         IEnumerable<PersonGroupCourse> respone = personGroupCourses.ToList();
-        return respone
-                .Select(x => ToPersonVm(x))
-                .OrderBy(x => x.GroupName)
-                .ThenBy(x => x.FirstName)
-                .ThenBy(x => x.LastName);
+        return respone.Select(x => ToPersonVm(x));
     }
 
     public static PersonRowVm ToPersonVm(PersonGroupCourse pgc)

@@ -47,7 +47,7 @@ public class ListEventSummarysQueryHandler : IRequestHandler<ListEventSummaryQue
             PersonGroupCourse pgc = pgcs[person.Id];
 
             var epVm = new EventSummaryVm(
-                ep.Id, person.FullName,
+                ep.Id, person.FormalFullName,
                 person.DocumentId,
                 ep.Paid,
                 pgc.Group.Id,
