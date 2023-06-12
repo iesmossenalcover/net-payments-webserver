@@ -10,6 +10,13 @@ namespace Infrastructure;
 
 public class GoogleAdminApi : IGoogleAdminApi
 {
+    private static readonly string[] SCOPES = new string[]
+    {
+        DirectoryService.Scope.AdminDirectoryUser,
+        DirectoryService.Scope.AdminDirectoryGroupMember,
+        DirectoryService.Scope.AdminDirectoryGroup,
+    };
+
     private readonly string CredentialFilePath;
     private readonly string UserEmailToImpersonate;
     private readonly string Domain;
@@ -228,15 +235,8 @@ public class GoogleAdminApi : IGoogleAdminApi
     private DirectoryService CreateService()
     {
         GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
-        // Specify the scope of access and enable domain-wide delegation.
-        string[] scopes = new string[]
-        {
-            DirectoryService.Scope.AdminDirectoryUser,
-            DirectoryService.Scope.AdminDirectoryGroupMember,
-            DirectoryService.Scope.AdminDirectoryGroup,
-        };
 
-        credential = credential.CreateScoped(scopes).CreateWithUser(UserEmailToImpersonate);
+        credential = credential.CreateScoped(SCOPES).CreateWithUser(UserEmailToImpersonate);
 
         // Use the credential to authenticate your API requests.
         DirectoryService service = new DirectoryService(new BaseClientService.Initializer()
