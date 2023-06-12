@@ -73,7 +73,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         { }
 
 
-        var claims = new List<string>(2);
+        var claims = new List<string>(3);
         if (isSuperuser)
         {
             claims.Add(RoleClaimValues.SUPER_USER);
