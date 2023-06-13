@@ -207,8 +207,6 @@ public class GoogleAdminApi : IGoogleAdminApi
             }
 
 
-
-
             string groupId = group;
             var groupRequest = service.Groups.Get(groupId);
             var gp = await groupRequest.ExecuteAsync();
