@@ -9,8 +9,8 @@ public interface IGoogleAdminApi
     public Task<GoogleApiResult<bool>> MoveUserToOU(string email, string ouPath);
     public Task<GoogleApiResult<IEnumerable<string>>> GetAllUsers(string ouPath);
     public Task<GoogleApiResult<bool>> AddUserToGroup(string email, string group);
-    public Task<GoogleApiResult<bool>> DeleteAllMembersOfGroup(string group);
-    public Task<GoogleApiResult<bool>> DeleteUserOfGroup(string email, string group);
+    public Task<GoogleApiResult<bool>> ClearGroupMembers(string group);
+    public Task<GoogleApiResult<bool>> DeleteUserInGroup(string email, string group);
     public Task<GoogleApiResult<bool>> CreateUser(
         string email,
         string firstName,
