@@ -6,6 +6,7 @@ public interface IGoogleAdminApi
 {
     public Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct);
     public Task<GoogleApiResult<bool>> SuspendByOU(string ouPath);
+    public Task<GoogleApiResult<bool>> UserExists(string email);
     public Task<GoogleApiResult<bool>> MoveUserToOU(string email, string ouPath);
     public Task<GoogleApiResult<IEnumerable<string>>> GetAllUsers(string ouPath);
     public Task<GoogleApiResult<bool>> AddUserToGroup(string email, string group);
