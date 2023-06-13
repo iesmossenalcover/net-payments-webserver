@@ -23,8 +23,9 @@ namespace Infrastructure
             services.AddScoped<Application.Common.Services.IEventsRespository, Repos.EventsRepository>();
             services.AddScoped<Application.Common.Services.IEventsPeopleRespository, EventsPeopleRepository>();
             services.AddScoped<Application.Common.Services.IOrdersRepository, OrdersRepository>();
+            services.AddScoped<Application.Common.Services.ITasksRepository, TasksRepository>();
+            services.AddScoped<Application.Common.Services.IOUGroupRelationsRepository, UoGroupRelationRepository>();
             services.AddScoped<Application.Common.Services.ITransactionsService, TransactionsService>();
-            // services.AddScoped<Application.Common.Services.IRepository<Domain.Entities.Authentication.GoogleGroupClaimRelation>, Repository<Domain.Entities.Authentication.GoogleGroupClaimRelation>>();
             services.AddSingleton<Application.Common.Services.ICsvParser, CsvParser>();
             services.AddSingleton<Application.Common.Services.IGoogleAdminApi, GoogleAdminApi>();
             services.AddSingleton<Application.Common.Services.IOAuthRepository, OAuthRepository>();
