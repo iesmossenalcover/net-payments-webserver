@@ -30,8 +30,13 @@ public class Tasks
         return result;
     }
 
-    public async static Task<Response<SyncPeopleToGoogleWorkspaceCommandVm>> ProcessPeople(HttpContext ctx, IMediator m)
+    public async static Task<Response<SyncPeopleToGoogleWorkspaceCommandVm>> ProcessPeople(IMediator m)
     {
         return await m.Send(new SyncPeopleToGoogleWorkspaceCommand());
+    }
+
+        public async static Task<Response<SyncPersonToGoogleWorkspaceCommandVm>> ProcessPerson(long id, IMediator m)
+    {
+        return await m.Send(new SyncPersonToGoogleWorkspaceCommand(id));
     }
 }

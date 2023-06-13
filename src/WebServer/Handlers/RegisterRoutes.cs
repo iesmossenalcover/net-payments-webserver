@@ -38,6 +38,11 @@ public static class RegisterRoutes
             // .RequireAuthorization("Superuser")
             .WithOpenApi();
 
+        app.MapPost("/api/tasks/sync/{id}", Tasks.ProcessPerson)
+            .WithName("Sync person")
+            // .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
         // People
         app.MapGet("/api/people/{id}", People.GetPerson)
             .RequireAuthorization("Admin")
@@ -48,7 +53,7 @@ public static class RegisterRoutes
             .RequireAuthorization("Admin")
             .WithName("List people by course")
             .WithOpenApi();
-        
+
         app.MapGet("/api/people/filter", People.FilterPeople)
             .RequireAuthorization("Admin")
             .WithName("Filter people")

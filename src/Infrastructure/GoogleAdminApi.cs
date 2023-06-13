@@ -125,7 +125,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         string lastName,
         string password,
         string ouPath,
-        bool changePasswordNexLogin = false
+        bool changePasswordNexLogin = true
         )
     {
         Google.Apis.Admin.Directory.directory_v1.Data.User newUser = new Google.Apis.Admin.Directory.directory_v1.Data.User()
@@ -339,5 +339,28 @@ public class GoogleAdminApi : IGoogleAdminApi
             ApplicationName = ApplicationName,
         });
         return service;
+    }
+
+    public async Task<GoogleApiResult<bool>> UserExists(string email)
+    {
+        try
+        {
+            DirectoryService service = CreateService();
+
+            string memberId = email;
+            var memberRequest = service.Users.Get(memberId);
+            var m = await memberRequest.ExecuteAsync();
+            return new GoogleApiResult<bool>(m != null);
+
+        }
+        catch (Google.GoogleApiException e)
+        {
+            if (e.Error.Code == 404)
+            {
+                return new GoogleApiResult<bool>(false);    
+            }
+            return new GoogleApiResult<bool>(e.Message);
+        }
+
     }
 }
