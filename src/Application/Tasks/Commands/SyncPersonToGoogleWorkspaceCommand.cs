@@ -75,7 +75,7 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
             password = Common.Helpers.GenerateString.RandomAlphanumeric(8);
             p.ContactMail = $"{Common.Helpers.Email.NormalizeText($"{p.Name}{p.Surname1}{p.AcademicRecordNumber}")}@{emailDomain}".ToLower();
 
-            GoogleApiResult<bool> createUsersResult = await _googleAdminApi.CreateUser(p.ContactMail, p.Name, p.LastName, password, oug.ActiveOU);
+            GoogleApiResult<bool> createUsersResult = await _googleAdminApi.CreateUser(p.ContactMail, p.Name.ToLower(), p.LastName.ToLower(), password, oug.ActiveOU);
             if (!createUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, createUsersResult.ErrorMessage ?? "Error al crear l'usuari");
 
             createUsersResult = await _googleAdminApi.AddUserToGroup(p.ContactMail, oug.GroupMail);
