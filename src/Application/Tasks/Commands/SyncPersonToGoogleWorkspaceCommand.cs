@@ -73,11 +73,13 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
         if (createUser)
         {
             password = Common.Helpers.GenerateString.RandomAlphanumeric(8);
-            p.ContactMail = $"{Common.Helpers.Email.NormalizeText($"{p.Name}{p.Surname1}{p.AcademicRecordNumber}")}@{emailDomain}".ToLower();
+            //TODO: Mirar si es alumne o professor
+            p.ContactMail = GetEmail(p);
 
             GoogleApiResult<bool> createUsersResult = await _googleAdminApi.CreateUser(p.ContactMail, p.Name.ToLower(), p.LastName.ToLower(), password, oug.ActiveOU);
             if (!createUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, createUsersResult.ErrorMessage ?? "Error al crear l'usuari");
 
+            //On create user to google api, need time to execute the creation on the google site.
             await Task.Delay(2000);
 
             createUsersResult = await _googleAdminApi.AddUserToGroup(p.ContactMail, oug.GroupMail);
@@ -85,7 +87,7 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
 
             await _peopleRepository.UpdateAsync(p, ct);
         }
-        else if(!string.IsNullOrEmpty(p.ContactMail))
+        else if (!string.IsNullOrEmpty(p.ContactMail))
         {
             GoogleApiResult<bool> moveUsersResult = await _googleAdminApi.MoveUserToOU(p.ContactMail, oug.ActiveOU);
             if (!moveUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, moveUsersResult.ErrorMessage ?? "Error movent d'OU");
@@ -101,8 +103,16 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
             return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.InternalError, "No s'ha pogut creal l'email");
         }
 
+
     }
 
-
+    private string GetEmail(Person p)
+    {
+        if (p.IsStudent)
+        {
+            return $"{Common.Helpers.Email.NormalizeText($"{p.Name}{p.Surname1}{p.AcademicRecordNumber}")}@{emailDomain}".ToLower();
+        }
+        return $"{Common.Helpers.Email.NormalizeText($"{p.Name}{p.Surname1}")}@{emailDomain}".ToLower();
+    }
 
 }
