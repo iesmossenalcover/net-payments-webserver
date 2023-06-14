@@ -23,7 +23,9 @@ public class Email
 
         text = text.Replace("ñ", "ny");
         text = text.Replace("l·l", "ll");
+        text = text.Replace(".", "");
         text = text.Replace("ç", "c");
+        text = text.Replace(" ", "");
 
         var normalizedText = text.Normalize(NormalizationForm.FormD);
         var stringBuilder = new StringBuilder();
@@ -36,7 +38,7 @@ public class Email
                 stringBuilder.Append(c);
             }
         }
-
+        
         return stringBuilder.ToString();
     }
 }
