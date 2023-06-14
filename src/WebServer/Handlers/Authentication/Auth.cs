@@ -32,7 +32,7 @@ public readonly record struct SignupRequest(string Username, string Password, st
 
 public readonly record struct SignupResult(SignupStatus Status, string? ErrorMessage = null);
 
-public record IdentityResponse(long UserId, string Username, string GivenName);
+public record IdentityResponse(long UserId, string Username, string GivenName, string? Role);
 
 public record OAuthSignIn(string Token);
 
@@ -130,7 +130,9 @@ public class Auth
             givenName = givenNameClaim.Value;
         }
 
-        var respone = new IdentityResponse(userId ?? 0, userName, givenName);
+        Claim? roleClaim = ctx.User.FindFirst(x => x.Type == "role");
+
+        var respone = new IdentityResponse(userId ?? 0, userName, givenName, roleClaim?.Value);
         await ctx.Response.WriteAsJsonAsync(respone, ct);
     }
 

@@ -14,7 +14,6 @@ public record CreatePersonCommand : IRequest<Response<long?>>
     public string? Surname2 { get; set; }
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
-    public string? ContactMail { get; set; }
     public long? AcademicRecordNumber { get; set; }
     // Current course  data
     public long? GroupId { get; set; }
@@ -67,9 +66,6 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
 
         RuleFor(x => x.ContactPhone)
             .MaximumLength(50).WithMessage("Màxim 15 caràcters");
-
-        RuleFor(x => x.ContactMail)
-            .MaximumLength(50).WithMessage("Màxim 100 caràcters");
     }
 }
 
@@ -107,7 +103,6 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
         {
             Name = request.Name,
             DocumentId = request.DocumentId,
-            ContactMail = request.ContactMail,
             ContactPhone = request.ContactPhone,
             Surname1 = request.Surname1,
             Surname2 = request.Surname2,

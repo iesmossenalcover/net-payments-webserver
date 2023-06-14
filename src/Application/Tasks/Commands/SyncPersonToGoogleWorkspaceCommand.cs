@@ -15,7 +15,7 @@ public record SyncPersonToGoogleWorkspaceCommand(long Id) : IRequest<Response<Sy
 // Validator for the model
 
 // Optionally define a view model
-public record SyncPersonToGoogleWorkspaceCommandVm(string Email, string Password);
+public record SyncPersonToGoogleWorkspaceCommandVm(string Email, string? Password);
 
 // Handler
 public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPersonToGoogleWorkspaceCommand, Response<SyncPersonToGoogleWorkspaceCommandVm>>
@@ -60,7 +60,7 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
 
         UoGroupRelation? oug = await _oUGroupRelationsRepository.GetByGroupIdAsync(pgc.GroupId, CancellationToken.None);
         if (oug == null) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.NotFound, "No s'ha configurat la OU per aquest grup");
-        string password = "****";
+        string? password = null;
 
         bool createUser = string.IsNullOrEmpty(p.ContactMail);
         if (!string.IsNullOrEmpty(p.ContactMail))
@@ -78,6 +78,8 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
             GoogleApiResult<bool> createUsersResult = await _googleAdminApi.CreateUser(p.ContactMail, p.Name.ToLower(), p.LastName.ToLower(), password, oug.ActiveOU);
             if (!createUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, createUsersResult.ErrorMessage ?? "Error al crear l'usuari");
 
+            await Task.Delay(2000);
+
             createUsersResult = await _googleAdminApi.AddUserToGroup(p.ContactMail, oug.GroupMail);
             if (!createUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, createUsersResult.ErrorMessage ?? "Error a l'assignar l'usuari al grup");
 
@@ -86,6 +88,8 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
         else if(!string.IsNullOrEmpty(p.ContactMail))
         {
             GoogleApiResult<bool> moveUsersResult = await _googleAdminApi.MoveUserToOU(p.ContactMail, oug.ActiveOU);
+            if (!moveUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, moveUsersResult.ErrorMessage ?? "Error movent d'OU");
+
         }
 
         if (!string.IsNullOrEmpty(p.ContactMail))

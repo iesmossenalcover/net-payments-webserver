@@ -39,9 +39,6 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
 
         RuleFor(x => x.ContactPhone)
             .MaximumLength(50).WithMessage("Màxim 15 caràcters");
-
-        RuleFor(x => x.ContactMail)
-            .MaximumLength(50).WithMessage("Màxim 100 caràcters");
     }
 }
 
@@ -84,7 +81,6 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         }
 
         p.Name = request.Name;
-        p.ContactMail = request.ContactMail;
         p.ContactPhone = request.ContactPhone;
         p.DocumentId = request.DocumentId;
         p.Surname1 = request.Surname1;
