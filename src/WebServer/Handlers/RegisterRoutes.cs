@@ -28,17 +28,17 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Tasks
-        app.MapPost("/api/tasks/people", Tasks.UploadPeople)
+        app.MapPost("/api/tasks/people", Tasks.PeopleBatchUpload)
             .RequireAuthorization("Admin")
             .WithName("Upload people")
             .WithOpenApi();
 
-        app.MapPost("/api/tasks/process", Tasks.ProcessPeople)
-            .WithName("Process people")
+        app.MapPost("/api/tasks/people/sync", Tasks.SyncPeopleToGoogleWorkspace)
+            .WithName("Sync people")
             // .RequireAuthorization("Superuser")
             .WithOpenApi();
 
-        app.MapPost("/api/tasks/sync/{id}", Tasks.ProcessPerson)
+        app.MapPost("/api/tasks/person/sync/{id}", Tasks.SyncPersonToGoogleWorkspace)
             .WithName("Sync person")
             // .RequireAuthorization("Superuser")
             .WithOpenApi();

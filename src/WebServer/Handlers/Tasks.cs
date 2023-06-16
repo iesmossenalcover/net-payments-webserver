@@ -6,7 +6,7 @@ namespace WebServer.Handlers;
 
 public class Tasks
 {
-    public async static Task<Response<BatchUploadSummary>> UploadPeople(HttpContext ctx, IMediator m)
+    public async static Task<Response<PeopleBatchUploadSummary>> PeopleBatchUpload(HttpContext ctx, IMediator m)
     {
         IFormFile? f = null;
         try
@@ -17,11 +17,11 @@ public class Tasks
                 f = files[0];
             }
         }
-        catch (Exception) {}
+        catch (Exception) { }
 
         if (f == null)
         {
-            return Response<BatchUploadSummary>.Error(ResponseCode.BadRequest, "No s'ha pogut processar el fitxer.");
+            return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, "No s'ha pogut processar el fitxer.");
         }
 
         Stream fileStream = f.OpenReadStream();
@@ -30,12 +30,12 @@ public class Tasks
         return result;
     }
 
-    public async static Task<Response<SyncPeopleToGoogleWorkspaceCommandVm>> ProcessPeople(IMediator m)
+    public async static Task<Response<SyncPeopleToGoogleWorkspaceCommandVm>> SyncPeopleToGoogleWorkspace(IMediator m)
     {
         return await m.Send(new SyncPeopleToGoogleWorkspaceCommand());
     }
 
-        public async static Task<Response<SyncPersonToGoogleWorkspaceCommandVm>> ProcessPerson(long id, IMediator m)
+    public async static Task<Response<SyncPersonToGoogleWorkspaceCommandVm>> SyncPersonToGoogleWorkspace(long id, IMediator m)
     {
         return await m.Send(new SyncPersonToGoogleWorkspaceCommand(id));
     }

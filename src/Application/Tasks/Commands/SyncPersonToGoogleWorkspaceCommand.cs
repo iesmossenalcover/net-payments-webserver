@@ -42,16 +42,6 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
 
     public async Task<Response<SyncPersonToGoogleWorkspaceCommandVm>> Handle(SyncPersonToGoogleWorkspaceCommand request, CancellationToken ct)
     {
-
-        // GoogleApiResult<bool> getUsersResult = await _googleAdminApi.DeleteUserInGroup("test1234@iesmossenalcover.cat", "payment.superuser@iesmossenalcover.cat");
-
-        // if (!getUsersResult.Success)
-        // {
-        //     return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, getUsersResult.ErrorMessage ?? "");
-
-        // }
-        // return Response<SyncPersonToGoogleWorkspaceCommandVm>.Ok(new SyncPersonToGoogleWorkspaceCommandVm());
-
         IEnumerable<PersonGroupCourse> personGroupCourses = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(request.Id, ct);
         PersonGroupCourse? pgc = personGroupCourses.FirstOrDefault(x => x.Course.Active == true);
         if (pgc == null) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.NotFound, "Aquesta persona no està matriculada al curs actual");
