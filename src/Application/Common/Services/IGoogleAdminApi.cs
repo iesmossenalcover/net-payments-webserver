@@ -11,7 +11,7 @@ public interface IGoogleAdminApi
     public Task<GoogleApiResult<IEnumerable<string>>> GetAllUsers(string ouPath);
     public Task<GoogleApiResult<bool>> AddUserToGroup(string email, string group);
     public Task<GoogleApiResult<bool>> ClearGroupMembers(string group);
-    public Task<GoogleApiResult<bool>> DeleteUserInGroup(string email, string group);
+    public Task<GoogleApiResult<bool>> RemoveUserFromGroup(string email, string group);
     public Task<GoogleApiResult<bool>> CreateUser(
         string email,
         string firstName,

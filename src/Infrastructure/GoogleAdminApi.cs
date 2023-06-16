@@ -190,7 +190,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
     }
 
-    public async Task<GoogleApiResult<bool>> DeleteUserInGroup(string email, string group)
+    public async Task<GoogleApiResult<bool>> RemoveUserFromGroup(string email, string group)
     {
         try
         {
