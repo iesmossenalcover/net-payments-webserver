@@ -32,10 +32,14 @@ public class TasksRepository : Repository<Domain.Entities.Tasks.Task>, ITasksRep
                     {
                         dbContext.Tasks.Add(newTask);
                         await dbContext.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        return true;
                     }
-                    
-                    await transaction.CommitAsync();
-                    return true;
+                    else
+                    {
+                        await transaction.CommitAsync();
+                        return false;
+                    }
                 }
                 catch (Exception)
                 {
