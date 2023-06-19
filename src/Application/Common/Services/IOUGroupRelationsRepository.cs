@@ -1,6 +1,8 @@
+using Domain.Entities.GoogleApi;
+
 namespace Application.Common.Services;
 
-public interface IOUGroupRelationsRepository
+public interface IOUGroupRelationsRepository  : IRepository<UoGroupRelation>
 {
-    public Task<Domain.Entities.GoogleApi.UoGroupRelation?> GetByGroupIdAsync(long groupId, CancellationToken ct);
+    public Task<UoGroupRelation?> GetByGroupIdAsync(long groupId, CancellationToken ct);
 }

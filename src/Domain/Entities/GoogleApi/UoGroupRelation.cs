@@ -12,4 +12,6 @@ public class UoGroupRelation : Entity
 
     public string OldOU { get; set; } = default!;
     public string ActiveOU { get; set; } = default!;
+
+    public bool UpdatePassword {get; set; } = false;
 }
