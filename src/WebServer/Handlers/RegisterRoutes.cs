@@ -38,7 +38,7 @@ public static class RegisterRoutes
             // .RequireAuthorization("Superuser")
             .WithOpenApi();
 
-        app.MapPost("/api/tasks/person/sync/{id}", Tasks.SyncPersonToGoogleWorkspace)
+        app.MapPost("/api/tasks/people/sync/{id}", Tasks.SyncPersonToGoogleWorkspace)
             .WithName("Sync person")
             // .RequireAuthorization("Superuser")
             .WithOpenApi();
