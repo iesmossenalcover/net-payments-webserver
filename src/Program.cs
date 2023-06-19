@@ -57,8 +57,9 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
-   options.AddPolicy("Admin", policy => policy.RequireClaim("role", RoleClaimValues.ADMIN));
-   options.AddPolicy("Reader", policy => policy.RequireClaim("role", RoleClaimValues.ADMIN, RoleClaimValues.READER));
+    options.AddPolicy("Superuser", policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER));
+    options.AddPolicy("Admin", policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER, RoleClaimValues.ADMIN));
+    options.AddPolicy("Reader", policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER, RoleClaimValues.ADMIN, RoleClaimValues.READER));
 });
 
 // CORS service
@@ -68,8 +69,7 @@ builder.Services.AddCors(options =>
     {
         // TODO check for production
         p.WithOrigins(
-            builder.Configuration.GetValue<string>("CORSOriginUrl") ?? throw new Exception("Configure CORSOriginUrl"),
-            "http://localhost:3000")
+            builder.Configuration.GetValue<string>("CORSOriginUrl") ?? throw new Exception("Configure CORSOriginUrl"), "http://localhost:3000")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();

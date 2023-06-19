@@ -14,7 +14,7 @@ public record PersonVm
     public string? Surname2 { get; set; }
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
-    public string? ContactMail { get; set; }
+    public string? Email { get; set; }
     public long? GroupId { get; set; }
     public long? AcademicRecordNumber { get; set; }
     public bool Amipa { get; set; }
@@ -62,7 +62,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.DocumentId = person.DocumentId;
         personVm.Surname1 = person.Surname1;
         personVm.Surname2 = person.Surname2;
-        personVm.ContactMail = person.ContactMail;
+        personVm.Email = person.ContactMail;
         personVm.ContactPhone = person.ContactPhone;
         personVm.GroupId = pgc?.GroupId;
         // PGC can be null for a person not in the current course.
