@@ -28,9 +28,25 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Tasks
-        app.MapPost("/api/tasks/people", Tasks.UploadPeople)
+        app.MapPost("/api/tasks/people", Tasks.PeopleBatchUpload)
             .RequireAuthorization("Admin")
             .WithName("Upload people")
+            .WithOpenApi();
+
+        // Google workspace
+        app.MapPost("/api/googleworkspace/people/sync", GoogleWorkspace.SyncPeopleToGoogleWorkspace)
+            .WithName("Sync people")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
+        app.MapPost("/api/googleworkspace/people/sync/{id}", GoogleWorkspace.SyncPersonToGoogleWorkspace)
+            .WithName("Sync person")
+            .RequireAuthorization("Admin")
+            .WithOpenApi();
+
+        app.MapPost("/api/googleworkspace/people/{id}/password", GoogleWorkspace.UpdatePasswordGoogleWorkspace)
+            .WithName("Set password person")
+            .RequireAuthorization("Admin")
             .WithOpenApi();
 
         // People
@@ -43,7 +59,7 @@ public static class RegisterRoutes
             .RequireAuthorization("Admin")
             .WithName("List people by course")
             .WithOpenApi();
-        
+
         app.MapGet("/api/people/filter", People.FilterPeople)
             .RequireAuthorization("Admin")
             .WithName("Filter people")

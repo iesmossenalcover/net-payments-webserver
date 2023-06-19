@@ -9,15 +9,15 @@ using MediatR;
 namespace Application.Tasks.Commands;
 
 // Model we receive
-public record PeopleBatchUploadCommand(Stream File) : IRequest<Response<BatchUploadSummary>>;
+public record PeopleBatchUploadCommand(Stream File) : IRequest<Response<PeopleBatchUploadSummary>>;
 
 // Validator for the model
 
 // Optionally define a view model
-public record BatchUploadSummary(int GroupsCreated, int PeopleCreated, int PeopleUpdated);
+public record PeopleBatchUploadSummary(int GroupsCreated, int PeopleCreated, int PeopleUpdated);
 
 // Handler
-public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, Response<BatchUploadSummary>>
+public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, Response<PeopleBatchUploadSummary>>
 {
     #region props
 
@@ -28,7 +28,7 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     private readonly ITransactionsService _transactionsService;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepo;
 
-    public BatchUploadCommandHandler(
+    public PeopleBatchUploadCommandHandler(
         ICsvParser csvParser,
         IPeopleRepository peopleRepo,
         ICoursesRepository coursesRepo,
@@ -45,13 +45,13 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
     }
     #endregion
 
-    public async Task<Response<BatchUploadSummary>> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
+    public async Task<Response<PeopleBatchUploadSummary>> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
     {
         // Parse csv
         var result = _csvParser.ParseBatchUpload(request.File);
         request.File.Dispose();
 
-        if (result.Values == null) return Response<BatchUploadSummary>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error processing csv.");
+        if (result.Values == null) return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error processing csv.");
 
         IEnumerable<BatchUploadRowModel> rows = result.Values;
 
@@ -63,10 +63,10 @@ public class BatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadComman
         IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, groups, rows, ct);
 
         var m = new BatchUploadModel(people, groups, presonGroupCourses.Values);
-        var summary = new BatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
+        var summary = new PeopleBatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
         await _transactionsService.InsertAndUpdateTransactionAsync(m, ct);
-        return Response<BatchUploadSummary>.Ok(summary);
+        return Response<PeopleBatchUploadSummary>.Ok(summary);
     }
 
     #region private methods

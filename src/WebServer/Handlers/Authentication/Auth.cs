@@ -32,7 +32,7 @@ public readonly record struct SignupRequest(string Username, string Password, st
 
 public readonly record struct SignupResult(SignupStatus Status, string? ErrorMessage = null);
 
-public record IdentityResponse(long UserId, string Username, string GivenName);
+public record IdentityResponse(long UserId, string Username, string GivenName, string? Role);
 
 public record OAuthSignIn(string Token);
 
@@ -130,64 +130,11 @@ public class Auth
             givenName = givenNameClaim.Value;
         }
 
-        var respone = new IdentityResponse(userId ?? 0, userName, givenName);
+        Claim? roleClaim = ctx.User.FindFirst(x => x.Type == "role");
+
+        var respone = new IdentityResponse(userId ?? 0, userName, givenName, roleClaim?.Value);
         await ctx.Response.WriteAsJsonAsync(respone, ct);
     }
-
-
-    // public class GoogleAuthResponse
-    // {
-    //     [JsonPropertyName("iss")]
-    //     public string Iss { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("nbf")]
-    //     public string Nbf { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("aud")]
-    //     public string Aud { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("sub")]
-    //     public string Sub { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("email")]
-    //     public string Email { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("email_verified")]
-    //     public string EmailVerified { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("azp")]
-    //     public string Azp { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("name")]
-    //     public string Name { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("picture")]
-    //     public string Picture { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("given_name")]
-    //     public string GivenName { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("family_name")]
-    //     public string FamilyName { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("iat")]
-    //     public string Iat { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("exp")]
-    //     public string Exp { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("jti")]
-    //     public string Jti { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("alg")]
-    //     public string Alg { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("kid")]
-    //     public string Kid { get; set; } = string.Empty;
-
-    //     [JsonPropertyName("typ")]
-    //     public string Typ { get; set; } = string.Empty;
-    // }
 
     public static async Task SigninOAuth(
         HttpContext ctx,
@@ -251,7 +198,15 @@ public class Auth
                 }
             };
 
-            if (claims.Contains(RoleClaimValues.ADMIN))
+            if (claims.Contains(RoleClaimValues.SUPER_USER))
+            {
+                newOAuthUser.User.UserClaims.Add(new UserClaim()
+                {
+                    Type = "role",
+                    Value = RoleClaimValues.SUPER_USER,
+                });
+            }
+            else if (claims.Contains(RoleClaimValues.ADMIN))
             {
                 newOAuthUser.User.UserClaims.Add(new UserClaim()
                 {
