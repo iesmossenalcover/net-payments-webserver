@@ -36,7 +36,7 @@ public class ListEventSummarysQueryHandler : IRequestHandler<ListEventSummaryQue
 
         IEnumerable<EventPerson> eventPeople = await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct);
         IDictionary<long, PersonGroupCourse> pgcs =
-                    (await _personGroupCourseRepository.GetCurrentCourseGroupByPeopleIdsAsync(eventPeople.Select(x => x.PersonId), ct))
+                    (await _personGroupCourseRepository.GetPeopleGroupByPeopleIdsAndCourseIdAsync(e.CourseId, eventPeople.Select(x => x.PersonId), ct))
                     .ToDictionary(x => x.PersonId, x => x);
 
         var payments = new List<EventSummaryVm>(eventPeople.Count());
