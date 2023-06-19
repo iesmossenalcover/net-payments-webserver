@@ -99,15 +99,18 @@ public class GoogleAdminApi : IGoogleAdminApi
             {
                 users = await userListRequest.ExecuteAsync();
 
-                foreach (var user in users.UsersValue)
+                if (users.UsersValue != null)
                 {
-                    if (user.OrgUnitPath == ouPath && user.Suspended == false)
+                    foreach (var user in users.UsersValue)
                     {
-                        user.Suspended = true;
-                        await service.Users.Update(user, user.Id).ExecuteAsync();
+                        if (user.OrgUnitPath == ouPath && user.Suspended == false)
+                        {
+                            user.Suspended = true;
+                            await service.Users.Update(user, user.Id).ExecuteAsync();
+                        }
                     }
+                    userListRequest.PageToken = users.NextPageToken;
                 }
-                userListRequest.PageToken = users.NextPageToken;
             }
             while (!string.IsNullOrEmpty(users.NextPageToken));
 
@@ -249,9 +252,12 @@ public class GoogleAdminApi : IGoogleAdminApi
             // Delete each member from the group.
             try
             {
-                foreach (Member member in members.MembersValue)
+                if (members.MembersValue != null)
                 {
-                    await service.Members.Delete(groupId, member.Id).ExecuteAsync();
+                    foreach (Member member in members.MembersValue)
+                    {
+                        await service.Members.Delete(groupId, member.Id).ExecuteAsync();
+                    }
                 }
 
                 return new GoogleApiResult<bool>(true);
@@ -309,12 +315,15 @@ public class GoogleAdminApi : IGoogleAdminApi
             do
             {
                 users = await userListRequest.ExecuteAsync();
-
-                foreach (var user in users.UsersValue)
+                if (users.UsersValue != null)
                 {
-                    usersList.Add(user.PrimaryEmail);
+                    foreach (var user in users.UsersValue)
+                    {
+                        usersList.Add(user.PrimaryEmail);
+                    }
+                    userListRequest.PageToken = users.NextPageToken;
                 }
-                userListRequest.PageToken = users.NextPageToken;
+
             }
             while (!string.IsNullOrEmpty(users.NextPageToken));
 
@@ -357,7 +366,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         {
             if (e.Error.Code == 404)
             {
-                return new GoogleApiResult<bool>(false);    
+                return new GoogleApiResult<bool>(false);
             }
             return new GoogleApiResult<bool>(e.Message);
         }
@@ -385,7 +394,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         {
             if (e.Error.Code == 404)
             {
-                return new GoogleApiResult<bool>("No s'ha trobat l'usuari");    
+                return new GoogleApiResult<bool>("No s'ha trobat l'usuari");
             }
             return new GoogleApiResult<bool>(e.Message);
         }
