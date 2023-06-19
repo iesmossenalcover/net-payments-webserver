@@ -1,13 +1,11 @@
-using System.Data;
 using Application.Common;
 using Application.Common.Models;
 using Application.Common.Services;
 using Domain.Entities.GoogleApi;
 using Domain.Entities.People;
-using FluentValidation;
 using MediatR;
 
-namespace Application.Tasks.Commands;
+namespace Application.GoogleWorkspace.Commands;
 
 // Model we receive
 public record SyncPersonToGoogleWorkspaceCommand(long Id) : IRequest<Response<SyncPersonToGoogleWorkspaceCommandVm>>;

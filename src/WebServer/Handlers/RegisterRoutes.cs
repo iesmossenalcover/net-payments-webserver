@@ -33,14 +33,20 @@ public static class RegisterRoutes
             .WithName("Upload people")
             .WithOpenApi();
 
-        app.MapPost("/api/tasks/people/sync", Tasks.SyncPeopleToGoogleWorkspace)
+        // Google workspace
+        app.MapPost("/api/googleworkspace/people/sync", GoogleWorkspace.SyncPeopleToGoogleWorkspace)
             .WithName("Sync people")
-            // .RequireAuthorization("Superuser")
+            .RequireAuthorization("Superuser")
             .WithOpenApi();
 
-        app.MapPost("/api/tasks/people/sync/{id}", Tasks.SyncPersonToGoogleWorkspace)
+        app.MapPost("/api/googleworkspace/people/sync/{id}", GoogleWorkspace.SyncPersonToGoogleWorkspace)
             .WithName("Sync person")
-            // .RequireAuthorization("Superuser")
+            .RequireAuthorization("Admin")
+            .WithOpenApi();
+
+        app.MapPost("/api/googleworkspace/people/{id}/password", GoogleWorkspace.UpdatePasswordGoogleWorkspace)
+            .WithName("Set password person")
+            .RequireAuthorization("Admin")
             .WithOpenApi();
 
         // People

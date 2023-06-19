@@ -363,4 +363,31 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
 
     }
+
+    public async Task<GoogleApiResult<bool>> SetPassword(string email, string password, bool changePasswordNexLogin = true)
+    {
+        try
+        {
+            DirectoryService service = CreateService();
+            var userRequest = service.Users.Get(email);
+            var user = await userRequest.ExecuteAsync();
+            if (user == null) return new GoogleApiResult<bool>("No s'ha trobat l'usuari");
+
+            user.Password = password;
+            user.ChangePasswordAtNextLogin = changePasswordNexLogin;
+
+            var updateRequest = service.Users.Update(user, email);
+            user = await updateRequest.ExecuteAsync();
+
+            return new GoogleApiResult<bool>(user != null);
+        }
+        catch (Google.GoogleApiException e)
+        {
+            if (e.Error.Code == 404)
+            {
+                return new GoogleApiResult<bool>("No s'ha trobat l'usuari");    
+            }
+            return new GoogleApiResult<bool>(e.Message);
+        }
+    }
 }
