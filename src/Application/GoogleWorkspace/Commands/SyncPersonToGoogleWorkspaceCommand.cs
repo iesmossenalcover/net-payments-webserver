@@ -61,9 +61,7 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
         if (createUser)
         {
             password = Common.Helpers.GenerateString.RandomAlphanumeric(8);
-            //TODO: Mirar si es alumne o professor
             p.ContactMail = GetEmail(p);
-
             GoogleApiResult<bool> createUsersResult = await _googleAdminApi.CreateUser(p.ContactMail, p.Name.ToLower(), p.LastName.ToLower(), password, oug.ActiveOU);
             if (!createUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, createUsersResult.ErrorMessage ?? "Error al crear l'usuari");
 
@@ -98,7 +96,7 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
     {
         if (p.IsStudent)
         {
-            return $"{Common.Helpers.Email.NormalizeText($"{p.Name}{p.Surname1}{p.AcademicRecordNumber}")}@{emailDomain}".ToLower();
+            return $"{Common.Helpers.Email.NormalizeText($"{p.Surname1}{p.Name}{p.AcademicRecordNumber}")}@{emailDomain}".ToLower();
         }
         return $"{Common.Helpers.Email.NormalizeText($"{p.Name}{p.Surname1}")}@{emailDomain}".ToLower();
     }
