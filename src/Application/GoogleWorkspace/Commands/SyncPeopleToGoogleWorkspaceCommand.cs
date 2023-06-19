@@ -6,7 +6,7 @@ using Domain.Entities.People;
 using FluentValidation;
 using MediatR;
 
-namespace Application.Tasks.Commands;
+namespace Application.GoogleWorkspace.Commands;
 
 // Model we receive
 public record SyncPeopleToGoogleWorkspaceCommand() : IRequest<Response<SyncPeopleToGoogleWorkspaceCommandVm>>;
