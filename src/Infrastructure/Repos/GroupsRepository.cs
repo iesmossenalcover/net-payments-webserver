@@ -5,7 +5,7 @@ namespace Infrastructure.Repos;
 
 public class GroupsRepository : Repository<Group>, Application.Common.Services.IGroupsRepository
 {
-    public GroupsRepository(AppDbContext dbContext) : base(dbContext, dbContext.Groups) {}
+    public GroupsRepository(AppDbContext dbContext) : base(dbContext, dbContext.Groups) { }
 
     public async Task<IEnumerable<Group>> GetGroupsByNameAsync(IEnumerable<string> names, CancellationToken ct)
     {

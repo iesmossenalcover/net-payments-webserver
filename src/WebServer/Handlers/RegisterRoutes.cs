@@ -92,6 +92,26 @@ public static class RegisterRoutes
             .WithName("Get groups selector")
             .WithOpenApi();
 
+        app.MapGet("/api/groups", Groups.ListGroups)
+            .RequireAuthorization("Admin")
+            .WithName("List groups")
+            .WithOpenApi();
+
+        app.MapGet("/api/groups/{id}", Groups.GetGroup)
+            .RequireAuthorization("Admin")
+            .WithName("Get group by id")
+            .WithOpenApi();
+
+        app.MapPost("/api/groups", Groups.CreateGroup)
+            .RequireAuthorization("Admin")
+            .WithName("Create group")
+            .WithOpenApi();
+
+        app.MapPut("/api/groups/{id}", Groups.UpdateGroup)
+            .RequireAuthorization("Admin")
+            .WithName("Update group")
+            .WithOpenApi();
+
         // Events
         app.MapGet("/api/events", Events.ListCourseEvents)
             .RequireAuthorization("Admin")
