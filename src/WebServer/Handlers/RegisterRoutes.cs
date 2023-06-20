@@ -93,22 +93,22 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapGet("/api/groups", Groups.ListGroups)
-            //.RequireAuthorization("Admin")
+            .RequireAuthorization("Admin")
             .WithName("List groups")
             .WithOpenApi();
 
         app.MapGet("/api/groups/{id}", Groups.GetGroup)
-            //.RequireAuthorization("Admin")
+            .RequireAuthorization("Admin")
             .WithName("Get group by id")
             .WithOpenApi();
 
         app.MapPost("/api/groups", Groups.CreateGroup)
-            //.RequireAuthorization("Admin")
+            .RequireAuthorization("Admin")
             .WithName("Create group")
             .WithOpenApi();
 
         app.MapPut("/api/groups/{id}", Groups.UpdateGroup)
-            //.RequireAuthorization("Admin")
+            .RequireAuthorization("Admin")
             .WithName("Update group")
             .WithOpenApi();
 
