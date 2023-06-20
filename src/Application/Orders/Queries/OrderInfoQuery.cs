@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.Common.Models;
 using Application.Common.Services;
+using Domain.Entities.Configuration;
 using Domain.Entities.Events;
 using Domain.Entities.Orders;
 using Domain.Entities.People;
@@ -9,7 +10,7 @@ using MediatR;
 namespace Application.Orders.Queries;
 
 public record EventInfo(string Code, string Name, decimal Price, string Currency);
-public record OrderInfoVm(IEnumerable<EventInfo> events);
+public record OrderInfoVm(IEnumerable<EventInfo> events, bool DisplayEnrollment, string? EnrollmentSubjectsInfo);
 
 public record OrderInfoQuery(string Signature, string MerchantParamenters, string SignatureVersion) : IRequest<Response<OrderInfoVm>>;
 
@@ -20,14 +21,16 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
     private readonly IPersonGroupCourseRepository _personGroupsCourseRepository;
     private readonly IEventsPeopleRespository _eventsPeopleRespository;
     private readonly ICoursesRepository _coursesRepository;
+    private readonly IAppConfigRepository _appConfigRepository;
 
-    public OrderInfoQueryHandler(IRedsys redsys, IOrdersRepository ordersRepository, IPersonGroupCourseRepository personGroupsCourseRepository, IEventsPeopleRespository eventsPeopleRespository, ICoursesRepository coursesRepository)
+    public OrderInfoQueryHandler(IRedsys redsys, IOrdersRepository ordersRepository, IPersonGroupCourseRepository personGroupsCourseRepository, IEventsPeopleRespository eventsPeopleRespository, ICoursesRepository coursesRepository, IAppConfigRepository appConfigRepository)
     {
         _redsys = redsys;
         _ordersRepository = ordersRepository;
         _personGroupsCourseRepository = personGroupsCourseRepository;
         _eventsPeopleRespository = eventsPeopleRespository;
         _coursesRepository = coursesRepository;
+        _appConfigRepository = appConfigRepository;
     }
 
     public async Task<Response<OrderInfoVm>> Handle(OrderInfoQuery request, CancellationToken ct)
@@ -44,7 +47,12 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
         if (pgc == null) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "Persona no matriculada al curs actual.");
 
         IEnumerable<EventPerson> orderEvents = await _eventsPeopleRespository.GetAllByOrderId(order.Id, ct);
+
+        AppConfig config = await _appConfigRepository.GetAsync(ct);
+
+        bool enrollmentEvent = orderEvents.Any(x => x.Event.Enrollment);
+
         IEnumerable<EventInfo> eventsInfo = orderEvents.Select(x => new EventInfo(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€"));
-        return Response<OrderInfoVm>.Ok(new OrderInfoVm(eventsInfo));
+        return Response<OrderInfoVm>.Ok(new OrderInfoVm(eventsInfo, enrollmentEvent && config.DisplayEnrollment, pgc.SubjectsInfo));
     }
 }
