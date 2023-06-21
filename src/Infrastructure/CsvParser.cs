@@ -12,20 +12,25 @@ public class CsvParser : ICsvParser
     private static readonly Dictionary<Type, Type> Map = new Dictionary<Type, Type>()
     {
         { typeof(AccountRow), typeof(GoogleUserMap) },
+        { typeof(BatchUploadRowModel), typeof(BatchUploadRowMap) },
     };
 
-    public CsvParserResult<BatchUploadRowModel> ParseBatchUpload(Stream stream)
+    public CsvParseResult<T> Parse(Stream stream)
     {
-        var result = new CsvParserResult<BatchUploadRowModel>();
+        var result = new CsvParseResult<T>();
         try
         {
             using var reader = new StreamReader(stream);
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-            csv.Context.RegisterClassMap<BatchUploadRowModelMap>();
-            result.Values = csv.GetRecords<BatchUploadRowModel>().ToList();
+            Type? classMap = Map[typeof(T)];
+            if (classMap != null)
+            {
+                csv.Context.RegisterClassMap(classMap);
+            }
+            result.Values = csv.GetRecords<T>().ToList();
             result.Ok = true;
         }
-        catch (CsvHelperException e)
+        catch(CsvHelperException e)
         {
             result.Ok = false;
             result.ErrorMessage = e.Message;
@@ -76,7 +81,7 @@ public class CsvParser : ICsvParser
     }
 }
 
-public class BatchUploadRowModelMap : ClassMap<BatchUploadRowModel>
+public class BatchUploadRowMap : ClassMap<BatchUploadRowMap>
 {
     public BatchUploadRowModelMap()
     {
