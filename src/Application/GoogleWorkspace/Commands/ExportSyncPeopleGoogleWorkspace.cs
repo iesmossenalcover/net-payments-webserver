@@ -40,7 +40,7 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
         _csvParser = csvParser;
         emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
         tempFolderPath = configuration.GetValue<string>("TempFolderPath") ?? throw new Exception("TempFolderPath");
-        excludeEmails = configuration.GetValue<string[]>("GoogleApiExcludeAccounts") ?? throw new Exception("GoogleApiExcludeAccounts");
+        excludeEmails = configuration.GetSection("GoogleApiExcludeAccounts").Get<string[]>() ?? throw new Exception("GoogleApiExcludeAccounts");
     }
     #endregion
 
