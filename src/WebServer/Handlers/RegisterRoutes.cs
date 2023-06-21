@@ -44,6 +44,11 @@ public static class RegisterRoutes
             .RequireAuthorization("Superuser")
             .WithOpenApi();
 
+        app.MapPost("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)
+            .WithName("Export people")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
         app.MapPost("/api/googleworkspace/people/sync/{id}", GoogleWorkspace.SyncPersonToGoogleWorkspace)
             .WithName("Sync person")
             .RequireAuthorization("Admin")

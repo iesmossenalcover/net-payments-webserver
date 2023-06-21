@@ -6,7 +6,9 @@ namespace Application.Common.Services;
 public interface ICsvParser
 {
     CsvParserResult<BatchUploadRowModel> ParseBatchUpload(Stream stream);
-    Task WriteToFileAsync<T>(string path, IEnumerable<T> records, bool overrite);
+    Task WriteManyToFileAsync<T>(string path, IEnumerable<T> records, bool overrite);
+    Task WriteToFileAsync<T>(string path, T record, bool overrite);
+    Task WriteHeadersAsync<T>(string path);
 }
 
 public class CsvParserResult<T>

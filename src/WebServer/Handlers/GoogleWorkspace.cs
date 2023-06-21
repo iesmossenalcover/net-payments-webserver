@@ -27,4 +27,8 @@ public class GoogleWorkspace
     {
         return await m.Send(cmd);
     }
+    public async static Task<Response<ExportSyncPeopleGoogleWorkspaceVm>> ExportPeopleGoogleWorkspace(IMediator m)
+    {
+        return await m.Send(new ExportSyncPeopleGoogleWorkspaceCommand());
+    }
 }

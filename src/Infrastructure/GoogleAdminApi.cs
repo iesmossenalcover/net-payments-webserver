@@ -25,6 +25,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     private readonly string SuperuserGroupEmail;
     private readonly string AdminGroupEmail;
     private readonly string ReaderGroupEmail;
+    private readonly string[] excludeEmails;
 
     public GoogleAdminApi(IConfiguration configuration)
     {
@@ -35,6 +36,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         AdminGroupEmail = configuration.GetValue<string>("GoogleApiAdminGroupEmail") ?? throw new Exception("GoogleApiAdminGroupEmail");
         ReaderGroupEmail = configuration.GetValue<string>("GoogleApiEmailGroupReader") ?? throw new Exception("GoogleApiEmailGroupReader");
         Domain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
+        excludeEmails = configuration.GetValue<string[]>("GoogleApiExcludeAccounts") ?? throw new Exception("GoogleApiExcludeAccounts");
     }
 
     public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
@@ -114,6 +116,9 @@ public class GoogleAdminApi : IGoogleAdminApi
             var batchRequest = new BatchRequest(service);
             foreach (var user in usersToProcess)
             {
+                // IMPORTANT: Exclude members
+                if (excludeEmails.Contains(user.PrimaryEmail)) continue;
+
                 if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
                 {
                     user.Suspended = suspend;
