@@ -58,7 +58,7 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
     public async Task<Response<SyncPeopleToGoogleWorkspaceCommandVm>> Handle(SyncPeopleToGoogleWorkspaceCommand request, CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
-        string filePath = $"{tempFolderPath}/{now.Date.Year}{now.Date.Month}{now.Date.Day}.csv";
+        string filePath = $"{tempFolderPath}export_users_{now.Date.Year}{now.Date.Month}{now.Date.Day}.csv";
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
         Domain.Entities.Tasks.Task task = new Domain.Entities.Tasks.Task()
         {
@@ -144,7 +144,7 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
                     FirstName = p.Name,
                     LastName = p.LastName,
                     GroupName = pgc.Group.Name,
-                    TempPassword = password ?? "",
+                    TempPassword = password ?? "****",
                 };
 
                 await _csvParser.WriteToFileAsync(filePath, new List<PersonRow>() { pr }, false);
