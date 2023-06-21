@@ -39,6 +39,11 @@ public static class RegisterRoutes
             .RequireAuthorization("Superuser")
             .WithOpenApi();
 
+        app.MapPost("/api/googleworkspace/people/suspend", GoogleWorkspace.SuspendPeopleByOuGoogleWorkspace)
+            .WithName("Suspend people")
+            //.RequireAuthorization("Superuser")
+            .WithOpenApi();
+
         app.MapPost("/api/googleworkspace/people/sync/{id}", GoogleWorkspace.SyncPersonToGoogleWorkspace)
             .WithName("Sync person")
             .RequireAuthorization("Admin")

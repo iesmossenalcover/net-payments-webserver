@@ -4,6 +4,7 @@ using Domain.Entities.Authentication;
 using Google.Apis.Admin.Directory.directory_v1;
 using Google.Apis.Admin.Directory.directory_v1.Data;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Requests;
 using Google.Apis.Services;
 
 namespace Infrastructure;
@@ -83,8 +84,10 @@ public class GoogleAdminApi : IGoogleAdminApi
         return claims;
     }
 
-    public async Task<GoogleApiResult<bool>> SuspendByOU(
-        string ouPath
+    public async Task<GoogleApiResult<bool>> SetSuspendByOU(
+        string ouPath, 
+        bool suspend,
+        bool exactOu
         )
     {
         try
@@ -95,24 +98,32 @@ public class GoogleAdminApi : IGoogleAdminApi
             userListRequest.Domain = Domain;
             userListRequest.MaxResults = 50;
             Users users;
+            List<Google.Apis.Admin.Directory.directory_v1.Data.User> usersToProcess = new List<Google.Apis.Admin.Directory.directory_v1.Data.User>();
+
             do
             {
                 users = await userListRequest.ExecuteAsync();
-
                 if (users.UsersValue != null)
                 {
-                    foreach (var user in users.UsersValue)
-                    {
-                        if (user.OrgUnitPath == ouPath && user.Suspended == false)
-                        {
-                            user.Suspended = true;
-                            await service.Users.Update(user, user.Id).ExecuteAsync();
-                        }
-                    }
+                    usersToProcess.AddRange(users.UsersValue);
                     userListRequest.PageToken = users.NextPageToken;
                 }
             }
             while (!string.IsNullOrEmpty(users.NextPageToken));
+
+            var batchRequest = new BatchRequest(service);
+            foreach (var user in usersToProcess)
+            {
+                if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
+                {
+                    user.Suspended = suspend;
+                    batchRequest.Queue(service.Users.Update(user, user.Id),
+                    (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) => {
+                        // 
+                    });
+                }
+            }
+            await batchRequest.ExecuteAsync();
 
             return new GoogleApiResult<bool>(true);
         }
