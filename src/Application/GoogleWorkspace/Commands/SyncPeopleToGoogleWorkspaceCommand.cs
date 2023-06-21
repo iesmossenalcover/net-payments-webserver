@@ -28,7 +28,9 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
     private readonly IPeopleRepository _peopleRepository;
     private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
     private readonly ITasksRepository _tasksRepository;
+    private readonly ICsvParser _csvParser;
     private readonly string emailDomain;
+    private readonly string tempFolderPath;
 
     public SyncPeopleToGoogleWorkspaceCommandHandler(
         IOUGroupRelationsRepository oUGroupRelationsRepository,
@@ -37,6 +39,7 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
         IPersonGroupCourseRepository personGroupCourseRepository,
         IPeopleRepository peopleRepository,
         ITasksRepository tasksRepository,
+        ICsvParser csvParser,
         IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
@@ -45,13 +48,17 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
         _peopleRepository = peopleRepository;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
         _tasksRepository = tasksRepository;
+        _csvParser = csvParser;
         emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
+        tempFolderPath = configuration.GetValue<string>("TempFolderPath") ?? throw new Exception("TempFolderPath");
     }
 
     #endregion
 
     public async Task<Response<SyncPeopleToGoogleWorkspaceCommandVm>> Handle(SyncPeopleToGoogleWorkspaceCommand request, CancellationToken ct)
     {
+        var now = DateTimeOffset.UtcNow;
+        string filePath = $"{tempFolderPath}/{now.Date.Year}{now.Date.Month}{now.Date.Day}.csv";
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
         Domain.Entities.Tasks.Task task = new Domain.Entities.Tasks.Task()
         {
@@ -131,10 +138,30 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
                 if (!setGroupResult.Success) throw new Exception("Enregistrar error");
                 await _peopleRepository.UpdateAsync(p, ct);
 
+                var pr = new PersonRow()
+                {
+                    Email = p.ContactMail ?? "",
+                    FirstName = p.Name,
+                    LastName = p.LastName,
+                    GroupName = pgc.Group.Name,
+                    TempPassword = password ?? "",
+                };
+
+                await _csvParser.WriteToFileAsync(filePath, new List<PersonRow>() { pr }, false);
+
             }
         }
 
 
         return Response<SyncPeopleToGoogleWorkspaceCommandVm>.Ok(new SyncPeopleToGoogleWorkspaceCommandVm());
     }
+}
+
+public class PersonRow
+{
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string TempPassword { get; set; } = string.Empty;
 }
