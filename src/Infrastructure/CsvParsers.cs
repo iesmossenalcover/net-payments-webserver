@@ -36,7 +36,11 @@ public class CsvParser : ICsvParser
             csv.WriteHeader<BatchUploadRowModel>();
             csv.NextRecord();
         }
-        await csv.WriteRecordsAsync(records);
+        foreach (var r in records)
+        {
+            csv.WriteRecord(r);
+        }
+        await csv.FlushAsync();
     }
 }
 
