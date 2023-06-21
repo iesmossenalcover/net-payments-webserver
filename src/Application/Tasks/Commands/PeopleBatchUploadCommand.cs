@@ -48,7 +48,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
     public async Task<Response<PeopleBatchUploadSummary>> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
     {
         // Parse csv
-        var result = _csvParser.ParseBatchUpload(request.File);
+        var result = _csvParser.Parse<BatchUploadRow>(request.File);
         request.File.Dispose();
 
         if (result.Values == null) return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error processing csv.");
