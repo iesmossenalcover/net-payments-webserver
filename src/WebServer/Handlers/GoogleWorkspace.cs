@@ -23,9 +23,14 @@ public class GoogleWorkspace
         return await m.Send(new SetPasswordGoogleWorkspaceCommand(id));
     }
 
-    public async static Task<Response<SuspendGoogleWorkspaceCommandVm>> SuspendPeopleByOuGoogleWorkspace([FromBody] SuspendGoogleWorkspaceCommand cmd, IMediator m)
+    public async static Task<Response<SuspendGoogleWorkspaceCommandVm>> SuspendPeopleByOuGoogleWorkspace(IMediator m)
     {
-        return await m.Send(cmd);
+        return await m.Send(new SuspendGoogleWorkspaceCommand());
+    }
+
+    public async static Task<Response<MovePeopleGoogleWorkspaceCommandVm>> MovePeopleByOuGoogleWorkspace(IMediator m)
+    {
+        return await m.Send(new MovePeopleGoogleWorkspaceCommand());
     }
     public async static Task<Response<ExportSyncPeopleGoogleWorkspaceVm>> ExportPeopleGoogleWorkspace(IMediator m)
     {

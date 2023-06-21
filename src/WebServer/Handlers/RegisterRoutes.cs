@@ -41,7 +41,12 @@ public static class RegisterRoutes
 
         app.MapPost("/api/googleworkspace/people/suspend", GoogleWorkspace.SuspendPeopleByOuGoogleWorkspace)
             .WithName("Suspend people")
-            .RequireAuthorization("Superuser")
+            // .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
+        app.MapPost("/api/googleworkspace/people/move", GoogleWorkspace.MovePeopleByOuGoogleWorkspace)
+            .WithName("Move people")
+            //.RequireAuthorization("Superuser")
             .WithOpenApi();
 
         app.MapPost("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)

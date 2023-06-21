@@ -1,13 +1,14 @@
 using Application.Common;
 using Application.Common.Models;
 using Application.Common.Services;
+using Domain.Entities.GoogleApi;
 using Domain.Entities.People;
 using MediatR;
 
 namespace Application.GoogleWorkspace.Commands;
 
 // Model we receive
-public record SuspendGoogleWorkspaceCommand(string Path) : IRequest<Response<SuspendGoogleWorkspaceCommandVm>>;
+public record SuspendGoogleWorkspaceCommand() : IRequest<Response<SuspendGoogleWorkspaceCommandVm>>;
 
 // Validator for the model
 
@@ -18,25 +19,28 @@ public record SuspendGoogleWorkspaceCommandVm(bool ok);
 public class SuspendGoogleWorkspaceCommandHandler : IRequestHandler<SuspendGoogleWorkspaceCommand, Response<SuspendGoogleWorkspaceCommandVm>>
 {
     #region props
-
+    private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
     private readonly IGoogleAdminApi _googleAdminApi;
-    private readonly string emailDomain;
 
-    public SuspendGoogleWorkspaceCommandHandler(IGoogleAdminApi googleAdminApi, IConfiguration configuration)
+    public SuspendGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
-        emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
+        _oUGroupRelationsRepository = oUGroupRelationsRepository;
     }
     #endregion
 
     public async Task<Response<SuspendGoogleWorkspaceCommandVm>> Handle(SuspendGoogleWorkspaceCommand request, CancellationToken ct)
     {
 
-        string path = request.Path;
-        if (string.IsNullOrEmpty(path)) return Response<SuspendGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "No s'ha especificat ruta");
+        IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
+        IEnumerable<string> pendings = ouRelations.Select(x => x.OldOU).Distinct();
 
-        GoogleApiResult<bool> result = await _googleAdminApi.SetSuspendByOU(path, true, false);
-        if (!result.Success) return Response<SuspendGoogleWorkspaceCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? "Error cridant api google.");
+
+        foreach (var ou in pendings)
+        {
+            GoogleApiResult<bool> result = await _googleAdminApi.SetSuspendByOU(ou, true, false);
+            if (!result.Success) return Response<SuspendGoogleWorkspaceCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? $"Error cridant api google. per la OU {ou}");
+        }
 
         return Response<SuspendGoogleWorkspaceCommandVm>.Ok(new SuspendGoogleWorkspaceCommandVm(true));
     }

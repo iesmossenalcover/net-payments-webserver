@@ -36,7 +36,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         AdminGroupEmail = configuration.GetValue<string>("GoogleApiAdminGroupEmail") ?? throw new Exception("GoogleApiAdminGroupEmail");
         ReaderGroupEmail = configuration.GetValue<string>("GoogleApiEmailGroupReader") ?? throw new Exception("GoogleApiEmailGroupReader");
         Domain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
-        excludeEmails = configuration.GetValue<string[]>("GoogleApiExcludeAccounts") ?? throw new Exception("GoogleApiExcludeAccounts");
+        excludeEmails = configuration.GetSection("GoogleApiExcludeAccounts").Get<string[]>() ?? throw new Exception("GoogleApiExcludeAccounts");
     }
 
     public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
