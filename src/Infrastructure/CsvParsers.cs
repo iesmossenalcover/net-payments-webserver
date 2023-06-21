@@ -26,6 +26,18 @@ public class CsvParser : ICsvParser
         }
         return result;
     }
+
+    public async Task WriteToFileAsync<T>(string path, IEnumerable<T> records, bool overrite)
+    {
+        using var writer = new StreamWriter(path, !overrite);
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        if (overrite)
+        {
+            csv.WriteHeader<BatchUploadRowModel>();
+            csv.NextRecord();
+        }
+        await csv.WriteRecordsAsync(records);
+    }
 }
 
 public class BatchUploadRowModelMap : ClassMap<BatchUploadRowModel>
