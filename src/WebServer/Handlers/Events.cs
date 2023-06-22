@@ -1,3 +1,6 @@
+using System.Net.Http.Headers;
+using System.Net.Mime;
+using System.Text;
 using Application.Common;
 using Application.Events.Commands;
 using Application.Events.Queries;
@@ -23,7 +26,7 @@ public class Events
         return await mediator.Send(new GetEventByIdQuery(id));
     }
 
-    public static async Task<Response<string?>> CreateEvent(IMediator mediator, [FromBody]CreateEventCommand cmd)
+    public static async Task<Response<string?>> CreateEvent(IMediator mediator, [FromBody] CreateEventCommand cmd)
     {
         return await mediator.Send(cmd);
     }
@@ -47,7 +50,7 @@ public class Events
     public static async Task<Response<bool?>> SetPeopleToEvent(
         IMediator mediator,
         string eventCode,
-        [FromBody]SetPeopleEventCommand cmd)
+        [FromBody] SetPeopleEventCommand cmd)
     {
         cmd.EventCode = eventCode;
         return await mediator.Send(cmd);
@@ -66,9 +69,17 @@ public class Events
     public static async Task<Response<bool>> SetPersonEventPaid(
         IMediator mediator,
         long eventPersonId,
-        [FromBody]SetPersonEventPaidCommand cmd)
+        [FromBody] SetPersonEventPaidCommand cmd)
     {
         cmd.SetId(eventPersonId);
         return await mediator.Send(cmd);
+    }
+
+    public static async Task<IResult> ExportEvents(HttpContext ctx, IMediator mediator, [FromQuery] long courseId)
+    {
+        var response = await mediator.Send(new ExportEventsInfoQuery(courseId));
+        // Convert the CSV content to a byte array
+        byte[] byteArray = response.Stream.ToArray();
+        return Results.File(byteArray, response.FileType, response.FileName);
     }
 }

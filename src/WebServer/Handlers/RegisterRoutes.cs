@@ -157,6 +157,11 @@ public static class RegisterRoutes
             .WithName("Get active events by person document Id")
             .WithOpenApi();
 
+         app.MapGet("/api/events/export", Events.ExportEvents)
+            // .RequireAuthorization("Admin")
+            .WithName("Export events info")
+            .WithOpenApi();
+
         // Events People
         app.MapPost("/api/events/{eventCode}/people", Events.SetPeopleToEvent)
             .RequireAuthorization("Admin")

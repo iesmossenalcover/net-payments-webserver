@@ -7,6 +7,16 @@ public class EventsPeopleRepository : Repository<EventPerson>, Application.Commo
 {
     public EventsPeopleRepository(AppDbContext dbContext) : base(dbContext, dbContext.EventPersons) {}
 
+    public async Task<IEnumerable<EventPerson>> GetAllByCourseId(long courseId, CancellationToken ct)
+    {
+        return await _dbSet
+                    .Where(x => x.Event.CourseId == courseId)
+                    .Include(x => x.Person)
+                    .Include(x => x.Event)
+                    .Include(x => x.Order)
+                    .ToListAsync(ct);
+    }
+
     public async Task<IEnumerable<EventPerson>> GetAllByEventIdAsync(long eventId, CancellationToken ct)
     {
         return await _dbSet.Where(x => x.EventId == eventId).ToListAsync(ct);

@@ -9,6 +9,7 @@ public interface ICsvParser
     Task WriteManyToFileAsync<T>(string path, IEnumerable<T> records, bool overrite);
     Task WriteToFileAsync<T>(string path, T record, bool overrite);
     Task WriteHeadersAsync<T>(string path);
+    Task WriteToStreamAsync<T>(StreamWriter writer, IEnumerable<T> records);
 }
 
 public class CsvParseResult<T>
