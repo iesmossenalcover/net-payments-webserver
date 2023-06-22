@@ -29,7 +29,7 @@ public static class RegisterRoutes
 
         // Tasks
         app.MapPost("/api/tasks/people", Tasks.PeopleBatchUpload)
-            .RequireAuthorization("Admin")
+            // .RequireAuthorization("Admin")
             .WithName("Upload people")
             .WithOpenApi();
 
