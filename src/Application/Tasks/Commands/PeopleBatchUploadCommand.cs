@@ -51,9 +51,15 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         var result = _csvParser.Parse<BatchUploadRow>(request.File);
         request.File.Dispose();
 
-        if (result.Values == null) return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error processing csv.");
+        if (result.Values == null) return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, "Error processing csv.");
 
         IEnumerable<BatchUploadRow> rows = result.Values;
+
+        // fix important data.
+        foreach (var r in rows)
+        {
+            r.Identitat = r.Identitat.ToUpper();
+        }
 
         // Process groups
         IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
