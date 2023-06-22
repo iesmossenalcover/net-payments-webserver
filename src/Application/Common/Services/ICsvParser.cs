@@ -5,7 +5,7 @@ namespace Application.Common.Services;
 
 public interface ICsvParser
 {
-    CsvParseResult<T> Parse(Stream stream);
+    CsvParseResult<T> Parse<T>(Stream stream);
     Task WriteManyToFileAsync<T>(string path, IEnumerable<T> records, bool overrite);
     Task WriteToFileAsync<T>(string path, T record, bool overrite);
     Task WriteHeadersAsync<T>(string path);

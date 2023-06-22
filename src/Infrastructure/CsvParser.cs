@@ -12,25 +12,21 @@ public class CsvParser : ICsvParser
     private static readonly Dictionary<Type, Type> Map = new Dictionary<Type, Type>()
     {
         { typeof(AccountRow), typeof(GoogleUserMap) },
-        { typeof(BatchUploadRowModel), typeof(BatchUploadRowMap) },
+        { typeof(BatchUploadRow), typeof(BatchUploadRowMap) },
     };
 
-    public CsvParseResult<T> Parse(Stream stream)
+    public CsvParseResult<T> Parse<T>(Stream stream)
     {
         var result = new CsvParseResult<T>();
         try
         {
             using var reader = new StreamReader(stream);
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-            Type? classMap = Map[typeof(T)];
-            if (classMap != null)
-            {
-                csv.Context.RegisterClassMap(classMap);
-            }
+            AddMapIfExist(typeof(T), csv.Context);
             result.Values = csv.GetRecords<T>().ToList();
             result.Ok = true;
         }
-        catch(CsvHelperException e)
+        catch (CsvHelperException e)
         {
             result.Ok = false;
             result.ErrorMessage = e.Message;
@@ -42,6 +38,7 @@ public class CsvParser : ICsvParser
     {
         using var writer = new StreamWriter(path, !overrite);
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        AddMapIfExist(typeof(T), csv.Context);
         if (overrite)
         {
             csv.WriteHeader<T>();
@@ -60,11 +57,7 @@ public class CsvParser : ICsvParser
         using var writer = new StreamWriter(path);
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-        var mapper = Map[typeof(T)];
-        if (mapper != null)
-        {
-            csv.Context.RegisterClassMap(mapper);
-        }
+        AddMapIfExist(typeof(T), csv.Context);
 
         csv.WriteHeader<T>();
         csv.NextRecord();
@@ -79,11 +72,20 @@ public class CsvParser : ICsvParser
         csv.NextRecord();
         await csv.FlushAsync();
     }
+
+    private void AddMapIfExist(Type type, CsvContext context)
+    {
+        var mapper = Map[type];
+        if (mapper != null)
+        {
+            context.RegisterClassMap(mapper);
+        }
+    }
 }
 
-public class BatchUploadRowMap : ClassMap<BatchUploadRowMap>
+public class BatchUploadRowMap : ClassMap<BatchUploadRow>
 {
-    public BatchUploadRowModelMap()
+    public BatchUploadRowMap()
     {
         Map(m => m.Expedient);
         Map(m => m.Identitat).Validate(x => !string.IsNullOrEmpty(x.Field));
