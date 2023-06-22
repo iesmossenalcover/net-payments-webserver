@@ -75,7 +75,7 @@ public class Events
         return await mediator.Send(cmd);
     }
 
-    public static async Task<IResult> ExportEvents(HttpContext ctx, IMediator mediator, [FromQuery] long courseId)
+    public static async Task<IResult> ExportEvents(HttpContext ctx, IMediator mediator, [FromQuery] long? courseId)
     {
         var response = await mediator.Send(new ExportEventsInfoQuery(courseId));
         // Convert the CSV content to a byte array

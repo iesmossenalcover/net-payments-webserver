@@ -170,7 +170,7 @@ public static class RegisterRoutes
             .WithOpenApi();
 
          app.MapGet("/api/events/export", Events.ExportEvents)
-            // .RequireAuthorization("Admin")
+            .RequireAuthorization("Admin")
             .WithName("Export events info")
             .WithOpenApi();
 
