@@ -53,7 +53,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
 
         if (result.Values == null) return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error processing csv.");
 
-        IEnumerable<BatchUploadRowModel> rows = result.Values;
+        IEnumerable<BatchUploadRow> rows = result.Values;
 
         // Process groups
         IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
@@ -74,7 +74,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
     private async Task<IDictionary<string, PersonGroupCourse>> ProcessPersonGroupCourse(
             IDictionary<string, Person> people,
             IDictionary<string, Group> groups,
-            IEnumerable<BatchUploadRowModel> rows,
+            IEnumerable<BatchUploadRow> rows,
             CancellationToken ct)
     {
         var course = await _coursesRepo.GetCurrentCoursAsync(ct);
@@ -117,7 +117,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         return personGroupCourse;
     }
 
-    private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
+    private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRow> rows, CancellationToken ct)
     {
         IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.Grup)).Select(x => x.Grup ?? "").Distinct();
         IEnumerable<Group> existingGroups = await _groupsRepo.GetGroupsByNameAsync(groupNames, ct);
@@ -137,7 +137,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         return groups;
     }
 
-    private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRowModel> rows, CancellationToken ct)
+    private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRow> rows, CancellationToken ct)
     {
         IEnumerable<Person> existingPeople = await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.Identitat), ct);
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
