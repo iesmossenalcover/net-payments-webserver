@@ -74,10 +74,18 @@ public class CsvParser : ICsvParser
         await csv.FlushAsync();
     }
 
+    public async Task WriteToStreamAsync<T>(StreamWriter writer, IEnumerable<T> records)
+    {
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture, true);
+        AddMapIfExist(typeof(T), csv.Context);
+
+        await csv.WriteRecordsAsync(records);
+        await csv.FlushAsync();
+    }
+
     private void AddMapIfExist(Type type, CsvContext context)
     {
-        var mapper = Map[type];
-        if (mapper != null)
+        if (Map.TryGetValue(type, out Type? mapper))
         {
             context.RegisterClassMap(mapper);
         }
