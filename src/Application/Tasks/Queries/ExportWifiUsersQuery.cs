@@ -1,4 +1,3 @@
-using Application.Common;
 using Application.Common.Models;
 using Application.Common.Services;
 using Domain.Entities.People;
@@ -7,15 +6,15 @@ using MediatR;
 namespace Application.GoogleWorkspace.Commands;
 
 // Model we receive
-public record ExportWifiUsersCommand() : IRequest<Response<ExportWifiUsersVm>>;
+public record ExportWifiUsersQuery() : IRequest<ExportWifiUsersVm>;
 
 // Validator for the model
 
 // Optionally define a view model
-public record ExportWifiUsersVm();
+public record ExportWifiUsersVm(MemoryStream Stream, string FileType, string FileName);
 
 // Handler
-public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersCommand, Response<ExportWifiUsersVm>>
+public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersQuery, ExportWifiUsersVm>
 {
     #region props
 
@@ -25,9 +24,6 @@ public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersCommand, Re
     private readonly IPeopleRepository _peopleRepository;
     private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
     private readonly ICsvParser _csvParser;
-    private readonly string emailDomain;
-    private readonly string[] excludeEmails;
-    private readonly string tempFolderPath;
 
     public ExportWifiUsersHandler(ICsvParser csvParser, IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository, IPeopleRepository peopleRepository, IConfiguration configuration)
     {
@@ -37,25 +33,20 @@ public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersCommand, Re
         _peopleRepository = peopleRepository;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
         _csvParser = csvParser;
-        emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
-        tempFolderPath = configuration.GetValue<string>("TempFolderPath") ?? throw new Exception("TempFolderPath");
-        excludeEmails = configuration.GetSection("GoogleApiExcludeAccounts").Get<string[]>() ?? throw new Exception("GoogleApiExcludeAccounts");
     }
     #endregion
 
 
-    public async Task<Response<ExportWifiUsersVm>> Handle(ExportWifiUsersCommand request, CancellationToken ct)
+    public async Task<ExportWifiUsersVm> Handle(ExportWifiUsersQuery request, CancellationToken ct)
     {
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
 
         var now = DateTimeOffset.UtcNow;
-        string filePath = $"{tempFolderPath}export_wifi_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";
-
-        await _csvParser.WriteHeadersAsync<WifiAccountRow>(filePath);
+        string fileName = $"export_wifi_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";
 
 
         IEnumerable<PersonGroupCourse> pgcs = _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(course.Id, ct);
-
+        List<WifiAccountRow> rows = new List<WifiAccountRow>(pgcs.Count());
         foreach (var pgc in pgcs)
         {
             Person p = pgc.Person;
@@ -69,10 +60,13 @@ public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersCommand, Re
                     Password = password,
                 };
 
-                await _csvParser.WriteToFileAsync(filePath, ac, false);
+                rows.Add(ac);
             }
         }
+         var memStream = new MemoryStream();
+        var streamWriter = new StreamWriter(memStream);
+        await _csvParser.WriteToStreamAsync(streamWriter, rows);
 
-        return Response<ExportWifiUsersVm>.Ok(new ExportWifiUsersVm());
+        return new ExportWifiUsersVm(memStream, "text/csv", fileName);
     }
 }

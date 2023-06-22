@@ -7,8 +7,11 @@ namespace WebServer.Handlers;
 
 public class Wifi
 {
-    public async static Task<Response<ExportWifiUsersVm>> ExportWifiUsers(IMediator m)
+
+    public static async Task<IResult> ExportWifiUsers(IMediator mediator)
     {
-        return await m.Send(new ExportWifiUsersCommand());
+        var response = await mediator.Send(new ExportWifiUsersQuery());
+        byte[] byteArray = response.Stream.ToArray();
+        return Results.File(byteArray, response.FileType, response.FileName);
     }
 }

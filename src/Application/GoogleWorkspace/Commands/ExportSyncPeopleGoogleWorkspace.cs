@@ -8,15 +8,15 @@ using MediatR;
 namespace Application.GoogleWorkspace.Commands;
 
 // Model we receive
-public record ExportSyncPeopleGoogleWorkspaceCommand() : IRequest<Response<ExportSyncPeopleGoogleWorkspaceVm>>;
+public record ExportSyncPeopleGoogleWorkspaceCommand() : IRequest<ExportSyncPeopleGoogleWorkspaceVm>;
 
 // Validator for the model
 
 // Optionally define a view model
-public record ExportSyncPeopleGoogleWorkspaceVm();
+public record ExportSyncPeopleGoogleWorkspaceVm(MemoryStream Stream, string FileType, string FileName);
 
 // Handler
-public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSyncPeopleGoogleWorkspaceCommand, Response<ExportSyncPeopleGoogleWorkspaceVm>>
+public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSyncPeopleGoogleWorkspaceCommand, ExportSyncPeopleGoogleWorkspaceVm>
 {
     #region props
 
@@ -28,7 +28,6 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
     private readonly ICsvParser _csvParser;
     private readonly string emailDomain;
     private readonly string[] excludeEmails;
-    private readonly string tempFolderPath;
 
     public ExportSyncPeopleGoogleWorkspaceHandler(ICsvParser csvParser, IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository, IPeopleRepository peopleRepository, IConfiguration configuration)
     {
@@ -39,22 +38,20 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
         _csvParser = csvParser;
         emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
-        tempFolderPath = configuration.GetValue<string>("TempFolderPath") ?? throw new Exception("TempFolderPath");
         excludeEmails = configuration.GetSection("GoogleApiExcludeAccounts").Get<string[]>() ?? throw new Exception("GoogleApiExcludeAccounts");
     }
     #endregion
 
 
-    public async Task<Response<ExportSyncPeopleGoogleWorkspaceVm>> Handle(ExportSyncPeopleGoogleWorkspaceCommand request, CancellationToken ct)
+    public async Task<ExportSyncPeopleGoogleWorkspaceVm> Handle(ExportSyncPeopleGoogleWorkspaceCommand request, CancellationToken ct)
     {
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
         IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
 
         var now = DateTimeOffset.UtcNow;
-        string filePath = $"{tempFolderPath}export_users_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";
+        string fileName = $"export_users_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";
 
-        await _csvParser.WriteHeadersAsync<AccountRow>(filePath);
-
+        List<AccountRow> rows = new List<AccountRow>();
         foreach (var ou in ouRelations)
         {
             IEnumerable<PersonGroupCourse> pgcs = await _personGroupCourseRepository.GetPeopleGroupByGroupIdAndCourseIdAsync(course.Id, ou.GroupId, ct);
@@ -88,12 +85,17 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
                 };
 
                 p.ContactMail = email;
+                rows.Add(ac);
 
-                await _csvParser.WriteToFileAsync(filePath, ac, false);
             }
+
             await _peopleRepository.UpdateManyAsync(pgcs.Select(x => x.Person), CancellationToken.None);
         }
 
-        return Response<ExportSyncPeopleGoogleWorkspaceVm>.Ok(new ExportSyncPeopleGoogleWorkspaceVm());
+        var memStream = new MemoryStream();
+        var streamWriter = new StreamWriter(memStream);
+        await _csvParser.WriteToStreamAsync(streamWriter, rows);
+        
+        return new ExportSyncPeopleGoogleWorkspaceVm(memStream, "text/csv", fileName);
     }
 }
