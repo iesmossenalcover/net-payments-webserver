@@ -19,18 +19,24 @@ public class CsvParser : ICsvParser
     public CsvParseResult<T> Parse<T>(Stream stream)
     {
         var result = new CsvParseResult<T>();
+        using var reader = new StreamReader(stream);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         try
         {
-            using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
             AddMapIfExist(typeof(T), csv.Context);
             result.Values = csv.GetRecords<T>().ToList();
             result.Ok = true;
         }
         catch (CsvHelperException e)
         {
+            CsvContext context = e.Context;
             result.Ok = false;
-            result.ErrorMessage = e.Message;
+            string column = csv.CurrentIndex.ToString();
+            if (csv.HeaderRecord != null && csv.CurrentIndex < csv.HeaderRecord.Length)
+            {
+                column = csv.HeaderRecord[csv.CurrentIndex];
+            }
+            result.ErrorMessage = $"Error columna: {column},  fila {context.Parser.Row}";
         }
         return result;
     }
