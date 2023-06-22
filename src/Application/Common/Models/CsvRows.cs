@@ -12,6 +12,11 @@ public class BatchUploadRow
     public string? Assignatures { get; set; }
 }
 
+public class WifiAccountRow {
+    public string? Email { get; set; }
+    public string? Password { get; set; }
+}
+
 public class AccountRow
 {
     public string First { get; set; } = string.Empty;

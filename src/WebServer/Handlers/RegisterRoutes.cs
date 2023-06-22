@@ -41,12 +41,17 @@ public static class RegisterRoutes
 
         app.MapPost("/api/googleworkspace/people/suspend", GoogleWorkspace.SuspendPeopleByOuGoogleWorkspace)
             .WithName("Suspend people")
-            // .RequireAuthorization("Superuser")
+            .RequireAuthorization("Superuser")
             .WithOpenApi();
 
         app.MapPost("/api/googleworkspace/people/move", GoogleWorkspace.MovePeopleByOuGoogleWorkspace)
             .WithName("Move people")
-            //.RequireAuthorization("Superuser")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+        
+        app.MapPost("/api/googleworkspace/people/groups", GoogleWorkspace.AddPeopleToGroupGoogleWorkspace)
+            .WithName("Add people to group")
+            .RequireAuthorization("Superuser")
             .WithOpenApi();
 
         app.MapPost("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)
@@ -63,6 +68,13 @@ public static class RegisterRoutes
             .WithName("Set password person")
             .RequireAuthorization("Admin")
             .WithOpenApi();
+
+        //Wifi
+        app.MapPost("/api/wifi/export", Wifi.ExportWifiUsers)
+            .WithName("Export wifi users")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
 
         // People
         app.MapGet("/api/people/{id}", People.GetPerson)
@@ -158,7 +170,7 @@ public static class RegisterRoutes
             .WithOpenApi();
 
          app.MapGet("/api/events/export", Events.ExportEvents)
-            // .RequireAuthorization("Admin")
+            .RequireAuthorization("Admin")
             .WithName("Export events info")
             .WithOpenApi();
 

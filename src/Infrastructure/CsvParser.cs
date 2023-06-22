@@ -13,6 +13,7 @@ public class CsvParser : ICsvParser
     {
         { typeof(AccountRow), typeof(GoogleUserMap) },
         { typeof(BatchUploadRow), typeof(BatchUploadRowMap) },
+        { typeof(WifiAccountRow), typeof(WifiAccountRowMap) },
     };
 
     public CsvParseResult<T> Parse<T>(Stream stream)
@@ -103,6 +104,15 @@ public class BatchUploadRowMap : ClassMap<BatchUploadRow>
         Map(m => m.TelContacte);
         Map(m => m.Grup).Validate(x => !string.IsNullOrEmpty(x.Field));
         Map(m => m.Assignatures);
+    }
+}
+
+public class WifiAccountRowMap : ClassMap<WifiAccountRow>
+{
+    public WifiAccountRowMap()
+    {
+        Map(m => m.Email).Name("usuari");
+        Map(m => m.Password).Name("password");
     }
 }
 
