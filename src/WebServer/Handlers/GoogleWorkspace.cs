@@ -32,6 +32,10 @@ public class GoogleWorkspace
     {
         return await m.Send(new MovePeopleGoogleWorkspaceCommand());
     }
+    public async static Task<Response<AddPeopleToGroupGoogleWorkspaceCommandVm>> AddPeopleToGroupGoogleWorkspace(IMediator m)
+    {
+        return await m.Send(new AddPeopleToGroupGoogleWorkspaceCommand());
+    }
     public async static Task<Response<ExportSyncPeopleGoogleWorkspaceVm>> ExportPeopleGoogleWorkspace(IMediator m)
     {
         return await m.Send(new ExportSyncPeopleGoogleWorkspaceCommand());
