@@ -143,7 +143,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
         foreach (var r in rows)
         {
-            if (people.ContainsKey(r.Identitat))
+            if (people.ContainsKey(r.Identitat.Trim()))
             {
                 Person p = people[r.Identitat];
                 p.AcademicRecordNumber = r.Expedient;
