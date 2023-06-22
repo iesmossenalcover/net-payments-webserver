@@ -58,7 +58,7 @@ public class ExportEventsInfoQueryHandler : IRequestHandler<ExportEventsInfoQuer
         var streamWriter = new StreamWriter(memStream);
         await _csvParser.WriteToStreamAsync(streamWriter, rows);
 
-        return new ExportEventsInfoVm(memStream, "text/csv", "prova.csv");
+        return new ExportEventsInfoVm(memStream, "text/csv", "export.csv");
     }
 }
 
