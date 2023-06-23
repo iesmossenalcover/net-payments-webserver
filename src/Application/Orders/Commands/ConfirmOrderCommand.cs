@@ -82,7 +82,6 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         await _eventsPeopleRespository.UpdateManyAsync(personEvents, CancellationToken.None);
 
         // buissness logic: todo move
-        
         // enrollment
         EventPerson? enrollmentEvent = personEvents.FirstOrDefault(x => x.Event.Enrollment);
         if (enrollmentEvent != null)
