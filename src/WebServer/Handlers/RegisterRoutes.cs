@@ -54,7 +54,7 @@ public static class RegisterRoutes
             .RequireAuthorization("Superuser")
             .WithOpenApi();
 
-        app.MapPost("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)
+        app.MapGet("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)
             .WithName("Export people")
             .RequireAuthorization("Superuser")
             .WithOpenApi();
@@ -70,7 +70,7 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         //Wifi
-        app.MapPost("/api/wifi/export", Wifi.ExportWifiUsers)
+        app.MapGet("/api/wifi/export", Wifi.ExportWifiUsers)
             .WithName("Export wifi users")
             .RequireAuthorization("Superuser")
             .WithOpenApi();
