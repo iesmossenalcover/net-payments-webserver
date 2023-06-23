@@ -56,7 +56,7 @@ public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersQuery, Expo
             {
                 var ac = new WifiAccountRow()
                 {
-                    Email = p.ContactMail,
+                    Email = p.ContactMail.Split("@").FirstOrDefault(),
                     Password = password,
                 };
 
