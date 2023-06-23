@@ -41,4 +41,13 @@ public class EventsPeopleRepository : Repository<EventPerson>, Application.Commo
                     .Include(x => x.Order)
                     .ToListAsync(ct);
     }
+
+    public async Task<EventPerson?> GetWithRelationsByIdAsync(long id, CancellationToken ct)
+    {
+        return await _dbSet
+                    .Include(x => x.Person)
+                    .Include(x => x.Event)
+                    .Include(x => x.Order)
+                    .FirstAsync(x => x.Id == id, ct);
+    }
 }

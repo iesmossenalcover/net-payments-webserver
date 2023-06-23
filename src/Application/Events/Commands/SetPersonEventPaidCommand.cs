@@ -40,7 +40,7 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
 
     public async Task<Response<bool>> Handle(SetPersonEventPaidCommand request, CancellationToken ct)
     {
-        var eventPerson = await _eventsPeopleRepository.GetByIdAsync(request.GetId, ct);
+        var eventPerson = await _eventsPeopleRepository.GetWithRelationsByIdAsync(request.GetId, ct);
         if (eventPerson == null)
         {
             return Response<bool>.Error(ResponseCode.NotFound, "No s'ha trobat cap amb aquest id");
@@ -75,7 +75,7 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
             PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(eventPerson.PersonId, eventPerson.Event.CourseId, ct);
             if (pgc != null)
             {
-                pgc.Enrolled = request.Paid;
+                pgc.Amipa = request.Paid;
                 await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
             }
         }
