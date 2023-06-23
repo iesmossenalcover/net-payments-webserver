@@ -29,7 +29,7 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
         _googleAdminApi = googleAdminApi;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
         emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
-        excludeEmails = configuration.GetSection("GoogleApiExcludeAccounts").Get<string[]>() ?? throw new Exception("GoogleApiExcludeAccounts");
+       excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
     }
     #endregion
 
