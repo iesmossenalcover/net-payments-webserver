@@ -63,7 +63,7 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
                 string email = string.IsNullOrEmpty(p.ContactMail) ? SyncPersonToGoogleWorkspaceCommandHandler.GetEmail(p, emailDomain) : p.ContactMail;
 
                 // IMPORTANT: Exclude members
-                if (excludeEmails.Contains(p.ContactMail)) continue;
+                if (excludeEmails.Contains(email)) continue;
 
                 string password = "****";
                 bool change = false;
