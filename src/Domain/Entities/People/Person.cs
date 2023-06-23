@@ -11,7 +11,7 @@ public class Person : Entity
     public long? AcademicRecordNumber { get; set; }
 
     public bool IsStudent => AcademicRecordNumber.HasValue;
-    public string FormalFullName => $"{Surname1} {Surname2}, {Name}";
-    public string FullName => $"{Name} {Surname1} {Surname2}";
-    public string LastName => $"{Surname1} {Surname2}";
+    public string FormalFullName => $"{Surname1} {Surname2}, {Name}".Trim();
+    public string FullName => $"{Name} {Surname1} {Surname2}".Trim();
+    public string LastName => $"{Surname1} {Surname2}".Trim();
 }
