@@ -10,7 +10,7 @@ using MediatR;
 namespace Application.Orders.Queries;
 
 public record EventInfo(string Code, string Name, decimal Price, string Currency);
-public record OrderInfoVm(IEnumerable<EventInfo> events, bool DisplayEnrollment, string? EnrollmentSubjectsInfo);
+public record OrderInfoVm(IEnumerable<EventInfo> events, bool DisplayEnrollment, string? EnrollmentSubjectsInfo, string? GroupDescription);
 
 public record OrderInfoQuery(string Signature, string MerchantParamenters, string SignatureVersion) : IRequest<Response<OrderInfoVm>>;
 
@@ -53,6 +53,6 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
         bool enrollmentEvent = orderEvents.Any(x => x.Event.Enrollment);
 
         IEnumerable<EventInfo> eventsInfo = orderEvents.Select(x => new EventInfo(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€"));
-        return Response<OrderInfoVm>.Ok(new OrderInfoVm(eventsInfo, enrollmentEvent && config.DisplayEnrollment, pgc.SubjectsInfo));
+        return Response<OrderInfoVm>.Ok(new OrderInfoVm(eventsInfo, enrollmentEvent && config.DisplayEnrollment, pgc.SubjectsInfo, pgc.Group.Description));
     }
 }

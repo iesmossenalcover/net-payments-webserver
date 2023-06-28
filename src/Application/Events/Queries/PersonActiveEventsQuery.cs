@@ -8,7 +8,7 @@ using MediatR;
 namespace Application.Events.Queries;
 
 # region ViewModels
-public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo);
+public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo, string? GroupDescription);
 public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable);
 public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm person);
 #endregion
@@ -70,6 +70,6 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)
     {
         bool displayEnrollment = pgc.Enrolled && config.DisplayEnrollment;
-        return new PersonSummaryVm(person.DocumentId, person.FullName, displayEnrollment, displayEnrollment ? pgc.SubjectsInfo : null);
+        return new PersonSummaryVm(person.DocumentId, person.FullName, displayEnrollment, displayEnrollment ? pgc.SubjectsInfo : null, displayEnrollment ? pgc.Group.Description : null);
     }
 }
