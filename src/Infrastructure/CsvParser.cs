@@ -14,6 +14,7 @@ public class CsvParser : ICsvParser
         { typeof(AccountRow), typeof(GoogleUserMap) },
         { typeof(BatchUploadRow), typeof(BatchUploadRowMap) },
         { typeof(WifiAccountRow), typeof(WifiAccountRowMap) },
+        { typeof(PersonRow), typeof(PersonRowMap) },
     };
 
     public CsvParseResult<T> Parse<T>(Stream stream)
@@ -122,14 +123,20 @@ public class WifiAccountRowMap : ClassMap<WifiAccountRow>
     }
 }
 
-// public class PersonRowMap : ClassMap<PersonRow>
-// {
-//     public WifiAccountRowMap()
-//     {
-//         Map(m => m.Email).Name("usuari");
-//         Map(m => m.Password).Name("password");
-//     }
-// }
+public class PersonRowMap : ClassMap<Application.Common.Models.PersonRow>
+{
+    public PersonRowMap()
+    {
+        Map(m => m.Name).Name("Nom");
+        Map(m => m.Surname1).Name("Llinatge1");
+        Map(m => m.Surname2).Name("Llinatge2");
+        Map(m => m.DocumentId).Name("Document Identitat");
+        Map(m => m.AcademicRecordNumber).Name("Expedient academic");
+        Map(m => m.GroupName).Name("Grup");
+        Map(m => m.Amipa).Name("Amipa");
+        Map(m => m.Enrolled).Name("Matriculat");
+    }
+}
 
 public class GoogleUserMap : ClassMap<AccountRow>
 {
