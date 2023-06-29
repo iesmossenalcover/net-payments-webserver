@@ -79,7 +79,7 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
         string errorsFilePath = $"{tempFolderPath}errors_export_users_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";
 
         await _csvParser.WriteHeadersAsync<ErrorRow>(errorsFilePath);
-        await _csvParser.WriteHeadersAsync<PersonRow>(filePath);
+        await _csvParser.WriteHeadersAsync<PersonAccountRow>(filePath);
 
         IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
 
@@ -176,7 +176,7 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
                 }
                 await _peopleRepository.UpdateAsync(p, ct);
 
-                var pr = new PersonRow()
+                var pr = new PersonAccountRow()
                 {
                     Email = p.ContactMail ?? "",
                     FirstName = p.Name,
@@ -185,7 +185,7 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
                     TempPassword = password ?? "****",
                 };
 
-                await _csvParser.WriteManyToFileAsync(filePath, new List<PersonRow>() { pr }, false);
+                await _csvParser.WriteManyToFileAsync(filePath, new List<PersonAccountRow>() { pr }, false);
 
             }
         }
@@ -198,7 +198,7 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
     }
 }
 
-public class PersonRow
+public class PersonAccountRow
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

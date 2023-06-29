@@ -46,27 +46,4 @@ public class ExportPeopleQueryQuueryHandler : IRequestHandler<ExportPeopleQuery,
         await _csvParser.WriteToStreamAsync(streamWriter, rows);
         return new FileVm(memStream, "text/csv", "users.csv");
     }
-
-    public static PersonRowVm ToPersonVm(PersonGroupCourse pgc)
-    {
-        Person p = pgc.Person;
-        return new PersonRowVm(
-            p.Id,
-            p.DocumentId,
-            p.Name,
-            p.LastName,
-            pgc.Group.Id,
-            pgc.Group.Name,
-            pgc.Amipa,
-            p.AcademicRecordNumber
-        );
-    }
-
-    private static CourseVm ToCourseVm(Course c)
-    {
-        return new CourseVm(
-            c.Id,
-            c.Name
-        );
-    }
 }
