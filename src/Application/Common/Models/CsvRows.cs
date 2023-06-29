@@ -12,7 +12,8 @@ public class BatchUploadRow
     public string? Assignatures { get; set; }
 }
 
-public class WifiAccountRow {
+public class WifiAccountRow
+{
     public string? Email { get; set; }
     public string? Password { get; set; }
 }
@@ -47,4 +48,16 @@ public class AccountRow
     public string Change { get; set; } = string.Empty;
     public string NewStatus { get; set; } = string.Empty;
     public string Advanced { get; set; } = string.Empty;
+}
+
+public class PersonRow
+{
+    public string Name { get; set; } = string.Empty;
+    public long? AcademicRecordNumber { get; set; }
+    public string DocumentId { get; set; } = string.Empty;
+    public string Surname1 { get; set; } = string.Empty;
+    public string? Surname2 { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public bool Amipla { get; set; }
+    public bool Enrolled { get; set; }
 }

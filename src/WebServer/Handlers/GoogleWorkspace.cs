@@ -32,16 +32,15 @@ public class GoogleWorkspace
     {
         return await m.Send(new MovePeopleGoogleWorkspaceCommand());
     }
+
     public async static Task<Response<AddPeopleToGroupGoogleWorkspaceCommandVm>> AddPeopleToGroupGoogleWorkspace(IMediator m)
     {
         return await m.Send(new AddPeopleToGroupGoogleWorkspaceCommand());
     }
 
-
     public static async Task<IResult> ExportPeopleGoogleWorkspace(IMediator mediator)
     {
         var response = await mediator.Send(new ExportSyncPeopleGoogleWorkspaceCommand());
-        byte[] byteArray = response.Stream.ToArray();
-        return Results.File(byteArray, response.FileType, response.FileName);
+        return Results.File(response.Stream.ToArray(), response.FileType, response.FileName);
     }
 }

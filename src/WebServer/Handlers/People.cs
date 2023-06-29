@@ -8,6 +8,12 @@ namespace WebServer.Handlers;
 
 public class People
 {
+    public static async Task<IResult> ExportPeople(IMediator mediator)
+    {
+        var response = await mediator.Send(new ExportPeopleQuery());
+        return Results.File(response.Stream.ToArray(), response.FileType, response.FileName);
+    }
+
     public static async Task<IEnumerable<PersonRowVm>> ListPeople(
         long? courseId,
         IMediator mediator)

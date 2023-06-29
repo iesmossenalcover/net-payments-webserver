@@ -6,15 +6,10 @@ using MediatR;
 namespace Application.GoogleWorkspace.Commands;
 
 // Model we receive
-public record ExportWifiUsersQuery() : IRequest<ExportWifiUsersVm>;
-
-// Validator for the model
-
-// Optionally define a view model
-public record ExportWifiUsersVm(MemoryStream Stream, string FileType, string FileName);
+public record ExportWifiUsersQuery() : IRequest<FileVm>;
 
 // Handler
-public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersQuery, ExportWifiUsersVm>
+public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersQuery, FileVm>
 {
     #region props
 
@@ -37,7 +32,7 @@ public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersQuery, Expo
     #endregion
 
 
-    public async Task<ExportWifiUsersVm> Handle(ExportWifiUsersQuery request, CancellationToken ct)
+    public async Task<FileVm> Handle(ExportWifiUsersQuery request, CancellationToken ct)
     {
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
 
@@ -67,6 +62,6 @@ public class ExportWifiUsersHandler : IRequestHandler<ExportWifiUsersQuery, Expo
         var streamWriter = new StreamWriter(memStream);
         await _csvParser.WriteToStreamAsync(streamWriter, rows);
 
-        return new ExportWifiUsersVm(memStream, "text/csv", fileName);
+        return new FileVm(memStream, "text/csv", fileName);
     }
 }
