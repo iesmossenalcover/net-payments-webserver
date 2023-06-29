@@ -11,7 +11,6 @@ public class Wifi
     public static async Task<IResult> ExportWifiUsers(IMediator mediator)
     {
         var response = await mediator.Send(new ExportWifiUsersQuery());
-        byte[] byteArray = response.Stream.ToArray();
-        return Results.File(byteArray, response.FileType, response.FileName);
+        return Results.File(response.Stream.ToArray(), response.FileType, response.FileName);
     }
 }

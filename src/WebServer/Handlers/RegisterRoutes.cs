@@ -77,6 +77,11 @@ public static class RegisterRoutes
 
 
         // People
+        app.MapGet("/api/people/export", People.ExportPeople)
+            .RequireAuthorization("Admin")
+            .WithName("Export people csv")
+            .WithOpenApi();
+
         app.MapGet("/api/people/{id}", People.GetPerson)
             .RequireAuthorization("Admin")
             .WithName("Get person by id")

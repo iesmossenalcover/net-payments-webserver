@@ -72,7 +72,8 @@ builder.Services.AddCors(options =>
             builder.Configuration.GetValue<string>("CORSOriginUrl") ?? throw new Exception("Configure CORSOriginUrl"), "http://localhost:3000")
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();
+            .AllowCredentials()
+            .WithExposedHeaders("Content-Disposition");
     });
 });
 

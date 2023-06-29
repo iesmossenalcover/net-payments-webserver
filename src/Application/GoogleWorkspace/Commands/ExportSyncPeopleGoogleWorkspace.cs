@@ -8,15 +8,10 @@ using MediatR;
 namespace Application.GoogleWorkspace.Commands;
 
 // Model we receive
-public record ExportSyncPeopleGoogleWorkspaceCommand() : IRequest<ExportSyncPeopleGoogleWorkspaceVm>;
-
-// Validator for the model
-
-// Optionally define a view model
-public record ExportSyncPeopleGoogleWorkspaceVm(MemoryStream Stream, string FileType, string FileName);
+public record ExportSyncPeopleGoogleWorkspaceCommand() : IRequest<FileVm>;
 
 // Handler
-public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSyncPeopleGoogleWorkspaceCommand, ExportSyncPeopleGoogleWorkspaceVm>
+public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSyncPeopleGoogleWorkspaceCommand, FileVm>
 {
     #region props
 
@@ -43,7 +38,7 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
     #endregion
 
 
-    public async Task<ExportSyncPeopleGoogleWorkspaceVm> Handle(ExportSyncPeopleGoogleWorkspaceCommand request, CancellationToken ct)
+    public async Task<FileVm> Handle(ExportSyncPeopleGoogleWorkspaceCommand request, CancellationToken ct)
     {
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
         IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
@@ -96,6 +91,6 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
         var streamWriter = new StreamWriter(memStream);
         await _csvParser.WriteToStreamAsync(streamWriter, rows);
         
-        return new ExportSyncPeopleGoogleWorkspaceVm(memStream, "text/csv", fileName);
+        return new FileVm(memStream, "text/csv", fileName);
     }
 }

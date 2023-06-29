@@ -78,7 +78,6 @@ public class Events
     public static async Task<IResult> ExportEvents(IMediator mediator, [FromQuery] long? courseId)
     {
         var response = await mediator.Send(new ExportEventsInfoQuery(courseId));
-        byte[] byteArray = response.Stream.ToArray();
-        return Results.File(byteArray, response.FileType, response.FileName);
+        return Results.File(response.Stream.ToArray(), response.FileType, response.FileName);
     }
 }

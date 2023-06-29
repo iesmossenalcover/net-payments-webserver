@@ -1,3 +1,4 @@
+using Application.Common.Models;
 using Application.Common.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
@@ -5,10 +6,9 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-public record ExportEventsInfoVm(MemoryStream Stream, string FileType, string FileName);
-public record ExportEventsInfoQuery(long? CourseId) : IRequest<ExportEventsInfoVm>;
+public record ExportEventsInfoQuery(long? CourseId) : IRequest<FileVm>;
 
-public class ExportEventsInfoQueryHandler : IRequestHandler<ExportEventsInfoQuery, ExportEventsInfoVm>
+public class ExportEventsInfoQueryHandler : IRequestHandler<ExportEventsInfoQuery, FileVm>
 {
     #region IOC
     private readonly Application.Common.Services.ICsvParser _csvParser;
@@ -27,7 +27,7 @@ public class ExportEventsInfoQueryHandler : IRequestHandler<ExportEventsInfoQuer
     }
     #endregion
 
-    public async Task<ExportEventsInfoVm> Handle(ExportEventsInfoQuery request, CancellationToken ct)
+    public async Task<FileVm> Handle(ExportEventsInfoQuery request, CancellationToken ct)
     {
         Course c = request.CourseId.HasValue ?
                     await _coursesRepository.GetByIdAsync(request.CourseId.Value, ct) ?? throw new Exception("Course Not found") :
@@ -58,7 +58,7 @@ public class ExportEventsInfoQueryHandler : IRequestHandler<ExportEventsInfoQuer
         var streamWriter = new StreamWriter(memStream);
         await _csvParser.WriteToStreamAsync(streamWriter, rows);
 
-        return new ExportEventsInfoVm(memStream, "text/csv", "export.csv");
+        return new FileVm(memStream, "text/csv", "export.csv");
     }
 }
 

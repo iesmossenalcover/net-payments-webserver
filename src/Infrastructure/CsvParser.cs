@@ -122,6 +122,15 @@ public class WifiAccountRowMap : ClassMap<WifiAccountRow>
     }
 }
 
+// public class PersonRowMap : ClassMap<PersonRow>
+// {
+//     public WifiAccountRowMap()
+//     {
+//         Map(m => m.Email).Name("usuari");
+//         Map(m => m.Password).Name("password");
+//     }
+// }
+
 public class GoogleUserMap : ClassMap<AccountRow>
 {
     public GoogleUserMap()
