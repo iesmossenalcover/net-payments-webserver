@@ -58,6 +58,7 @@ public class PersonRow
     public string DocumentId { get; set; } = string.Empty;
     public long? AcademicRecordNumber { get; set; }
     public string GroupName { get; set; } = string.Empty;
+    public string? Email { get; set; } = string.Empty;
     public bool Amipa { get; set; }
     public bool Enrolled { get; set; }
 }
