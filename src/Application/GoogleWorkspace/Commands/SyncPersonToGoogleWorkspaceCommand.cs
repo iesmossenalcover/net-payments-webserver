@@ -77,6 +77,9 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
         {
             GoogleApiResult<bool> moveUsersResult = await _googleAdminApi.MoveUserToOU(p.ContactMail, oug.ActiveOU);
             if (!moveUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, moveUsersResult.ErrorMessage ?? "Error movent d'OU");
+            
+            GoogleApiResult<bool> changeGroup = await _googleAdminApi.AddUserToGroup(p.ContactMail, oug.GroupMail);
+            if (!changeGroup.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, moveUsersResult.ErrorMessage ?? "Error change user to group");
 
         }
 
