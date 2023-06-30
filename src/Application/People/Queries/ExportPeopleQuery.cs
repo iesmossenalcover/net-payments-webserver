@@ -38,7 +38,8 @@ public class ExportPeopleQueryQuueryHandler : IRequestHandler<ExportPeopleQuery,
             GroupName = x.Group.Name,
             Name = x.Person.Name,
             Surname1 = x.Person.Surname1,
-            Surname2 = x.Person.Surname2
+            Surname2 = x.Person.Surname2,
+            Email = x.Person.ContactMail,
         });
         
         var memStream = new MemoryStream();
