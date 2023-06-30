@@ -133,6 +133,7 @@ public class PersonRowMap : ClassMap<Application.Common.Models.PersonRow>
         Map(m => m.DocumentId).Name("Document Identitat");
         Map(m => m.AcademicRecordNumber).Name("Expedient academic");
         Map(m => m.GroupName).Name("Grup");
+        Map(m => m.Email).Name("Correu");
         Map(m => m.Amipa).Name("Amipa");
         Map(m => m.Enrolled).Name("Matriculat");
     }

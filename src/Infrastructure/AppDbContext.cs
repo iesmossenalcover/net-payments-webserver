@@ -187,17 +187,21 @@ namespace Infrastructure
                 .HasIndex(x => new { x.Type, x.Status }).IsDescending();
         }
 
-        public override int SaveChanges()
+        public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             foreach (var entry in ChangeTracker.Entries<Person>())
             {
                 if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
                 {
-                    entry.Entity.DocumentId = entry.Entity.DocumentId.ToUpperInvariant();
+                    entry.Entity.Name = entry.Entity.Name.Trim().ToUpperInvariant();
+                    entry.Entity.Surname1 = entry.Entity.Surname1.Trim().ToUpperInvariant();
+                    entry.Entity.Surname2 = !string.IsNullOrEmpty(entry.Entity.Surname2) ? entry.Entity.Surname2.Trim().ToUpperInvariant() : null;
+                    entry.Entity.ContactMail = !string.IsNullOrEmpty(entry.Entity.ContactMail) ? entry.Entity.ContactMail.Trim() : null;
+                    entry.Entity.DocumentId = entry.Entity.DocumentId.Trim().ToUpperInvariant();
                 }
             }
 
-            return base.SaveChanges();
+            return await base.SaveChangesAsync(cancellationToken);
         }
     }
 }
