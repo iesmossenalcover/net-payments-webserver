@@ -195,9 +195,17 @@ namespace Infrastructure
                 {
                     entry.Entity.Name = entry.Entity.Name.Trim().ToUpperInvariant();
                     entry.Entity.Surname1 = entry.Entity.Surname1.Trim().ToUpperInvariant();
+                    entry.Entity.DocumentId = entry.Entity.DocumentId.Trim().ToUpperInvariant();
                     entry.Entity.Surname2 = !string.IsNullOrEmpty(entry.Entity.Surname2) ? entry.Entity.Surname2.Trim().ToUpperInvariant() : null;
                     entry.Entity.ContactMail = !string.IsNullOrEmpty(entry.Entity.ContactMail) ? entry.Entity.ContactMail.Trim() : null;
-                    entry.Entity.DocumentId = entry.Entity.DocumentId.Trim().ToUpperInvariant();
+                }
+            }
+
+            foreach (var entry in ChangeTracker.Entries<PersonGroupCourse>())
+            {
+                if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
+                {
+                    entry.Entity.SubjectsInfo = !string.IsNullOrEmpty(entry.Entity.SubjectsInfo) ? entry.Entity.SubjectsInfo.Trim() : null;
                 }
             }
 
