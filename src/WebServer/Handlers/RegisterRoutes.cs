@@ -113,6 +113,11 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Courses
+        app.MapGet("/api/courses/{id}", Courses.GetCourse)
+            .RequireAuthorization("Admin")
+            .WithName("Get course by id")
+            .WithOpenApi();
+
         app.MapGet("/api/courses", Courses.GetAllCourses)
             .RequireAuthorization("Admin")
             .WithName("Get all courses")

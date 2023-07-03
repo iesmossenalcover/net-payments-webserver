@@ -20,17 +20,16 @@ public class CreateCourseCommandValidator : AbstractValidator<CreateCourseComman
     public CreateCourseCommandValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty()
-            .MaximumLength(50)
-            .WithMessage("S'ha de proporcionar un nom pel curs. Màxim 50 caràcters.");
+            .NotEmpty().WithMessage("S'ha de proporcionar un nom pel curs.")
+            .MaximumLength(50).WithMessage("Màxim 50 caràcters.");
 
         RuleFor(x => x.StartDate)
-            .NotNull()
-            .WithMessage("S'ha d'indicar una data d'inici pel curs.");
+            .NotNull().WithMessage("S'ha d'indicar una data d'inici pel curs.");
 
         RuleFor(x => x.EndDate)
-            .NotNull()
-            .WithMessage("S'ha d'indicar una data d'inici pel curs.");
+            .NotNull().WithMessage("S'ha d'indicar una data d'inici pel curs.")
+            .GreaterThan(x => x.StartDate).WithMessage("La data de fi ha de ser posterior a la data d'inici");
+            
     }
 }
 
