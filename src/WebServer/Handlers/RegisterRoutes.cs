@@ -113,9 +113,29 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Courses
+        app.MapGet("/api/courses", Courses.GetAllCourses)
+            .RequireAuthorization("Admin")
+            .WithName("Get all courses")
+            .WithOpenApi();
+
         app.MapGet("/api/courses/selector", Courses.GetCoursesSelector)
             .RequireAuthorization("Admin")
             .WithName("Get courses selector")
+            .WithOpenApi();
+
+        app.MapPost("/api/courses", Courses.CreateCourse)
+            .RequireAuthorization("Admin")
+            .WithName("Create course")
+            .WithOpenApi();
+
+        app.MapPut("/api/courses/{id}", Courses.UpdateCourse)
+            .RequireAuthorization("Admin")
+            .WithName("Update course")
+            .WithOpenApi();
+
+        app.MapPut("/api/courses/{id}/active", Courses.SetActiveCourse)
+            .RequireAuthorization("Admin")
+            .WithName("Set active course")
             .WithOpenApi();
 
         // Groups
