@@ -34,6 +34,11 @@ public class Courses
         return await mediator.Send(cmd);
     }
 
+    public static async Task<Response<CourseVm>> GetCourse(IMediator mediator, long id)
+    {
+        return await mediator.Send(new GetCourseQuery(id));
+    }
+
     public static async Task<IEnumerable<CourseVm>> GetAllCourses(IMediator mediator)
     {
         return await mediator.Send(new GetCoursesQuery());

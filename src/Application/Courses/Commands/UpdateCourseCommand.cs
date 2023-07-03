@@ -30,6 +30,10 @@ public class UpdateCourseCommandValidator : AbstractValidator<UpdateCourseComman
         RuleFor(x => x.EndDate)
             .NotNull()
             .WithMessage("S'ha d'indicar una data d'inici pel curs.");
+
+        RuleFor(x => x.EndDate)
+            .NotNull().WithMessage("S'ha d'indicar una data d'inici pel curs.")
+            .GreaterThan(x => x.StartDate).WithMessage("La data de fi ha de ser posterior a la data d'inici");
     }
 }
 
