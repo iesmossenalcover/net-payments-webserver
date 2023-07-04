@@ -1,6 +1,6 @@
 using Domain.Entities.Configuration;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IAppConfigRepository : IRepository<AppConfig>
 {

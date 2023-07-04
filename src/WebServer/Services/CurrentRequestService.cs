@@ -2,7 +2,7 @@ using System.Security.Claims;
 
 namespace WebServer.Services;
 
-public class CurrentRequestService : Application.Common.Services.ICurrentRequestService
+public class CurrentRequestService : Domain.Services.ICurrentRequestService
 {
 
     private readonly long? _userId;

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class PeopleRepository : Repository<Person>, Application.Common.Services.IPeopleRepository
+public class PeopleRepository : Repository<Person>, Domain.Services.IPeopleRepository
 {
     public PeopleRepository(AppDbContext dbContext) : base(dbContext, dbContext.People) {}
 

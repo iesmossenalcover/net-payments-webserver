@@ -13,24 +13,27 @@ namespace Infrastructure
 
             services.AddScoped<AppDbContext, AppDbContext>();
 
-            // Better approach
-            services.AddScoped<Application.Common.Services.IUsersRepository, Repos.UserRepository>();
-            services.AddScoped<Application.Common.Services.IOAuthUsersRepository, Repos.OAuthUserRepository>();
-            services.AddScoped<Application.Common.Services.ICoursesRepository, Repos.CoursesRepository>();
-            services.AddScoped<Application.Common.Services.IPeopleRepository, Repos.PeopleRepository>();
-            services.AddScoped<Application.Common.Services.IPersonGroupCourseRepository, Repos.PeopleGroupCourseRepository>();
-            services.AddScoped<Application.Common.Services.IGroupsRepository, Repos.GroupsRepository>();
-            services.AddScoped<Application.Common.Services.IEventsRespository, Repos.EventsRepository>();
-            services.AddScoped<Application.Common.Services.IEventsPeopleRespository, EventsPeopleRepository>();
-            services.AddScoped<Application.Common.Services.IOrdersRepository, OrdersRepository>();
-            services.AddScoped<Application.Common.Services.ITasksRepository, TasksRepository>();
-            services.AddScoped<Application.Common.Services.IOUGroupRelationsRepository, UoGroupRelationRepository>();
-            services.AddScoped<Application.Common.Services.ITransactionsService, TransactionsService>();
-            services.AddSingleton<Application.Common.Services.ICsvParser, CsvParser>();
-            services.AddSingleton<Application.Common.Services.IGoogleAdminApi, GoogleAdminApi>();
-            services.AddSingleton<Application.Common.Services.IOAuthRepository, OAuthRepository>();
-            services.AddSingleton<Application.Common.Services.IRedsys, Redsys.RedsysApi>();
-            services.AddScoped<Application.Common.Services.IAppConfigRepository, AppConfigRepository>();
+            // Domain
+            services.AddScoped<Domain.Behaviours.EventPersonProcessingService, Domain.Behaviours.EventPersonProcessingService>();
+
+            // Infrastructure
+            services.AddScoped<Domain.Services.IUsersRepository, Repos.UserRepository>();
+            services.AddScoped<Domain.Services.IOAuthUsersRepository, Repos.OAuthUserRepository>();
+            services.AddScoped<Domain.Services.ICoursesRepository, Repos.CoursesRepository>();
+            services.AddScoped<Domain.Services.IPeopleRepository, Repos.PeopleRepository>();
+            services.AddScoped<Domain.Services.IPersonGroupCourseRepository, Repos.PeopleGroupCourseRepository>();
+            services.AddScoped<Domain.Services.IGroupsRepository, Repos.GroupsRepository>();
+            services.AddScoped<Domain.Services.IEventsRespository, Repos.EventsRepository>();
+            services.AddScoped<Domain.Services.IEventsPeopleRespository, EventsPeopleRepository>();
+            services.AddScoped<Domain.Services.IOrdersRepository, OrdersRepository>();
+            services.AddScoped<Domain.Services.IOUGroupRelationsRepository, UoGroupRelationRepository>();
+            services.AddScoped<Domain.Services.ITransactionsService, TransactionsService>();
+            services.AddSingleton<Domain.Services.ICsvParser, CsvParser>();
+            services.AddSingleton<Domain.Services.IGoogleAdminApi, GoogleAdminApi>();
+            services.AddSingleton<Domain.Services.IOAuthRepository, OAuthRepository>();
+            services.AddSingleton<Domain.Services.IRedsys, Redsys.RedsysApi>();
+            services.AddScoped<Domain.Services.IAppConfigRepository, AppConfigRepository>();
+
             return services;
         }
     }

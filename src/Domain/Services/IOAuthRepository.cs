@@ -1,6 +1,6 @@
 using Domain.Entities.Authentication;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IOAuthRepository
 {

@@ -1,6 +1,6 @@
 using Application.Common.Models;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IGoogleAdminApi
 {

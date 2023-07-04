@@ -1,9 +1,10 @@
 using Application.Common;
-using Application.Common.Services;
+using Domain.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
 using FluentValidation;
 using MediatR;
+using Domain.Behaviours;
 
 namespace Application.Events.Commands;
 
@@ -30,57 +31,33 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
     #region IOC
     private readonly IEventsPeopleRespository _eventsPeopleRepository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
+    private readonly ICoursesRepository _coursesRepository;
+    private readonly Domain.Behaviours.EventPersonProcessingService _eventPersonProcessingService;
 
-    public SetPersonEventPaidHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository personGroupCourseRepository)
+    public SetPersonEventPaidHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository personGroupCourseRepository, ICoursesRepository coursesRepository, EventPersonProcessingService eventPersonProcessingService)
     {
         _eventsPeopleRepository = eventsPeopleRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
+        _coursesRepository = coursesRepository;
+        _eventPersonProcessingService = eventPersonProcessingService;
     }
+
     #endregion
 
     public async Task<Response<bool>> Handle(SetPersonEventPaidCommand request, CancellationToken ct)
     {
-        var eventPerson = await _eventsPeopleRepository.GetWithRelationsByIdAsync(request.GetId, ct);
-        if (eventPerson == null)
-        {
-            return Response<bool>.Error(ResponseCode.NotFound, "No s'ha trobat cap amb aquest id");
-        }
+        EventPerson? eventPerson = await _eventsPeopleRepository.GetWithRelationsByIdAsync(request.GetId, ct);
+        if (eventPerson == null) return Response<bool>.Error(ResponseCode.NotFound, "Aquesta persona no està  a l'esdeveniment.");
+        
+        Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
+        if (course.Id != eventPerson.Event.CourseId) return Response<bool>.Error(ResponseCode.BadRequest, "No es pot fer un pagament d'un curs no actiu.");
+
         eventPerson.Paid = request.Paid;
         await _eventsPeopleRepository.UpdateAsync(eventPerson, CancellationToken.None);
 
-        // TODO buissness logic: todo move
-        // enrollment
-        if (eventPerson.Event.Enrollment)
-        {
-            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(eventPerson.PersonId, eventPerson.Event.CourseId, ct);
-            if (pgc != null)
-            {
-                if (request.Paid)
-                {
-                    pgc.EnrollmentEvent = eventPerson.Event;
-                    pgc.Enrolled = true;
-                }
-                else
-                {
-                    pgc.EnrollmentEvent = null;
-                    pgc.Enrolled = false;
-                }
-                await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
-            }
-        }
+        // Bussiness logic when an event is paid/unpaid
+        await _eventPersonProcessingService.ProcessPaidEvent(eventPerson, request.Paid, CancellationToken.None);
 
-        // amipa
-        if (eventPerson.Event.Amipa)
-        {
-            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(eventPerson.PersonId, eventPerson.Event.CourseId, ct);
-            if (pgc != null)
-            {
-                pgc.Amipa = request.Paid;
-                await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
-            }
-        }
         return Response<bool>.Ok(true);
     }
-
-
 }

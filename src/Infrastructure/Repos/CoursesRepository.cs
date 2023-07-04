@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class CoursesRepository : Repository<Course>, Application.Common.Services.ICoursesRepository
+public class CoursesRepository : Repository<Course>, Domain.Services.ICoursesRepository
 {
     public CoursesRepository(AppDbContext dbContext) : base(dbContext, dbContext.Courses) {}
 

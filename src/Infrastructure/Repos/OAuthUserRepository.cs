@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class OAuthUserRepository : Repository<OAuthUser>, Application.Common.Services.IOAuthUsersRepository
+public class OAuthUserRepository : Repository<OAuthUser>, Domain.Services.IOAuthUsersRepository
 {
     public OAuthUserRepository(AppDbContext dbContext) : base(dbContext, dbContext.OAuthUsers) {}
 

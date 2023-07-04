@@ -1,7 +1,7 @@
 using Application.Common.Models;
 using System.Data;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface ICsvParser
 {

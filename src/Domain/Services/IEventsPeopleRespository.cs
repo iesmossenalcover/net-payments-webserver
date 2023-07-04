@@ -1,6 +1,6 @@
 using Domain.Entities.Events;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IEventsPeopleRespository : IRepository<EventPerson>
 {

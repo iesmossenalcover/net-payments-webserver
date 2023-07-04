@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class OrdersRepository : Repository<Order>, Application.Common.Services.IOrdersRepository
+public class OrdersRepository : Repository<Order>, Domain.Services.IOrdersRepository
 {
     public OrdersRepository(AppDbContext dbContext) : base(dbContext, dbContext.Orders) {}
 

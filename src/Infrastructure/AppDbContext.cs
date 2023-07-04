@@ -32,8 +32,6 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Orders.Order> Orders { get; set; } = default!;
 
         public DbSet<Domain.Entities.GoogleApi.UoGroupRelation> UoGroupRelations { get; set; } = default!;
-
-        public DbSet<Domain.Entities.Tasks.Task> Tasks { get; set; } = default!;
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -178,13 +176,6 @@ namespace Infrastructure
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.GoogleApi.UoGroupRelation>()
                 .HasIndex(x => x.GroupId).IsDescending();
-
-            // Tasks
-            modelBuilder.Entity<Domain.Entities.Tasks.Task>()
-                .ToTable("task", "main")
-                .Property(x => x.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Domain.Entities.Tasks.Task>()
-                .HasIndex(x => new { x.Type, x.Status }).IsDescending();
         }
 
         public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -1,6 +1,6 @@
 using Domain.Entities.GoogleApi;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IOUGroupRelationsRepository  : IRepository<UoGroupRelation>
 {

@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Infrastructure;
 
-public class OAuthRepository : Application.Common.Services.IOAuthRepository
+public class OAuthRepository : Domain.Services.IOAuthRepository
 {
     public async Task<Dictionary<string, string>?> TokenInfoValidation(string token, CancellationToken ct)
     {

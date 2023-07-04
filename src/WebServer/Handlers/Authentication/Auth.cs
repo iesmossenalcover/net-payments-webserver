@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Application.Common.Services;
+using Domain.Services;
 
 namespace WebServer.Handlers.Authentication;
 
@@ -43,7 +43,7 @@ public class Auth
     public static async Task SigninPost(
         [FromBody] SigninRequest model,
         HttpContext ctx,
-        Application.Common.Services.IUsersRepository usersRepository,
+        Domain.Services.IUsersRepository usersRepository,
         IPasswordHasher<User> hasher,
         CancellationToken ct
     )
@@ -81,7 +81,7 @@ public class Auth
     public static async Task SignupPost(
         [FromBody] SignupRequest model,
         HttpContext ctx,
-        Application.Common.Services.IUsersRepository usersRepository,
+        Domain.Services.IUsersRepository usersRepository,
         IPasswordHasher<User> hasher,
         CancellationToken ct)
     {
@@ -111,7 +111,7 @@ public class Auth
 
     public static async Task GetIdentity(
         HttpContext ctx,
-        Application.Common.Services.ICurrentRequestService currentRequestService,
+        Domain.Services.ICurrentRequestService currentRequestService,
         CancellationToken ct)
     {
         long? userId = currentRequestService.UserId;

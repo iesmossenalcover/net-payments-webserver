@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class EventsPeopleRepository : Repository<EventPerson>, Application.Common.Services.IEventsPeopleRespository
+public class EventsPeopleRepository : Repository<EventPerson>, Domain.Services.IEventsPeopleRespository
 {
     public EventsPeopleRepository(AppDbContext dbContext) : base(dbContext, dbContext.EventPersons) {}
 

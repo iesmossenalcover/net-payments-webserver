@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class UserRepository : Repository<User>, Application.Common.Services.IUsersRepository
+public class UserRepository : Repository<User>, Domain.Services.IUsersRepository
 {
     public UserRepository(AppDbContext dbContext) : base(dbContext, dbContext.Users) {}
 

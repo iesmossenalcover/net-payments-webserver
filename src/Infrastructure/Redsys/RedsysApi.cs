@@ -1,5 +1,5 @@
 ﻿using Application.Common.Models;
-using Application.Common.Services;
+using Domain.Services;
 using Domain.Entities.Orders;
 
 namespace Infrastructure.Redsys;
