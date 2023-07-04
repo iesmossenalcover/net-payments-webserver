@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class AppConfigRepository : Repository<Domain.Entities.Configuration.AppConfig>, Application.Common.Services.IAppConfigRepository
+public class AppConfigRepository : Repository<Domain.Entities.Configuration.AppConfig>, Domain.Services.IAppConfigRepository
 {
     public AppConfigRepository(AppDbContext dbContext) : base(dbContext, dbContext.AppConfigs) {}
 

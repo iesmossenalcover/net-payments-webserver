@@ -1,10 +1,8 @@
-using System.Data;
 using Application.Common;
 using Application.Common.Models;
-using Application.Common.Services;
+using Domain.Services;
 using Domain.Entities.GoogleApi;
 using Domain.Entities.People;
-using FluentValidation;
 using MediatR;
 
 namespace Application.GoogleWorkspace.Commands;
@@ -27,7 +25,6 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IPeopleRepository _peopleRepository;
     private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
-    private readonly ITasksRepository _tasksRepository;
     private readonly ICsvParser _csvParser;
     private readonly string emailDomain;
     private readonly string tempFolderPath;
@@ -39,7 +36,6 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
         ICoursesRepository courseRepository,
         IPersonGroupCourseRepository personGroupCourseRepository,
         IPeopleRepository peopleRepository,
-        ITasksRepository tasksRepository,
         ICsvParser csvParser,
         IConfiguration configuration)
     {
@@ -48,7 +44,6 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
         _personGroupCourseRepository = personGroupCourseRepository;
         _peopleRepository = peopleRepository;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
-        _tasksRepository = tasksRepository;
         _csvParser = csvParser;
         emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
         tempFolderPath = configuration.GetValue<string>("TempFolderPath") ?? throw new Exception("TempFolderPath");
@@ -60,20 +55,6 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
     public async Task<Response<SyncPeopleToGoogleWorkspaceCommandVm>> Handle(SyncPeopleToGoogleWorkspaceCommand request, CancellationToken ct)
     {
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
-        Domain.Entities.Tasks.Task task = new Domain.Entities.Tasks.Task()
-        {
-            Status = Domain.Entities.Tasks.TaskStatus.RUNNING,
-            Type = Domain.Entities.Tasks.TaskType.SYNC_USERS_TO_GOOGLE_WORKSPACE,
-            Start = DateTimeOffset.UtcNow,
-            End = null,
-        };
-
-        bool insertedTask = await _tasksRepository.AtomiInsertTaskAsync(task);
-        if (!insertedTask)
-        {
-            return Response<SyncPeopleToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "Ja existeix una tasca del mateix tipus executant-se.");
-        }
-
         var now = DateTimeOffset.UtcNow;
         string filePath = $"{tempFolderPath}export_users_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";
         string errorsFilePath = $"{tempFolderPath}errors_export_users_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";
@@ -189,11 +170,6 @@ public class SyncPeopleToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPeo
 
             }
         }
-
-        // Finish task
-        task.End = DateTimeOffset.UtcNow;
-        task.Status = Domain.Entities.Tasks.TaskStatus.SUCCESS;
-        await _tasksRepository.UpdateAsync(task, CancellationToken.None);
         return Response<SyncPeopleToGoogleWorkspaceCommandVm>.Ok(new SyncPeopleToGoogleWorkspaceCommandVm());
     }
 }

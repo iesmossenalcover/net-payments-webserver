@@ -1,11 +1,12 @@
 using Application.Common;
-using Application.Common.Services;
+using Domain.Services;
 using FluentValidation;
 using MediatR;
 using Domain.Entities.Orders;
 using Application.Common.Models;
 using Domain.Entities.Events;
 using Domain.Entities.People;
+using Domain.Behaviours;
 
 namespace Application.Orders.Commands;
 
@@ -32,16 +33,16 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRedsys _redsys;
+    private readonly Domain.Behaviours.EventPersonProcessingService _eventPersonProcessingService;
 
-    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository, IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys)
+    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository, IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys, EventPersonProcessingService eventPersonProcessingService)
     {
         _eventsPeopleRespository = eventsPeopleRespository;
         _personGroupCourseRepository = personGroupCourseRepository;
         _ordersRepository = ordersRepository;
         _redsys = redsys;
+        _eventPersonProcessingService = eventPersonProcessingService;
     }
-
-
     #endregion
 
     public async Task<Response<ConfirmOrderCommandVm?>> Handle(ConfirmOrderCommand request, CancellationToken ct)
@@ -62,7 +63,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         IEnumerable<EventPerson> personEvents = await _eventsPeopleRespository.GetAllByOrderId(order.Id, ct);
         if (!personEvents.Any())
         {
-            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, "Error, cap event amb aquest ordre");
+            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, "Error, cap esdeveniment amb aquest ordre");
         }
 
         if (!result.Success)
@@ -81,31 +82,8 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
 
         await _eventsPeopleRespository.UpdateManyAsync(personEvents, CancellationToken.None);
 
-        // buissness logic: todo move
-        // enrollment
-        EventPerson? enrollmentEvent = personEvents.FirstOrDefault(x => x.Event.Enrollment);
-        if (enrollmentEvent != null)
-        {
-            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(enrollmentEvent.PersonId, enrollmentEvent.Event.CourseId, ct);
-            if (pgc != null)
-            {
-                pgc.EnrollmentEvent = enrollmentEvent.Event;
-                pgc.Enrolled = true;
-                await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
-            }
-        }
-
-        // amipa
-        EventPerson? amipaEvent = personEvents.FirstOrDefault(x => x.Event.Amipa);
-        if (amipaEvent != null)
-        {
-            PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(amipaEvent.PersonId, amipaEvent.Event.CourseId, ct);
-            if (pgc != null)
-            {
-                pgc.Amipa = true;
-                await _personGroupCourseRepository.UpdateAsync(pgc, CancellationToken.None);
-            }
-        }
+        // Bussiness logic when an event is paid
+        await _eventPersonProcessingService.ProcessPaidEvents(personEvents, true, CancellationToken.None);
 
         return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
     }

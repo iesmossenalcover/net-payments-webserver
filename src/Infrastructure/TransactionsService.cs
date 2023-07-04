@@ -2,7 +2,7 @@ using Application.Common.Models;
 
 namespace Infrastructure;
 
-public class TransactionsService : Application.Common.Services.ITransactionsService
+public class TransactionsService : Domain.Services.ITransactionsService
 {
     private readonly AppDbContext _dbContext;
 

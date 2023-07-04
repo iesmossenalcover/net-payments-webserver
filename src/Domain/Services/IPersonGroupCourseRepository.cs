@@ -1,6 +1,6 @@
 using Domain.Entities.People;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IPersonGroupCourseRepository : IRepository<PersonGroupCourse>
 {

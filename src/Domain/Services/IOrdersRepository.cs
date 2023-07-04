@@ -1,6 +1,6 @@
 using Domain.Entities.Orders;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IOrdersRepository : IRepository<Order>
 {

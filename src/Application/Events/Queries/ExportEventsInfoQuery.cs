@@ -1,5 +1,5 @@
 using Application.Common.Models;
-using Application.Common.Services;
+using Domain.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
 using MediatR;
@@ -11,11 +11,11 @@ public record ExportEventsInfoQuery(long? CourseId) : IRequest<FileVm>;
 public class ExportEventsInfoQueryHandler : IRequestHandler<ExportEventsInfoQuery, FileVm>
 {
     #region IOC
-    private readonly Application.Common.Services.ICsvParser _csvParser;
-    private readonly Application.Common.Services.IEventsRespository _eventsRepository;
-    private readonly Application.Common.Services.IEventsPeopleRespository _eventsPeopleRespository;
-    private readonly Application.Common.Services.ICoursesRepository _coursesRepository;
-    private readonly Application.Common.Services.IPersonGroupCourseRepository _personGroupRespository;
+    private readonly Domain.Services.ICsvParser _csvParser;
+    private readonly Domain.Services.IEventsRespository _eventsRepository;
+    private readonly Domain.Services.IEventsPeopleRespository _eventsPeopleRespository;
+    private readonly Domain.Services.ICoursesRepository _coursesRepository;
+    private readonly Domain.Services.IPersonGroupCourseRepository _personGroupRespository;
 
     public ExportEventsInfoQueryHandler(ICsvParser csvParser, IEventsRespository eventsRepository, IEventsPeopleRespository eventsPeopleRespository, ICoursesRepository coursesRepository, IPersonGroupCourseRepository personGroupRespository)
     {

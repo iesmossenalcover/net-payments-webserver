@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class GroupsRepository : Repository<Group>, Application.Common.Services.IGroupsRepository
+public class GroupsRepository : Repository<Group>, Domain.Services.IGroupsRepository
 {
     public GroupsRepository(AppDbContext dbContext) : base(dbContext, dbContext.Groups) { }
 

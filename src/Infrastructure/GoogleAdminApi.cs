@@ -1,5 +1,5 @@
 using Application.Common.Models;
-using Application.Common.Services;
+using Domain.Services;
 using Domain.Entities.Authentication;
 using Google.Apis.Admin.Directory.directory_v1;
 using Google.Apis.Admin.Directory.directory_v1.Data;

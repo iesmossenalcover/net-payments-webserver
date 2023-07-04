@@ -1,10 +1,10 @@
-using Application.Common.Services;
+using Domain.Services;
 using Domain.Entities.People;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Application.Common.Services.IPersonGroupCourseRepository
+public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Domain.Services.IPersonGroupCourseRepository
 {
     public PeopleGroupCourseRepository(AppDbContext dbContext) : base(dbContext, dbContext.PersonGroupCourses) { }
 

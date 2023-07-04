@@ -1,4 +1,4 @@
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IRepository<T> where T : Domain.Entity
 {

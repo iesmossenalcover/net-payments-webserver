@@ -1,7 +1,7 @@
 using Application.Common.Models;
 using Domain.Entities.Orders;
 
-namespace Application.Common.Services;
+namespace Domain.Services;
 
 public interface IRedsys
 {

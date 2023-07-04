@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.Common.Services;
+using Domain.Services;
 using Domain.Entities.Configuration;
 using FluentValidation;
 using MediatR;
