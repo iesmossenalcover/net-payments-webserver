@@ -6,7 +6,7 @@ namespace Application.People.Queries;
 
 # region ViewModels
 public record CourseVm(long Id, string Name);
-public record PersonRowVm(long Id, string DocumentId, string FirstName, string LastName, long GroupId, string GroupName, bool Amipa, long? AcademicRecordNumber);
+public record PersonRowVm(long Id, string DocumentId, string FirstName, string LastName, long? GroupId, string? GroupName, bool Amipa, long? AcademicRecordNumber);
 public record ListPeopleByCourseVm(IEnumerable<PersonRowVm> People);
 #endregion
 
