@@ -34,7 +34,7 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
         RuleFor(x => x.DocumentId)
-            .NotEmpty().WithMessage("Text must be not empty")
+            .NotEmpty().WithMessage("És obligatori posar un document d'indentitat")
             .MaximumLength(50).WithMessage("Màxim 50 caràcters");
 
         RuleFor(x => x.ContactPhone)
