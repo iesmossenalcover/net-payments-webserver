@@ -22,7 +22,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Domain
                         (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{filter.Query}%")) ||
                         (x.Person.AcademicRecordNumber.HasValue && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.AcademicRecordNumber.Value.ToString()), $"%{filter.Query}%")) ||
                         EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{filter.Query}%")
-                    ) && x.Course.Active == true
+                    )
                 )
                 .OrderBy(x => x.Person.Surname1)
                 .ThenBy(x => x.Person.Surname2)
