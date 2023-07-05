@@ -24,6 +24,10 @@ public class GetPeopleQueryHandler : IRequestHandler<GetPeopleQuery, IEnumerable
     public async Task<IEnumerable<PersonRowVm>> Handle(GetPeopleQuery request, CancellationToken ct)
     {
         IEnumerable<PersonGroupCourse> ppgc = await _personGroupCourseRepository.FilterPeople(new FilterPeople(request.Query), 50, ct);
-        return ppgc.Select(x => new PersonRowVm(x.PersonId, x.Person.DocumentId, x.Person.Name, x.Person.LastName, x.GroupId, x.Group.Name, x.Amipa, x.Person.AcademicRecordNumber));
+        return ppgc.GroupBy(x => x.Person).Select(x =>
+        {
+            PersonGroupCourse pgc = x.OrderByDescending(x => x.Course.StartDate).First();
+            return new PersonRowVm(x.Key.Id, x.Key.DocumentId, x.Key.Name, x.Key.LastName, pgc.Course.Active ? pgc.GroupId : null, pgc.Course.Active ? pgc.Group.Name : null, pgc.Amipa, x.Key.AcademicRecordNumber);
+        });
     }
 }
