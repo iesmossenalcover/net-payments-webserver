@@ -39,7 +39,8 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
         RuleFor(x => x.GroupId)
-            .NotNull().NotEmpty().WithMessage("Com a mínim s'ha d'especificar un grup.");
+            .NotNull().WithMessage("S'ha d'especificar un grup")
+            .GreaterThan(0).WithMessage("S'ha d'especificar un grup");
 
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("El camp no pot ser buid.")
