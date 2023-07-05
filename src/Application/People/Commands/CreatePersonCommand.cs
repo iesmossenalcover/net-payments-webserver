@@ -43,7 +43,7 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .GreaterThan(0).WithMessage("S'ha d'especificar un grup");
 
         RuleFor(x => x.DocumentId)
-            .NotEmpty().WithMessage("El camp no pot ser buid.")
+            .NotEmpty().WithMessage("És obligatori posar un document d'indentitat")
             .MaximumLength(50).WithMessage("Màxim 50 caràcters.")
             .MustAsync(async (DocumentId, ct) =>
             {
