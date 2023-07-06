@@ -10,20 +10,60 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Domain
 
     public async Task<IEnumerable<PersonGroupCourse>> FilterPeople(FilterPeople filter, int maxResults, CancellationToken ct)
     {
-        return await _dbSet
+        string q = filter.Query.ToUpperInvariant().Trim();
+        IEnumerable<string> terms = q.Split(" ");
+
+        var baseQuery = _dbSet
                 .Include(x => x.Person)
                 .Include(x => x.Group)
-                .Include(x => x.Course)
-                .Where(x =>
+                .Include(x => x.Course);
+
+        IQueryable<PersonGroupCourse> query;
+
+        if (terms.Count() == 1)
+        {
+            query = baseQuery.Where(x =>
+                (
+                    EF.Functions.Like(x.Person.DocumentId, $"%{q}%") ||
+                    EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{q}%") ||
+                    EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{q}%") ||
+                    (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{q}%")) ||
+                    (x.Person.AcademicRecordNumber.HasValue && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.AcademicRecordNumber.Value.ToString()), $"%{q}%")) ||
+                    EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{q}%")
+                )
+            );
+        }
+        else
+        {
+            string term1 = string.Join(" ", terms.Take(terms.Count() - 1));
+            string term2 = terms.Last();
+            query = baseQuery.Where(x =>
+                (
+                    EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{term1}%")
+                    &&
+                    EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{term2}%")
+                )
+                ||
+                (
+                    EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{q}%") ||
                     (
-                        EF.Functions.Like(x.Person.DocumentId, $"%{filter.Query.ToUpperInvariant()}%") ||
-                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{filter.Query}%") ||
-                        EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{filter.Query}%") ||
-                        (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{filter.Query}%")) ||
-                        (x.Person.AcademicRecordNumber.HasValue && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.AcademicRecordNumber.Value.ToString()), $"%{filter.Query}%")) ||
-                        EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{filter.Query}%")
+                        (
+                            EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{term1}%")
+                                &&
+                            (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{term2}%"))
+                        )
+                        ||
+                        (
+                            EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{term2}%")
+                                &&
+                            (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{term1}%"))
+                        )
                     )
                 )
+            );
+        }
+
+        return await query
                 .OrderBy(x => x.Person.Surname1)
                 .ThenBy(x => x.Person.Surname2)
                 .ThenBy(x => x.Person.Name)
