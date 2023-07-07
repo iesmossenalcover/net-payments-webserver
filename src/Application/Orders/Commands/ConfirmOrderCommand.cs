@@ -73,11 +73,20 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? string.Empty);
         }
 
+        long courseId = personEvents.First().Event.CourseId;
+        Person p = personEvents.First().Person;
+        PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(p.Id, courseId, ct);
+        if (pgc == null)
+        {
+            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, "Error, la persona no està asociada al curs");
+        }
+
         order.Status = OrderStatus.Paid;
         order.PaidDate = DateTimeOffset.UtcNow;
         foreach (var ep in personEvents)
         {
             ep.Paid = true;
+            ep.PaidAsAmipa = pgc.Amipa;
         }
 
         await _eventsPeopleRespository.UpdateManyAsync(personEvents, CancellationToken.None);

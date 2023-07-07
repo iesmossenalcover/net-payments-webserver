@@ -6,6 +6,7 @@ namespace Domain.Entities.Events;
 public class EventPerson : Entity
 {
     public bool Paid { get; set; }
+    public bool PaidAsAmipa { get; set; } = false;
 
     public long PersonId { get; set; }
     public Person Person { get; set; } = default!;

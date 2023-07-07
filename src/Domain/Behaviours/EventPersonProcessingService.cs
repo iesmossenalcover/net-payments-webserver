@@ -42,13 +42,16 @@ public class EventPersonProcessingService
         if (ep.Event.Enrollment)
         {
             pgc.EnrollmentEvent = paid ? ep.Event : null;
+            pgc.EnrollmentEventId = paid ? ep.Event.Id : null;
             pgc.Enrolled = paid;
+            pgc.EnrolledDate = paid ? DateTimeOffset.UtcNow : null;
         }
 
         // amipa
         if (ep.Event.Amipa)
         {
             pgc.Amipa = paid;
+            pgc.AmipaDate = paid ? DateTimeOffset.UtcNow : null;
         }
         await _personGroupCourseRepository.UpdateAsync(pgc, ct);
     }
