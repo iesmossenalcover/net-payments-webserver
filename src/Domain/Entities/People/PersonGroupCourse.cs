@@ -15,8 +15,10 @@ public class PersonGroupCourse : Entity
     public Group Group { get; set; } = default!;
 
     public bool Amipa { get; set; } = false;
+    public DateTimeOffset? AmipaDate { get; set; }
 
     public bool Enrolled { get; set; } = false;
+    public DateTimeOffset? EnrolledDate { get; set; }
     public long? EnrollmentEventId { get; set; }
     public Event? EnrollmentEvent { get; set; }
     public string? SubjectsInfo { get; set; } = default!;

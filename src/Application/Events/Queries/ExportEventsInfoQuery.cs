@@ -41,8 +41,8 @@ public class ExportEventsInfoQueryHandler : IRequestHandler<ExportEventsInfoQuer
         foreach (var e in events)
         {
             IEnumerable<EventPerson> eventPeople = allEventsPeople.Where(x => x.EventId == e.Id);
-            var amipaPayments = eventPeople.Where(x => x.Paid && pgcs[x.PersonId].Amipa);
-            var noAmipaPayments = eventPeople.Where(x => x.Paid && !pgcs[x.PersonId].Amipa);
+            var amipaPayments = eventPeople.Where(x => x.Paid && x.PaidAsAmipa);
+            var noAmipaPayments = eventPeople.Where(x => x.Paid && !x.PaidAsAmipa);
             var eventPgcs = eventPeople.Select(x => pgcs[x.PersonId]);
             rows.Add(new EventRow()
             {

@@ -52,7 +52,12 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         if (course.Id != eventPerson.Event.CourseId) return Response<bool>.Error(ResponseCode.BadRequest, "No es pot fer un pagament d'un curs no actiu.");
 
+        PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(eventPerson.PersonId, course.Id, ct);
+        if (pgc == null) return Response<bool>.Error(ResponseCode.BadRequest, "Error, la persona no està asociada al curs");
+
         eventPerson.Paid = request.Paid;
+        eventPerson.PaidAsAmipa = request.Paid ? pgc.Amipa : false;
+        
         await _eventsPeopleRepository.UpdateAsync(eventPerson, CancellationToken.None);
 
         // Bussiness logic when an event is paid/unpaid

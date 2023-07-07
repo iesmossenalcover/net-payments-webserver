@@ -49,7 +49,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             var epVm = new EventPaymentVm(
                 ep.Id, person.FullName,
                 person.DocumentId,
-                pgc.Amipa,
+                ep.PaidAsAmipa,
                 pgc.PriceForEvent(ep.Event),
                 ep.Paid,
                 pgc.Group.Name
