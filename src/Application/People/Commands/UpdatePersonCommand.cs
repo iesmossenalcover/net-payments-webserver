@@ -11,6 +11,8 @@ public record UpdatePersonCommand : CreatePersonCommand, IRequest<Response<long?
 {
     public long Id { get; set; }
 
+    public string? Email { get; set; }
+
     public UpdatePersonCommand(long id)
     {
         Id = id;
@@ -20,9 +22,12 @@ public record UpdatePersonCommand : CreatePersonCommand, IRequest<Response<long?
 // Validator
 public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonCommand>
 {
+    private readonly IPeopleRepository _peopleRepository;
 
-    public UpdatePersonCommandValidator()
+    public UpdatePersonCommandValidator(IPeopleRepository peopleRepository)
     {
+        _peopleRepository = peopleRepository;
+
         RuleFor(x => x.Id)
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
@@ -39,6 +44,23 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
 
         RuleFor(x => x.ContactPhone)
             .MaximumLength(50).WithMessage("Màxim 15 caràcters");
+
+        RuleFor(x => x)
+            .MustAsync(BeUniqueEmailAsync).WithMessage("Email ja està asociat a una persona.");
+    }
+
+    private async Task<bool> BeUniqueEmailAsync(UpdatePersonCommand cmd, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(cmd.Email)) return true;
+        Person? p = await _peopleRepository.GetPersonByEmailAsync(cmd.Email, ct);
+        if (p == null)
+        {
+            return true;
+        }
+        else
+        {
+            return p.Id == cmd.Id;
+        }
     }
 }
 
@@ -82,11 +104,12 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
 
         p.Name = request.Name;
         p.ContactPhone = request.ContactPhone;
+        p.ContactMail = request.Email;
         p.DocumentId = request.DocumentId;
         p.Surname1 = request.Surname1;
         p.Surname2 = request.Surname2;
         p.AcademicRecordNumber = request.AcademicRecordNumber;
-        
+
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);
 
         // Update / create group
