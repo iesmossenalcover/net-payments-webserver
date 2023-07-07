@@ -49,8 +49,8 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             var epVm = new EventPaymentVm(
                 ep.Id, person.FullName,
                 person.DocumentId,
-                ep.PaidAsAmipa,
-                pgc.PriceForEvent(ep.Event),
+                ep.Paid ? ep.PaidAsAmipa : pgc.Amipa,
+                ep.Paid ? ep.AmmountPaid(ep.Event) : pgc.PriceForEvent(ep.Event),
                 ep.Paid,
                 pgc.Group.Name
             );

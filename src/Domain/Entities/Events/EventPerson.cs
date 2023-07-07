@@ -19,4 +19,6 @@ public class EventPerson : Entity
 
     public bool CanBePaid => Event.IsActive && !Paid;
 
+    public decimal AmmountPaid(Event e) => PaidAsAmipa ? e.AmipaPrice : e.Price;
+
 }
