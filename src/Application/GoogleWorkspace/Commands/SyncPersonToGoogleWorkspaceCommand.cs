@@ -55,13 +55,14 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
         {
             GoogleApiResult<bool> userExists = await _googleAdminApi.UserExists(p.ContactMail);
             if (!userExists.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, userExists.ErrorMessage ?? "Error recuperant l'usuari");
+            if (userExists.Data) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "Ja existeix un compte amb aquest correu");
             createUser = !userExists.Data;
         }
 
         if (createUser)
         {
             password = Common.Helpers.GenerateString.RandomAlphanumeric(8);
-            p.ContactMail = GetEmail(p, emailDomain);
+            p.ContactMail = string.IsNullOrEmpty(p.ContactMail) ? GetEmail(p, emailDomain) : p.ContactMail;
             GoogleApiResult<bool> createUsersResult = await _googleAdminApi.CreateUser(p.ContactMail, p.Name.ToLower(), p.LastName.ToLower(), password, oug.ActiveOU);
             if (!createUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, createUsersResult.ErrorMessage ?? "Error al crear l'usuari");
 

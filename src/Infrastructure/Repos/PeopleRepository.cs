@@ -35,4 +35,9 @@ public class PeopleRepository : Repository<Person>, Domain.Services.IPeopleRepos
             .Where(x => x.AcademicRecordNumber.HasValue && academicRecords.Distinct().Contains(x.AcademicRecordNumber.Value))
             .ToListAsync(ct);
     }
+
+    public async Task<Person?> GetPersonByEmailAsync(string email, CancellationToken ct)
+    {
+        return await _dbSet.FirstOrDefaultAsync(x => x.ContactMail == email, ct);
+    }
 }

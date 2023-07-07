@@ -87,6 +87,8 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactMail).HasMaxLength(100);
             modelBuilder.Entity<Domain.Entities.People.Person>()
+                .HasIndex(x => x.ContactMail).IsUnique();
+            modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.DocumentId).HasMaxLength(50);
             modelBuilder.Entity<Domain.Entities.People.Person>()
                 .Property(x => x.ContactPhone).HasMaxLength(15);
