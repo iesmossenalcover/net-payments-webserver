@@ -45,14 +45,14 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
         RuleFor(x => x.ContactPhone)
             .MaximumLength(50).WithMessage("Màxim 15 caràcters");
 
-        RuleFor(x => x)
-            .MustAsync(BeUniqueEmailAsync).WithMessage("Email ja està asociat a una persona.");
+        RuleFor(x => x.Email)
+            .MustAsync(CheckUniqueEmailAsync).WithMessage("Aquest email ja està associat a una altra persona.");
     }
 
-    private async Task<bool> BeUniqueEmailAsync(UpdatePersonCommand cmd, CancellationToken ct)
+    private async Task<bool> CheckUniqueEmailAsync(UpdatePersonCommand cmd, string? email, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(cmd.Email)) return true;
-        Person? p = await _peopleRepository.GetPersonByEmailAsync(cmd.Email, ct);
+        if (string.IsNullOrEmpty(email)) return true;
+        Person? p = await _peopleRepository.GetPersonByEmailAsync(email, ct);
         if (p == null)
         {
             return true;
