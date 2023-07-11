@@ -58,7 +58,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         // fix important data.
         foreach (var r in rows)
         {
-            r.Identitat = r.Identitat.ToUpper();
+            r.DocumentId = r.DocumentId.ToUpper();
         }
 
         // Process groups
@@ -88,22 +88,38 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         var personGroupCourse = (await _personGroupCourseRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
         foreach (var r in rows)
         {
-            Person p = people[r.Identitat];
+            Person p = people[r.DocumentId];
 
-            if (string.IsNullOrEmpty(r.Grup))
+            if (string.IsNullOrEmpty(r.GroupName))
             {
                 // no group. Should add the default group.
             }
             else
             {
-                Group g = groups[r.Grup];
+                Group g = groups[r.GroupName];
 
                 PersonGroupCourse pgc;
                 if (personGroupCourse.ContainsKey(p.DocumentId))
                 {
                     pgc = personGroupCourse[p.DocumentId];
                     pgc.Group = g;
-                    pgc.SubjectsInfo = r.Assignatures;
+                    pgc.SubjectsInfo = r.Subjects;
+
+                    // If amipa field is set, then update.
+                    if (r.IsAmipa.HasValue)
+                    {
+                        pgc.Amipa = r.IsAmipa.Value;
+                        pgc.AmipaDate = r.IsAmipa.Value ? DateTimeOffset.UtcNow : null;
+                    }
+
+                    // If enrolled field is set, then update.
+                    if (r.Enrolled.HasValue)
+                    {
+                        pgc.Enrolled = r.Enrolled.Value;
+                        pgc.EnrolledDate = r.Enrolled.Value ? DateTimeOffset.UtcNow : null;
+                        pgc.EnrollmentEventId = null;
+                        pgc.EnrollmentEvent = null;
+                    }
                 }
                 else
                 {
@@ -112,9 +128,11 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
                         Group = g,
                         Person = p,
                         Course = course,
-                        Amipa = false,
-                        Enrolled = false,
-                        SubjectsInfo = r.Assignatures,
+                        Amipa = r.IsAmipa ?? false,
+                        AmipaDate = r.IsAmipa.HasValue && r.IsAmipa.Value ? DateTimeOffset.UtcNow : null,
+                        Enrolled = r.Enrolled ?? false,
+                        EnrolledDate = r.Enrolled.HasValue && r.Enrolled.Value ? DateTimeOffset.UtcNow : null,
+                        SubjectsInfo = r.Subjects,
                     };
                     personGroupCourse.Add(p.DocumentId, pgc);
                 }
@@ -125,7 +143,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
 
     private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRow> rows, CancellationToken ct)
     {
-        IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.Grup)).Select(x => x.Grup ?? "").Distinct();
+        IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.GroupName)).Select(x => x.GroupName ?? "").Distinct();
         IEnumerable<Group> existingGroups = await _groupsRepo.GetGroupsByNameAsync(groupNames, ct);
         IDictionary<string, Group> groups = existingGroups.ToDictionary(x => x.Name, x => x);
 
@@ -145,32 +163,32 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
 
     private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRow> rows, CancellationToken ct)
     {
-        IEnumerable<Person> existingPeople = await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.Identitat), ct);
+        IEnumerable<Person> existingPeople = await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.DocumentId), ct);
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
         foreach (var r in rows)
         {
-            if (people.ContainsKey(r.Identitat.Trim()))
+            if (people.ContainsKey(r.DocumentId.Trim()))
             {
-                Person p = people[r.Identitat];
-                p.AcademicRecordNumber = r.Expedient;
-                p.ContactPhone = r.TelContacte;
-                p.DocumentId = r.Identitat.Trim();
-                p.Name = r.Nom.Trim();
-                p.Surname1 = r.Llinatge1.Trim();
-                p.Surname2 = r.Llinatge2 != null ? r.Llinatge2.Trim() : null;
+                Person p = people[r.DocumentId];
+                p.AcademicRecordNumber = r.AcademicRecordNumber;
+                p.ContactPhone = r.ContactPhone;
+                p.DocumentId = r.DocumentId.Trim();
+                p.Name = r.FirstName.Trim();
+                p.Surname1 = r.Surname1.Trim();
+                p.Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null;
             }
             else
             {
                 Person p = new Person()
                 {
-                    AcademicRecordNumber = r.Expedient,
-                    ContactPhone = r.TelContacte,
-                    DocumentId = r.Identitat.Trim(),
-                    Name = r.Nom.Trim(),
-                    Surname1 = r.Llinatge1.Trim(),
-                    Surname2 = r.Llinatge2 != null ? r.Llinatge2.Trim() : null,
+                    AcademicRecordNumber = r.AcademicRecordNumber,
+                    ContactPhone = r.ContactPhone,
+                    DocumentId = r.DocumentId.Trim(),
+                    Name = r.FirstName.Trim(),
+                    Surname1 = r.Surname1.Trim(),
+                    Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null,
                 };
-                people[r.Identitat] = p;
+                people[r.DocumentId] = p;
             }
         }
         return people;

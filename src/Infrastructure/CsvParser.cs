@@ -9,6 +9,9 @@ namespace Infrastructure;
 
 public class CsvParser : ICsvParser
 {
+    public static string[] TRUE_VALUES = new string[] { "si", "sí", "SI", "Sí", "Sí", "Si", "S", "s" };
+    public static string[] FALSE_VALUES = new string[] { "no", "NO", "No", "nO", "N" };
+
     private static readonly Dictionary<Type, Type> Map = new Dictionary<Type, Type>()
     {
         { typeof(AccountRow), typeof(GoogleUserMap) },
@@ -103,14 +106,21 @@ public class BatchUploadRowMap : ClassMap<BatchUploadRow>
 {
     public BatchUploadRowMap()
     {
-        Map(m => m.Expedient);
-        Map(m => m.Identitat).Validate(x => !string.IsNullOrEmpty(x.Field));
-        Map(m => m.Nom).Validate(x => !string.IsNullOrEmpty(x.Field));
-        Map(m => m.Llinatge1).Validate(x => !string.IsNullOrEmpty(x.Field));
-        Map(m => m.Llinatge2);
-        Map(m => m.TelContacte);
-        Map(m => m.Grup).Validate(x => !string.IsNullOrEmpty(x.Field));
-        Map(m => m.Assignatures);
+        Map(m => m.AcademicRecordNumber).Name("Expedient");
+        Map(m => m.DocumentId).Name("Identitat").Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.FirstName).Name("Nom").Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Surname1).Name("Llinatge1").Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Surname2).Name("Llinatge2");
+        Map(m => m.ContactPhone).Name("TelContacte");
+        Map(m => m.GroupName).Name("Grup").Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.Subjects).Name("Assignatures");
+        Map(m => m.IsAmipa).Name("Amipa")
+            .TypeConverterOption.BooleanValues(true, true, CsvParser.TRUE_VALUES)
+            .TypeConverterOption.BooleanValues(false, true, CsvParser.FALSE_VALUES);
+
+        Map(m => m.Enrolled).Name("Matriculat")
+            .TypeConverterOption.BooleanValues(true, true, CsvParser.TRUE_VALUES)
+            .TypeConverterOption.BooleanValues(false, true, CsvParser.FALSE_VALUES);
     }
 }
 

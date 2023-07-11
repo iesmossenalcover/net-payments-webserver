@@ -18,7 +18,7 @@ public class GetAllGroupsSelectorQueryHandler : IRequestHandler<GetAllGroupsSele
 
     public async Task<SelectorVm> Handle(GetAllGroupsSelectorQuery request, CancellationToken ct)
     {
-        IEnumerable<Group> groups = await _groupsRepository.GetAllAsync(ct);
+        IEnumerable<Group> groups = (await _groupsRepository.GetAllAsync(ct)).OrderBy(x => x.Name);
         long activeGroupId = groups.Any() ? groups.First().Id : 0;
         List<SelectOptionVm> options = new List<SelectOptionVm>(groups.Count());
         foreach (var c in groups)

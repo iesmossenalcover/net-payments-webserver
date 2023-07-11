@@ -2,14 +2,16 @@ namespace Application.Common.Models;
 
 public class BatchUploadRow
 {
-    public long? Expedient { get; set; }
-    public string Identitat { get; set; } = default!;
-    public string Nom { get; set; } = default!;
-    public string Llinatge1 { get; set; } = default!;
-    public string? Llinatge2 { get; set; }
-    public string? TelContacte { get; set; }
-    public string? Grup { get; set; }
-    public string? Assignatures { get; set; }
+    public long? AcademicRecordNumber { get; set; }
+    public string DocumentId { get; set; } = default!;
+    public string FirstName { get; set; } = default!;
+    public string Surname1 { get; set; } = default!;
+    public string? Surname2 { get; set; }
+    public string? ContactPhone { get; set; }
+    public string? GroupName { get; set; }
+    public string? Subjects { get; set; }
+    public bool? Enrolled { get; set; }
+    public bool? IsAmipa { get; set; }
 }
 
 public class WifiAccountRow
