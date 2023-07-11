@@ -26,7 +26,7 @@ public class ListGroupsQueryHandler : IRequestHandler<ListGroupsQuery, IEnumerab
     public async Task<IEnumerable<GroupRowVm>> Handle(ListGroupsQuery request, CancellationToken ct)
     {
         IEnumerable<Group> groups =  await _groupsRepository.GetAllAsync(ct);
-        return groups.Select(x => ToGroupRowVm(x));
+        return groups.Select(x => ToGroupRowVm(x)).OrderBy(x => x.Name);
     }
 
     public static GroupRowVm ToGroupRowVm(Group g)
