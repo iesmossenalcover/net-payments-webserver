@@ -36,11 +36,15 @@ public class CsvParser : ICsvParser
             CsvContext context = e.Context;
             result.Ok = false;
             string column = csv.CurrentIndex.ToString();
-            if (csv.HeaderRecord != null && csv.CurrentIndex < csv.HeaderRecord.Length)
+            if (csv.CurrentIndex < 0)
+            {
+                result.ErrorMessage = $"Error: {e.Message}";
+            }
+            else if (csv.HeaderRecord != null && csv.CurrentIndex < csv.HeaderRecord.Length)
             {
                 column = csv.HeaderRecord[csv.CurrentIndex];
+                result.ErrorMessage = $"Error columna: {column},  fila {context.Parser.Row}";
             }
-            result.ErrorMessage = $"Error columna: {column},  fila {context.Parser.Row}";
         }
         return result;
     }
