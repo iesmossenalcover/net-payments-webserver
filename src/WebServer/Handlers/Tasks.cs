@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.GoogleWorkspace.Commands;
 using Application.Tasks.Commands;
 using MediatR;
 
@@ -6,6 +7,12 @@ namespace WebServer.Handlers;
 
 public class Tasks
 {
+    public static async Task<IResult> GetPeopleBatchUploadTemplate(IMediator mediator)
+    {
+        var response = await mediator.Send(new BatchUploadTemplateQuery());
+        return Results.File(response.Stream.ToArray(), response.FileType, response.FileName);
+    }
+
     public async static Task<Response<PeopleBatchUploadSummary>> PeopleBatchUpload(HttpContext ctx, IMediator m)
     {
         IFormFile? f = null;

@@ -10,6 +10,7 @@ public class BatchUploadRow
     public string? ContactPhone { get; set; }
     public string? GroupName { get; set; }
     public string? Subjects { get; set; }
+    public string? Email { get; set; }
     public bool? Enrolled { get; set; }
     public bool? IsAmipa { get; set; }
 }

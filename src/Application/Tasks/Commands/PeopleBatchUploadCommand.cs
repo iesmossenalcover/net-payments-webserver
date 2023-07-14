@@ -176,6 +176,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
                 p.Name = r.FirstName.Trim();
                 p.Surname1 = r.Surname1.Trim();
                 p.Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null;
+                p.ContactMail = string.IsNullOrEmpty(r.Email) ? p.ContactMail : r.Email.ToLower().Trim();
             }
             else
             {
@@ -187,6 +188,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
                     Name = r.FirstName.Trim(),
                     Surname1 = r.Surname1.Trim(),
                     Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null,
+                    ContactMail = string.IsNullOrEmpty(r.Email) ? null : r.Email.ToLower().Trim(),
                 };
                 people[r.DocumentId] = p;
             }

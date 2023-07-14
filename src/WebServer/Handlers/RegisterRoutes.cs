@@ -28,6 +28,11 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Tasks
+        app.MapGet("/api/tasks/people", Tasks.GetPeopleBatchUploadTemplate)
+            .RequireAuthorization("Admin")
+            .WithName("Get people batch upload template")
+            .WithOpenApi();
+
         app.MapPost("/api/tasks/people", Tasks.PeopleBatchUpload)
             .RequireAuthorization("Admin")
             .WithName("Upload people")

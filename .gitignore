@@ -6,8 +6,7 @@ project.lock.json
 nupkg/
 
 # credentials
-payments*.json
-payments.json
+*payments*.json
 
 # Visual Studio Code
 .vscode

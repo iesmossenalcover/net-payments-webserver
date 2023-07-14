@@ -118,6 +118,7 @@ public class BatchUploadRowMap : ClassMap<BatchUploadRow>
         Map(m => m.ContactPhone).Name("TelContacte");
         Map(m => m.GroupName).Name("Grup").Validate(x => !string.IsNullOrEmpty(x.Field));
         Map(m => m.Subjects).Name("Assignatures");
+        Map(m => m.Email).Name("Correu");
         Map(m => m.IsAmipa).Name("Amipa")
             .TypeConverterOption.BooleanValues(true, true, CsvParser.TRUE_VALUES)
             .TypeConverterOption.BooleanValues(false, true, CsvParser.FALSE_VALUES);
