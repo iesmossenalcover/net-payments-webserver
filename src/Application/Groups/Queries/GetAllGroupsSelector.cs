@@ -23,7 +23,7 @@ public class GetAllGroupsSelectorQueryHandler : IRequestHandler<GetAllGroupsSele
 
         List<SelectOptionVm> options = new List<SelectOptionVm>(groups.Count() + 1);
 
-        // options.Add(new SelectOptionVm(string.Empty, "-")); // Uncomment to allow remove from current course.
+        options.Add(new SelectOptionVm(string.Empty, "-")); // Uncomment to allow remove from current course.
 
         foreach (var c in groups)
         {

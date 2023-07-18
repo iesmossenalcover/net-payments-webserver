@@ -35,6 +35,11 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
 
+        // Comment rule to allow none grup.
+        RuleFor(x => x.GroupId)
+            .NotNull().WithMessage("S'ha d'especificar un grup")
+            .GreaterThan(0).WithMessage("S'ha d'especificar un grup");
+
         RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
