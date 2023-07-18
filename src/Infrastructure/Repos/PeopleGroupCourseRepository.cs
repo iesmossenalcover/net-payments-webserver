@@ -29,7 +29,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Domain
                     EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{q}%") ||
                     (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{q}%")) ||
                     (x.Person.AcademicRecordNumber.HasValue && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.AcademicRecordNumber.Value.ToString()), $"%{q}%")) ||
-                    EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{q}%")
+                    (EF.Functions.ILike(EF.Functions.Unaccent(x.Group.Name), $"%{q}%") && x.Course.Active)
                 )
             );
         }
