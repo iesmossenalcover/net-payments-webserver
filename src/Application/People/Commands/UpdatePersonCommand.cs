@@ -114,7 +114,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
 
         // Update / create group
         PersonGroupCourse? pgc = await _personGroupCourseRepo.GetCoursePersonGroupById(p.Id, c.Id, CancellationToken.None);
-        if (pgc == null && request.GroupId.HasValue)
+        if (pgc == null && request.GroupId.HasValue) // Create PGC
         {
             pgc = new PersonGroupCourse()
             {
@@ -126,7 +126,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
             };
             await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
         }
-        else if (pgc != null && request.GroupId.HasValue)
+        else if (pgc != null && request.GroupId.HasValue) // Update PGC
         {
             pgc.GroupId = request.GroupId.Value;
             pgc.Amipa = request.Amipa;
@@ -141,7 +141,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
             pgc.SubjectsInfo = request.SubjectsInfo;
             await _personGroupCourseRepo.UpdateAsync(pgc, CancellationToken.None);
         }
-        else if (pgc != null && !request.GroupId.HasValue)
+        else if (pgc != null && !request.GroupId.HasValue) // Delete PGC
         {
             await _personGroupCourseRepo.DeleteAsync(pgc, CancellationToken.None);
         }

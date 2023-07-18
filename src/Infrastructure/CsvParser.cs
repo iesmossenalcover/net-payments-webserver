@@ -116,7 +116,7 @@ public class BatchUploadRowMap : ClassMap<BatchUploadRow>
         Map(m => m.Surname1).Name("Llinatge1").Validate(x => !string.IsNullOrEmpty(x.Field));
         Map(m => m.Surname2).Name("Llinatge2");
         Map(m => m.ContactPhone).Name("TelContacte");
-        Map(m => m.GroupName).Name("Grup").Validate(x => !string.IsNullOrEmpty(x.Field));
+        Map(m => m.GroupName).Name("Grup");
         Map(m => m.Subjects).Name("Assignatures");
         Map(m => m.Email).Name("Correu");
         Map(m => m.IsAmipa).Name("Amipa")

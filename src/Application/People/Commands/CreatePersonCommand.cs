@@ -38,10 +38,6 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
         RuleFor(x => x.Surname1)
             .NotEmpty().WithMessage("El camp no pot ser buid.");
 
-        RuleFor(x => x.GroupId)
-            .NotNull().WithMessage("S'ha d'especificar un grup")
-            .GreaterThan(0).WithMessage("S'ha d'especificar un grup");
-
         RuleFor(x => x.DocumentId)
             .NotEmpty().WithMessage("És obligatori posar un document d'indentitat")
             .MaximumLength(50).WithMessage("Màxim 50 caràcters.")
@@ -92,13 +88,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
     public async Task<Response<long?>> Handle(CreatePersonCommand request, CancellationToken ct)
     {
-        if (!request.GroupId.HasValue)
-            return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "S'ha d'assignar a un grup.");
-
         Course course = await _coursesRepo.GetCurrentCoursAsync(ct);
-        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId.Value, ct);
-
-        if (group == null) return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "Specified group does not exist");
 
         Person p = new Person()
         {
@@ -110,17 +100,26 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             AcademicRecordNumber = request.AcademicRecordNumber,
         };
 
-        var pgc = new PersonGroupCourse()
+        if (request.GroupId.HasValue)
         {
-            Person = p,
-            Course = course,
-            Group = group,
-            Amipa = request.Amipa,
-            Enrolled = request.Enrolled,
-            SubjectsInfo = request.SubjectsInfo,
-        };
+            Group? group = await _groupsRepo.GetByIdAsync(request.GroupId.Value, ct);
+            if (group == null) return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "El grup especificat no existeix.");
 
-        await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
+            var pgc = new PersonGroupCourse()
+            {
+                Person = p,
+                Course = course,
+                Group = group,
+                Amipa = request.Amipa,
+                Enrolled = request.Enrolled,
+                SubjectsInfo = request.SubjectsInfo,
+            };
+            await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
+        }
+        else
+        {
+            await _peopleRepo.InsertAsync(p, CancellationToken.None);
+        }
 
         return Response<long?>.Ok(p.Id);
     }

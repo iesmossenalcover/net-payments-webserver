@@ -16,6 +16,7 @@ public class TransactionsService : Domain.Services.ITransactionsService
         _dbContext.Groups.UpdateRange(batchUploadModel.ExistingGroups);
         _dbContext.People.AddRange(batchUploadModel.NewPeople);
         _dbContext.People.UpdateRange(batchUploadModel.ExistingPeople);
+        _dbContext.PersonGroupCourses.RemoveRange(batchUploadModel.PersonGroupCoursesToDelete);
         _dbContext.PersonGroupCourses.AddRange(batchUploadModel.NewPersonGroupCourses);
         _dbContext.PersonGroupCourses.UpdateRange(batchUploadModel.ExistingPersonGroupCourses);
         await _dbContext.SaveChangesAsync();

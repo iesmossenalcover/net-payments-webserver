@@ -66,9 +66,15 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         // Process people
         IDictionary<string, Person> people = await ProcessPeople(rows, ct);
         // Process PersonGroupCourse
-        IDictionary<string, PersonGroupCourse> presonGroupCourses = await ProcessPersonGroupCourse(people, groups, rows, ct);
+        var (presonGroupCourses, personGroupCoursesToDelete) = await ProcessPersonGroupCourse(people, groups, rows, ct);
 
-        var m = new BatchUploadModel(people, groups, presonGroupCourses.Values);
+        var m = new BatchUploadModel()
+        {
+            People = people,
+            Groups = groups,
+            PersonGroupCourses = presonGroupCourses.Values,
+            PersonGroupCoursesToDelete = personGroupCoursesToDelete
+        };
         var summary = new PeopleBatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
         await _transactionsService.InsertAndUpdateTransactionAsync(m, ct);
@@ -77,7 +83,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
 
     #region private methods
 
-    private async Task<IDictionary<string, PersonGroupCourse>> ProcessPersonGroupCourse(
+    private async Task<(IDictionary<string, PersonGroupCourse>, IEnumerable<PersonGroupCourse>)> ProcessPersonGroupCourse(
             IDictionary<string, Person> people,
             IDictionary<string, Group> groups,
             IEnumerable<BatchUploadRow> rows,
@@ -86,19 +92,23 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         var course = await _coursesRepo.GetCurrentCoursAsync(ct);
         var peopleIds = people.Select(x => x.Value.Id);
         var personGroupCourse = (await _personGroupCourseRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
+        IList<PersonGroupCourse> personGroupCourseToDelete = new List<PersonGroupCourse>();
         foreach (var r in rows)
         {
             Person p = people[r.DocumentId];
-
+            PersonGroupCourse pgc;
             if (string.IsNullOrEmpty(r.GroupName))
             {
-                // no group. Should add the default group.
+                if (personGroupCourse.ContainsKey(p.DocumentId))
+                {
+                    pgc = personGroupCourse[p.DocumentId];
+                    personGroupCourse.Remove(p.DocumentId);
+                    personGroupCourseToDelete.Add(pgc);
+                }
             }
             else
             {
                 Group g = groups[r.GroupName];
-
-                PersonGroupCourse pgc;
                 if (personGroupCourse.ContainsKey(p.DocumentId))
                 {
                     pgc = personGroupCourse[p.DocumentId];
@@ -134,11 +144,12 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
                         EnrolledDate = r.Enrolled.HasValue && r.Enrolled.Value ? DateTimeOffset.UtcNow : null,
                         SubjectsInfo = r.Subjects,
                     };
+
                     personGroupCourse.Add(p.DocumentId, pgc);
                 }
             }
         }
-        return personGroupCourse;
+        return (personGroupCourse, personGroupCourseToDelete);
     }
 
     private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRow> rows, CancellationToken ct)

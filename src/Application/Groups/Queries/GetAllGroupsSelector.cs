@@ -20,7 +20,8 @@ public class GetAllGroupsSelectorQueryHandler : IRequestHandler<GetAllGroupsSele
     {
         IEnumerable<Group> groups = (await _groupsRepository.GetAllAsync(ct)).OrderBy(x => x.Name);
         long activeGroupId = groups.Any() ? groups.First().Id : 0;
-        List<SelectOptionVm> options = new List<SelectOptionVm>(groups.Count());
+        List<SelectOptionVm> options = new List<SelectOptionVm>(groups.Count() + 1);
+        options.Add(new SelectOptionVm(string.Empty, "(Sense matricular)"));
         foreach (var c in groups)
         {
             options.Add(new SelectOptionVm(c.Id.ToString(), c.Name));
