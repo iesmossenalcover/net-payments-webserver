@@ -39,7 +39,6 @@ public class CreateCourseCommandValidator : AbstractValidator<CreateCourseComman
 
     private async Task<bool> CheckUniqueNameAsync(CreateCourseCommand cmd, string name, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(name)) return false;
         Course? c = await _courseRepository.GetCourseByNameAsync(name, ct);
         return c == null;
     }
