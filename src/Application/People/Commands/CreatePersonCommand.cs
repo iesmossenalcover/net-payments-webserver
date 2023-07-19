@@ -35,7 +35,6 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
 
-        // Comment rule to allow none grup.
         RuleFor(x => x.GroupId)
             .NotNull().WithMessage("S'ha d'especificar un grup")
             .GreaterThan(0).WithMessage("S'ha d'especificar un grup");
@@ -49,16 +48,14 @@ public class CreatePersonCommandValidator : AbstractValidator<CreatePersonComman
             .MustAsync(async (DocumentId, ct) =>
             {
                 return await _peopleRepo.GetPersonByDocumentIdAsync(DocumentId, ct) == null;
-            }).WithMessage("Ja existeix una persona amb aquest document identificatiu.");
+            }).WithMessage("Ja existeix una persona amb aquest document d'identitat.");
 
         RuleFor(x => x.AcademicRecordNumber)
             .Must(x =>
             {
                 if (x.HasValue && x.Value == 0) return false;
-
                 return true;
-            })
-            .WithMessage("Si és un estudiant, s'ha d'indicar l'expedient acadèmic.")
+            }).WithMessage("Si és un estudiant, s'ha d'indicar l'expedient acadèmic.")
             .MustAsync(async (x, ct) =>
             {
                 if (!x.HasValue) return true;
@@ -93,6 +90,11 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
     public async Task<Response<long?>> Handle(CreatePersonCommand request, CancellationToken ct)
     {
+        if (!request.GroupId.HasValue) return Response<long?>.Error(ResponseCode.BadRequest, "S'ha d'especificar un grup.");
+        
+        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId.Value, ct);
+        if (group == null) return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "El grup especificat no existeix.");
+
         Course course = await _coursesRepo.GetCurrentCoursAsync(ct);
 
         Person p = new Person()
@@ -105,26 +107,16 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             AcademicRecordNumber = request.AcademicRecordNumber,
         };
 
-        if (request.GroupId.HasValue)
+        var pgc = new PersonGroupCourse()
         {
-            Group? group = await _groupsRepo.GetByIdAsync(request.GroupId.Value, ct);
-            if (group == null) return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId), "El grup especificat no existeix.");
-
-            var pgc = new PersonGroupCourse()
-            {
-                Person = p,
-                Course = course,
-                Group = group,
-                Amipa = request.Amipa,
-                Enrolled = request.Enrolled,
-                SubjectsInfo = request.SubjectsInfo,
-            };
-            await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
-        }
-        else
-        {
-            await _peopleRepo.InsertAsync(p, CancellationToken.None);
-        }
+            Person = p,
+            Course = course,
+            Group = group,
+            Amipa = request.Amipa,
+            Enrolled = request.Enrolled,
+            SubjectsInfo = request.SubjectsInfo,
+        };
+        await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
 
         return Response<long?>.Ok(p.Id);
     }

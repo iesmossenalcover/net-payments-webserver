@@ -65,6 +65,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.Email = person.ContactMail;
         personVm.ContactPhone = person.ContactPhone;
         personVm.GroupId = pgc?.GroupId;
+        
         // PGC can be null for a person not in the current course.
         personVm.SubjectsInfo = pgc?.SubjectsInfo ?? "";
         personVm.Enrolled = pgc?.Enrolled ?? false;

@@ -31,7 +31,7 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
                 if (unpublish.Value < request.PublishDate) return false;
 
                 return true;
-            }).WithMessage("La data ha de ser posterior a la data de publicaci�");
+            }).WithMessage("La data ha de ser posterior a la data de publicació");
     }
 }
 

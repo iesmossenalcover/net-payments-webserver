@@ -7,6 +7,11 @@ public class CoursesRepository : Repository<Course>, Domain.Services.ICoursesRep
 {
     public CoursesRepository(AppDbContext dbContext) : base(dbContext, dbContext.Courses) {}
 
+    public async Task<Course?> GetCourseByNameAsync(string name, CancellationToken ct)
+    {
+        return await _dbSet.FirstOrDefaultAsync(x => x.Name == name);
+    }
+
     public async Task<Course> GetCurrentCoursAsync(CancellationToken ct)
     {
         return await _dbSet.FirstAsync(x => x.Active == true);

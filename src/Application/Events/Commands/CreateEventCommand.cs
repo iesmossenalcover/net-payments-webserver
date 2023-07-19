@@ -32,7 +32,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
-        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicaci�");
+        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
             {
@@ -41,7 +41,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
                 if (unpublish.Value < request.PublishDate) return false;
 
                 return true;
-            }).WithMessage("La data ha de ser posterior a la data de publicaci�");
+            }).WithMessage("La data ha de ser posterior a la data de publicació");
     }
 }
 
