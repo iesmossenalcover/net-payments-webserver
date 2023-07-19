@@ -11,28 +11,34 @@ public record CreateGroupCommand : IRequest<Response<long?>>
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-   
+
 }
 
 // Validator
 public class CreateGroupCommandValidator : AbstractValidator<CreateGroupCommand>
 {
-        private readonly IGroupsRepository _groupsRepository;
+    private readonly IGroupsRepository _groupsRepository;
 
     public CreateGroupCommandValidator(IGroupsRepository groupsRepository)
     {
         _groupsRepository = groupsRepository;
-        
+
         RuleFor(x => x.Name)
-            .NotEmpty()
-            .WithMessage("El camp no pot ser buid.");
+            .NotEmpty().WithMessage("S'ha d'indicar un nom pe grup.")
+            .MustAsync(CheckUniqueNameAsync).WithMessage("Ja existeix un grup amb aquest nom");
+    }
+
+    private async Task<bool> CheckUniqueNameAsync(CreateGroupCommand cmd, string name, CancellationToken ct)
+    {
+        IEnumerable<Group> groups = await _groupsRepository.GetGroupsByNameAsync(new string[] { name }, ct);
+        return !groups.Any();
     }
 }
 
 // Handler
 public class CreateGroupCommandHandler : IRequestHandler<CreateGroupCommand, Response<long?>>
 {
-   
+
     private readonly IGroupsRepository _groupsRepo;
 
     public CreateGroupCommandHandler(

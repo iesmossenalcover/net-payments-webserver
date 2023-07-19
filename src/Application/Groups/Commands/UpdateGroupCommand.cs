@@ -20,15 +20,25 @@ public record UpdateGroupCommand : CreateGroupCommand, IRequest<Response<long?>>
 // Validator
 public class UpdateGroupCommandValidator : AbstractValidator<UpdateGroupCommand>
 {
+    private readonly IGroupsRepository _groupRepository;
 
-    public UpdateGroupCommandValidator()
+    public UpdateGroupCommandValidator(IGroupsRepository groupRepository)
     {
+        _groupRepository = groupRepository;
+
         RuleFor(x => x.Id)
             .NotEmpty()
             .WithMessage("El camp no pot ser buid.");
+
         RuleFor(x => x.Name)
-            .NotEmpty()
-            .WithMessage("El camp no pot ser buid.");
+            .NotEmpty().WithMessage("S'ha d'indicar un nom pe grup.")
+            .MustAsync(CheckUniqueNameAsync).WithMessage("Ja existeix un grup amb aquest nom");
+    }
+
+    private async Task<bool> CheckUniqueNameAsync(UpdateGroupCommand cmd, string name, CancellationToken ct)
+    {
+        IEnumerable<Group> groups = await _groupRepository.GetGroupsByNameAsync(new string[] { name }, ct);
+        return !groups.Any(x => x.Id != cmd.Id);
     }
 }
 
@@ -39,7 +49,7 @@ public class UpdateGroupCommandHandler : IRequestHandler<UpdateGroupCommand, Res
 
     public UpdateGroupCommandHandler(IGroupsRepository groupsRepo)
     {
-                _groupsRepo = groupsRepo;
+        _groupsRepo = groupsRepo;
 
     }
 
@@ -54,7 +64,7 @@ public class UpdateGroupCommandHandler : IRequestHandler<UpdateGroupCommand, Res
 
         g.Name = request.Name;
         g.Description = request.Description;
- 
+
         await _groupsRepo.UpdateAsync(g, CancellationToken.None);
 
         return Response<long?>.Ok(g.Id);
