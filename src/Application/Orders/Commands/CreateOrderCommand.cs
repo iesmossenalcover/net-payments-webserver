@@ -54,6 +54,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
 
     public async Task<Response<CreateOrderCommandVm?>> Handle(CreateOrderCommand request, CancellationToken ct)
     {
+        ct = CancellationToken.None;
+
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupByDocumentId(request.DocumentId, course.Id, ct);
         if (pgc == null)
@@ -107,13 +109,13 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             Amount = personEvents.Sum(x => pgc.PriceForEvent(x.Event) * x.Quantity),
             Person = pgc.Person,
         };
-        await _ordersRepository.InsertAsync(order, CancellationToken.None);
+        await _ordersRepository.InsertAsync(order, ct);
 
         foreach (var pe in personEvents)
         {
             pe.Order = order;
         }
-        await _eventsPeopleRepository.UpdateManyAsync(personEvents, CancellationToken.None);
+        await _eventsPeopleRepository.UpdateManyAsync(personEvents, ct);
 
         RedsysRequest redsysRequest = _redsys.CreateRedsysRequest(order);
         var vm = new CreateOrderCommandVm(redsysRequest.Url, redsysRequest.MerchantParamenters, redsysRequest.SignatureVersion, redsysRequest.Signature);
