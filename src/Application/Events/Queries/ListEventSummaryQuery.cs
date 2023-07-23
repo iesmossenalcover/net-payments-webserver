@@ -52,7 +52,7 @@ public class ListEventSummarysQueryHandler : IRequestHandler<ListEventSummaryQue
                 ep.Paid,
                 pgc.Group.Id,
                 pgc.Group.Name,
-                ep.Event.MaxQuantity > 1 ? ep.Quantity : null
+                ep.Event.MaxQuantity > 1 && ep.Paid ? ep.Quantity : null
             );
             payments.Add(epVm);
         }
