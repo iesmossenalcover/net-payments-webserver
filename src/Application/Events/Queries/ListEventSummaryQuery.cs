@@ -7,8 +7,8 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-public record EventSummaryVm(long Id, string FullName, string DocumentId, bool Paid, long GroupId, string GroupName);
-public record ListEventSummaryVm(long Id,string Name, DateTimeOffset Date, string Code, IEnumerable<SelectOptionVm> Groups, IEnumerable<EventSummaryVm> Events);
+public record EventSummaryVm(long Id, string FullName, string DocumentId, bool Paid, long GroupId, string GroupName, uint? Quantity);
+public record ListEventSummaryVm(long Id, string Name, DateTimeOffset Date, string Code, IEnumerable<SelectOptionVm> Groups, IEnumerable<EventSummaryVm> Events);
 
 public record ListEventSummaryQuery(string Code) : IRequest<Response<ListEventSummaryVm>>;
 
@@ -51,7 +51,8 @@ public class ListEventSummarysQueryHandler : IRequestHandler<ListEventSummaryQue
                 person.DocumentId,
                 ep.Paid,
                 pgc.Group.Id,
-                pgc.Group.Name
+                pgc.Group.Name,
+                ep.Event.MaxQuantity > 1 ? ep.Quantity : null
             );
             payments.Add(epVm);
         }

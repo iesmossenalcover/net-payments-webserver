@@ -11,7 +11,7 @@ public class EventPerson : Entity
 
     public long PersonId { get; set; }
     public Person Person { get; set; } = default!;
-    
+
     public long EventId { get; set; }
     public Event Event { get; set; } = default!;
 
@@ -20,6 +20,6 @@ public class EventPerson : Entity
 
     public bool CanBePaid => Event.IsActive && !Paid;
 
-    public decimal AmmountPaid(Event e) => PaidAsAmipa ? e.AmipaPrice : e.Price;
+    public decimal AmmountPaid(Event e) => (PaidAsAmipa ? e.AmipaPrice : e.Price) * Quantity;
 
 }

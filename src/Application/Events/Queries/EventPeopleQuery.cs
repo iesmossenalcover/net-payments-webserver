@@ -2,7 +2,6 @@ using Application.Common;
 using Domain.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
-using Infrastructure.Repos;
 using MediatR;
 
 namespace Application.Events.Queries;
