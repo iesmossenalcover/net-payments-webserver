@@ -24,8 +24,8 @@ public record CreateOrderCommand : IRequest<Response<CreateOrderCommandVm?>>
 
 public class CreateEventCommandValidator : AbstractValidator<CreateOrderCommand>
 {
-	public CreateEventCommandValidator()
-	{
+    public CreateEventCommandValidator()
+    {
         RuleFor(x => x.Events)
             .NotEmpty().WithMessage("Com a mínim s'ha de seleccionar un event.");
     }
@@ -81,9 +81,13 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             {
                 return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, $"L'esdeveniment {pe.Event.Name} permet com a màxim {pe.Event.MaxQuantity} quantitats");
             }
+            else if (r.Quantity.HasValue && r.Quantity.Value <= 0)
+            {
+                return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, $"Quantitat no vàlid per l'esdeveniment {pe.Event.Name}");
+            }
             pe.Quantity = r.Quantity ?? 1;
         }
-        
+
         // Create order
         bool foundFreeCode = false;
         string code = string.Empty;
