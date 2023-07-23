@@ -60,7 +60,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
 
     public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)
     {
-        return new PublicEventVm(x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true, x.Event.MaxQuanity > 1, x.Event.MaxQuanity);
+        return new PublicEventVm(x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true, x.Event.MaxQuantity > 1, x.Event.MaxQuantity);
     }
 
     public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)

@@ -15,6 +15,7 @@ public record EventData
     public decimal AmipaPrice { get; set; }
     public bool Enrollment { get; set; }
     public bool Amipa { get; set; }
+    public uint MaxQuantity { get; set; } = 1;
     public string Description { get; set; } = string.Empty;
     public DateTime Date { get; set; }
     public DateTime PublishDate { get; set; }
@@ -86,6 +87,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Enrollment = request.Enrollment,
             Amipa = request.Amipa,
             Price = request.Price,
+            MaxQuantity = request.MaxQuantity,
             Description = request.Description,
             Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero),
             PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero),

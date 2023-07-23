@@ -5,7 +5,7 @@ namespace Domain.Entities.Events;
 
 public class EventPerson : Entity
 {
-    public required uint Quantity { get; set; }
+    public required uint Quantity { get; set; } = 1;
     public bool Paid { get; set; }
     public bool PaidAsAmipa { get; set; } = false;
 

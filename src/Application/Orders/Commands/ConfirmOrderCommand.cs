@@ -18,14 +18,6 @@ public record ConfirmOrderCommand : IRequest<Response<ConfirmOrderCommandVm?>>
     public string Signature { get; set; } = string.Empty;
 }
 
-public class ConfirmOrderCommandValidator : AbstractValidator<CreateOrderCommand>
-{
-    public ConfirmOrderCommandValidator()
-    {
-        RuleFor(x => x.EventCodes).NotEmpty().WithMessage("Com a mínim s'ha de seleccionar un event.");
-    }
-}
-
 public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, Response<ConfirmOrderCommandVm?>>
 {
     #region IOC

@@ -10,7 +10,7 @@ public class Event : Entity
     public decimal Price { get; set; }
     public decimal AmipaPrice { get; set; }
 
-    public required uint MaxQuanity { get; set; } = 1;
+    public required uint MaxQuantity { get; set; } = 1;
 
     public bool Enrollment { get; set; } = false;
     public bool Amipa { get; set; } = false;
