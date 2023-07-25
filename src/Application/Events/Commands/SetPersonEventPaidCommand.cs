@@ -57,12 +57,7 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
         PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(eventPerson.PersonId, course.Id, ct);
         if (pgc == null) return Response<bool>.Error(ResponseCode.BadRequest, "Error, la persona no està asociada al curs");
 
-        if (request.Quantity > eventPerson.Event.MaxQuantity) return Response<bool>.Error(ResponseCode.BadRequest, $"La quanitat màxima és {eventPerson.Event.MaxQuantity}");
-
-        if (eventPerson.Event.MaxQuantity > 1 && request.Quantity.HasValue)
-        {
-            eventPerson.Quantity = Math.Max(1, request.Quantity.Value);
-        }
+        eventPerson.Quantity = Math.Min(request.Quantity ?? 1, eventPerson.Event.MaxQuantity);
 
         eventPerson.Paid = request.Paid;
         eventPerson.PaidAsAmipa = request.Paid ? pgc.Amipa : false;

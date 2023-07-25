@@ -79,15 +79,20 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         foreach (var pe in personEvents)
         {
             var r = request.Events.First(x => x.Code == pe.Event.Code);
-            if (r.Quantity.HasValue && r.Quantity.Value > pe.Event.MaxQuantity)
+            // If quantity must be set, then
+            if (pe.Event.MaxQuantity > 1)
             {
-                return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, $"L'esdeveniment {pe.Event.Name} permet com a màxim {pe.Event.MaxQuantity} quantitats");
+                if (r.Quantity.HasValue && r.Quantity.Value > pe.Event.MaxQuantity)
+                {
+                    return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, $"L'esdeveniment {pe.Event.Name} permet com a màxim {pe.Event.MaxQuantity} quantitats");
+                }
+                else if (r.Quantity.HasValue && r.Quantity.Value <= 0)
+                {
+                    return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, $"Quantitat no vàlid per l'esdeveniment {pe.Event.Name}");
+                }
             }
-            else if (r.Quantity.HasValue && r.Quantity.Value <= 0)
-            {
-                return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest, $"Quantitat no vàlid per l'esdeveniment {pe.Event.Name}");
-            }
-            pe.Quantity = r.Quantity ?? 1;
+            
+            pe.Quantity = pe.Event.MaxQuantity > 1 && r.Quantity.HasValue ? r.Quantity.Value : 1;
         }
 
         // Create order
