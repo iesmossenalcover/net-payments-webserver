@@ -8,7 +8,7 @@ namespace Application.Events.Queries;
 # region ViewModels
 public record EventVm(
     long Id, string Code, string Description, string Name, decimal Price, decimal AmipaPrice,
-    bool Enrollment, bool Amipa,
+    bool Enrollment, bool Amipa, uint MaxQuantity,
     DateTimeOffset Date, DateTimeOffset CreationDate, DateTimeOffset PublishDate, DateTimeOffset? UnpublishDate, bool IsActive
 );
 
@@ -39,7 +39,7 @@ public class GetEventByIdQueryHandler : IRequestHandler<GetEventByIdQuery, Respo
 
         return Response<EventVm>.Ok(
             new EventVm(
-                e.Id, e.Code, e.Description, e.Name, e.Price, e.AmipaPrice, e.Enrollment, e.Amipa, e.Date, e.CreationDate, e.PublishDate, e.UnpublishDate, e.IsActive
+                e.Id, e.Code, e.Description, e.Name, e.Price, e.AmipaPrice, e.Enrollment, e.Amipa, e.MaxQuantity, e.Date, e.CreationDate, e.PublishDate, e.UnpublishDate, e.IsActive
             ));
     }
 }
