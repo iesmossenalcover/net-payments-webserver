@@ -7,8 +7,11 @@ public class Event : Entity
     public string Code { get; set; }  = default!;
     public string Name { get; set; } = default!;
     public string Description { get; set; } = default!;
+    
     public decimal Price { get; set; }
     public decimal AmipaPrice { get; set; }
+
+    public required uint MaxQuantity { get; set; } = 1;
 
     public bool Enrollment { get; set; } = false;
     public bool Amipa { get; set; } = false;

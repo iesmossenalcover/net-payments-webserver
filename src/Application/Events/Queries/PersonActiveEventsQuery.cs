@@ -9,8 +9,8 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo, string? GroupDescription);
-public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable);
-public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm person);
+public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity);
+public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm Person);
 #endregion
 
 #region Query
@@ -46,12 +46,11 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         }
 
         Person person = pgc.Person;
-        IEnumerable<Domain.Entities.Events.EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
+        IEnumerable<EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
         personEvents = personEvents.Where(x => x.CanBePaid);
 
         AppConfig config = await _appConfigRepository.GetAsync(ct);
 
-        // TODO: Decide with events are selectable, for the moment all are selectable
         IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => ToPublicEventVm(x, pgc));
 
         return Response<PersonActiveEventsVm>.Ok(
@@ -61,10 +60,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
 
     public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)
     {
-        // , pgc.Enrolled, pgc.Enrolled ? pgc.SubjectsInfo : null
-        return new PublicEventVm(
-            x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true
-        );
+        return new PublicEventVm(x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true, x.Event.MaxQuantity > 1, x.Event.MaxQuantity);
     }
 
     public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)

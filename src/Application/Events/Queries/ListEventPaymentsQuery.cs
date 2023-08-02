@@ -6,9 +6,13 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal Total, decimal Amipa, decimal NoAmipa, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid);
-public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group);
-public record ListEventPaymentsVm(long Id, string Name, string Code, DateTimeOffset Date, PaymentSummaryVm Summary, IEnumerable<EventPaymentVm> PaidEvents, IEnumerable<EventPaymentVm> UnPaidEvents);
+public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid);
+public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group, uint Quantity);
+public record ListEventPaymentsVm(
+    long Id, string Name, string Code, DateTimeOffset Date,
+    PaymentSummaryVm Summary, IEnumerable<EventPaymentVm> PaidEvents, IEnumerable<EventPaymentVm> UnPaidEvents,
+    bool QuantitySelector, uint? MaxQuantity = null
+);
 
 public record ListEventPaymentsQuery(string Code) : IRequest<Response<ListEventPaymentsVm>>;
 
@@ -39,6 +43,8 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                     (await _personGroupCourseRepository.GetCurrentCourseGroupByPeopleIdsAsync(eventPeople.Select(x => x.PersonId), ct))
                     .ToDictionary(x => x.PersonId, x => x);
 
+        var quantitySelector = e.MaxQuantity > 1;
+
         var payments = new List<EventPaymentVm>(eventPeople.Count());
         foreach (var ep in eventPeople)
         {
@@ -52,7 +58,8 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                 ep.Paid ? ep.PaidAsAmipa : pgc.Amipa,
                 ep.Paid ? ep.AmmountPaid(ep.Event) : pgc.PriceForEvent(ep.Event),
                 ep.Paid,
-                pgc.Group.Name
+                pgc.Group.Name,
+                quantitySelector && ep.Paid ? ep.Quantity : 1
             );
             payments.Add(epVm);
         }
@@ -64,9 +71,6 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             payments.Where(x => x.Paid).Count(),
             payments.Where(x => x.Amipa && x.Paid).Count(),
             payments.Where(x => !x.Amipa && x.Paid).Count(),
-            payments.Sum(x => x.Price),
-            payments.Where(x => x.Amipa).Sum(x => x.Price),
-            payments.Where(x => !x.Amipa).Sum(x => x.Price),
             payments.Where(x => x.Paid).Sum(x => x.Price),
             payments.Where(x => x.Amipa && x.Paid).Sum(x => x.Price),
             payments.Where(x => !x.Amipa && x.Paid).Sum(x => x.Price)
@@ -79,7 +83,9 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             e.Date,
             summaryVm,
             payments.Where(x => x.Paid).OrderBy(x => x.Group),
-            payments.Where(x => !x.Paid).OrderBy(x => x.Group)
+            payments.Where(x => !x.Paid).OrderBy(x => x.Group),
+            quantitySelector,
+            quantitySelector ? e.MaxQuantity : null
         );
 
         return Response<ListEventPaymentsVm>.Ok(vm);

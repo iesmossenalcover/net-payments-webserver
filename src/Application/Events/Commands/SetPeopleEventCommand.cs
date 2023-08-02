@@ -71,6 +71,7 @@ public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventComman
                 {
                     Event = e,
                     Person = p,
+                    Quantity = 1,
                     Paid = false,
                     Order = null,
                 });
