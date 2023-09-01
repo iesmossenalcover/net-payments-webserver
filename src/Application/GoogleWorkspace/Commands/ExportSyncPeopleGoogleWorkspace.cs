@@ -83,8 +83,8 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
                 rows.Add(ac);
 
             }
-            // UNcomment when ready.
-            //await _peopleRepository.UpdateManyAsync(pgcs.Select(x => x.Person), CancellationToken.None);
+            
+            await _peopleRepository.UpdateManyAsync(pgcs.Select(x => x.Person), CancellationToken.None);
         }
 
         var memStream = new MemoryStream();
