@@ -15,6 +15,7 @@ public record EventData
     public decimal AmipaPrice { get; set; }
     public bool Enrollment { get; set; }
     public bool Amipa { get; set; }
+    public uint MaxQuantity { get; set; } = 1;
     public string Description { get; set; } = string.Empty;
     public DateTime Date { get; set; }
     public DateTime PublishDate { get; set; }
@@ -33,6 +34,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
         RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
+        RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
             {
@@ -86,6 +88,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Enrollment = request.Enrollment,
             Amipa = request.Amipa,
             Price = request.Price,
+            MaxQuantity = request.MaxQuantity,
             Description = request.Description,
             Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero),
             PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero),

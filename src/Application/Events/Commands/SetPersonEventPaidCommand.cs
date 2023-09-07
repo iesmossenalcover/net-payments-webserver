@@ -8,7 +8,7 @@ using Domain.Behaviours;
 
 namespace Application.Events.Commands;
 
-public record SetPersonEventPaidCommand : EventData, IRequest<Response<bool>>
+public record SetPersonEventPaidCommand : IRequest<Response<bool>>
 {
     private long _Id;
 
@@ -16,6 +16,7 @@ public record SetPersonEventPaidCommand : EventData, IRequest<Response<bool>>
     public void SetId(long value) { _Id = value; }
 
     public bool Paid { get; set; } = false;
+    public uint? Quantity { get; set; }
 }
 
 public class SetPersonEventPaidValidator : AbstractValidator<SetPersonEventPaidCommand>
@@ -23,6 +24,7 @@ public class SetPersonEventPaidValidator : AbstractValidator<SetPersonEventPaidC
     public SetPersonEventPaidValidator()
     {
         RuleFor(x => x.GetId).NotEmpty().WithMessage("S'ha l'ID");
+        RuleFor(x => x.Quantity).Must(x => x.HasValue ? x.Value > 0 : true).WithMessage("Quantitat invàlida");
     }
 }
 
@@ -48,16 +50,18 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
     {
         EventPerson? eventPerson = await _eventsPeopleRepository.GetWithRelationsByIdAsync(request.GetId, ct);
         if (eventPerson == null) return Response<bool>.Error(ResponseCode.NotFound, "Aquesta persona no està  a l'esdeveniment.");
-        
+
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         if (course.Id != eventPerson.Event.CourseId) return Response<bool>.Error(ResponseCode.BadRequest, "No es pot fer un pagament d'un curs no actiu.");
 
         PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(eventPerson.PersonId, course.Id, ct);
         if (pgc == null) return Response<bool>.Error(ResponseCode.BadRequest, "Error, la persona no està asociada al curs");
 
+        eventPerson.Quantity = Math.Min(request.Quantity ?? 1, eventPerson.Event.MaxQuantity);
+
         eventPerson.Paid = request.Paid;
         eventPerson.PaidAsAmipa = request.Paid ? pgc.Amipa : false;
-        
+
         await _eventsPeopleRepository.UpdateAsync(eventPerson, CancellationToken.None);
 
         // Bussiness logic when an event is paid/unpaid

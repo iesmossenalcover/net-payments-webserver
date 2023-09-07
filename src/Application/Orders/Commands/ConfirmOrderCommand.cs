@@ -18,14 +18,6 @@ public record ConfirmOrderCommand : IRequest<Response<ConfirmOrderCommandVm?>>
     public string Signature { get; set; } = string.Empty;
 }
 
-public class ConfirmOrderCommandValidator : AbstractValidator<CreateOrderCommand>
-{
-    public ConfirmOrderCommandValidator()
-    {
-        RuleFor(x => x.EventCodes).NotEmpty().WithMessage("Com a mínim s'ha de seleccionar un event.");
-    }
-}
-
 public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, Response<ConfirmOrderCommandVm?>>
 {
     #region IOC
@@ -47,6 +39,8 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
 
     public async Task<Response<ConfirmOrderCommandVm?>> Handle(ConfirmOrderCommand request, CancellationToken ct)
     {
+        ct = CancellationToken.None;
+
         bool isValid = _redsys.Validate(request.MerchantParamenters, request.Signature);
         if (!isValid)
         {
@@ -69,7 +63,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         if (!result.Success)
         {
             order.Status = OrderStatus.Error;
-            await _ordersRepository.UpdateAsync(order, CancellationToken.None);
+            await _ordersRepository.UpdateAsync(order, ct);
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? string.Empty);
         }
 
@@ -89,10 +83,10 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             ep.PaidAsAmipa = pgc.Amipa;
         }
 
-        await _eventsPeopleRespository.UpdateManyAsync(personEvents, CancellationToken.None);
+        await _eventsPeopleRespository.UpdateManyAsync(personEvents, ct);
 
         // Bussiness logic when an event is paid
-        await _eventPersonProcessingService.ProcessPaidEvents(personEvents, true, CancellationToken.None);
+        await _eventPersonProcessingService.ProcessPaidEvents(personEvents, true, ct);
 
         return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
     }

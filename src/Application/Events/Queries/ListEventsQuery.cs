@@ -33,6 +33,6 @@ public class ListEventsQueryHandler : IRequestHandler<ListEventsQuery, IEnumerab
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         IEnumerable<Event> events = await _eventsRepository.GetAllEventsByCourseIdAsync(course.Id, ct);
 
-        return events.Select(x => new EventVm(x.Id, x.Code, x.Description, x.Name, x.Price, x.AmipaPrice, x.Enrollment, x.Amipa, x.Date, x.CreationDate, x.PublishDate, x.UnpublishDate, x.IsActive));
+        return events.Select(x => new EventVm(x.Id, x.Code, x.Description, x.Name, x.Price, x.AmipaPrice, x.Enrollment, x.Amipa, x.MaxQuantity, x.Date, x.CreationDate, x.PublishDate, x.UnpublishDate, x.IsActive));
     }
 }
