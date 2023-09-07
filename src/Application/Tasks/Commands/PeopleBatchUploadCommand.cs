@@ -17,7 +17,8 @@ public record PeopleBatchUploadCommand(Stream File) : IRequest<Response<PeopleBa
 public record PeopleBatchUploadSummary(int GroupsCreated, int PeopleCreated, int PeopleUpdated);
 
 // Handler
-public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, Response<PeopleBatchUploadSummary>>
+public class
+    PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUploadCommand, Response<PeopleBatchUploadSummary>>
 {
     #region props
 
@@ -43,6 +44,7 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         _transactionsService = transactionsService;
         _personGroupCourseRepo = personGroupCourseRepo;
     }
+
     #endregion
 
     public async Task<Response<PeopleBatchUploadSummary>> Handle(PeopleBatchUploadCommand request, CancellationToken ct)
@@ -51,7 +53,9 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         var result = _csvParser.Parse<BatchUploadRow>(request.File);
         request.File.Dispose();
 
-        if (result.Values == null) return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error processing csv.");
+        if (result.Values == null)
+            return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest,
+                result.ErrorMessage ?? "Error processing csv.");
 
         IEnumerable<BatchUploadRow> rows = result.Values;
 
@@ -77,13 +81,22 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
         };
         var summary = new PeopleBatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
 
-        await _transactionsService.InsertAndUpdateTransactionAsync(m, ct);
-        return Response<PeopleBatchUploadSummary>.Ok(summary);
+        TransactionResult<string> transactionResult = await _transactionsService.InsertAndUpdateTransactionAsync(m);
+        if (transactionResult.Ok)
+        {
+            return Response<PeopleBatchUploadSummary>.Ok(summary);
+        }
+        else if (transactionResult.Error != null)
+        {
+            return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, transactionResult.Error);
+        }
+        return Response<PeopleBatchUploadSummary>.Error(ResponseCode.InternalError, "Unhandled error");
     }
 
     #region private methods
 
-    private async Task<(IDictionary<string, PersonGroupCourse>, IEnumerable<PersonGroupCourse>)> ProcessPersonGroupCourse(
+    private async Task<(IDictionary<string, PersonGroupCourse>, IEnumerable<PersonGroupCourse>)>
+        ProcessPersonGroupCourse(
             IDictionary<string, Person> people,
             IDictionary<string, Group> groups,
             IEnumerable<BatchUploadRow> rows,
@@ -91,7 +104,9 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
     {
         var course = await _coursesRepo.GetCurrentCoursAsync(ct);
         var peopleIds = people.Select(x => x.Value.Id);
-        var personGroupCourse = (await _personGroupCourseRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(x => x.Person.DocumentId, x => x);
+        var personGroupCourse =
+            (await _personGroupCourseRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(
+                x => x.Person.DocumentId, x => x);
         IList<PersonGroupCourse> personGroupCourseToDelete = new List<PersonGroupCourse>();
         foreach (var r in rows)
         {
@@ -149,12 +164,14 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
                 }
             }
         }
+
         return (personGroupCourse, personGroupCourseToDelete);
     }
 
     private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRow> rows, CancellationToken ct)
     {
-        IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.GroupName)).Select(x => x.GroupName ?? "").Distinct();
+        IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.GroupName))
+            .Select(x => x.GroupName ?? "").Distinct();
         IEnumerable<Group> existingGroups = await _groupsRepo.GetGroupsByNameAsync(groupNames, ct);
         IDictionary<string, Group> groups = existingGroups.ToDictionary(x => x.Name, x => x);
 
@@ -169,12 +186,15 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
             };
             groups[name] = g;
         }
+
         return groups;
     }
 
-    private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRow> rows, CancellationToken ct)
+    private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRow> rows,
+        CancellationToken ct)
     {
-        IEnumerable<Person> existingPeople = await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.DocumentId), ct);
+        IEnumerable<Person> existingPeople =
+            await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.DocumentId), ct);
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
         foreach (var r in rows)
         {
@@ -204,7 +224,9 @@ public class PeopleBatchUploadCommandHandler : IRequestHandler<PeopleBatchUpload
                 people[r.DocumentId] = p;
             }
         }
+
         return people;
     }
+
     #endregion
 }
