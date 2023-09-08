@@ -65,9 +65,7 @@ public class AddPeopleToGroupGoogleWorkspaceCommandHandler : IRequestHandler<Add
             foreach (var pgc in pgcs)
             {
                 Person p = pgc.Person;
-                // IMPORTANT: Exclude members
-                if (excludeEmails.Contains(p.ContactMail)) continue;
-
+                
                 if (!string.IsNullOrEmpty(p.ContactMail))
                 {
                     var result = await _googleAdminApi.AddUserToGroup(p.ContactMail, ou.GroupMail);
