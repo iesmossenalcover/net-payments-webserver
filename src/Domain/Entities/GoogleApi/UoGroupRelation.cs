@@ -14,4 +14,5 @@ public class UoGroupRelation : Entity
     public string ActiveOU { get; set; } = default!;
 
     public bool UpdatePassword {get; set; } = false;
+    public bool ChangePasswordNextSignIn { get; set; } = true;
 }
