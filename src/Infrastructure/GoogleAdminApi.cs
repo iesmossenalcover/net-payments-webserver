@@ -119,6 +119,7 @@ public class GoogleAdminApi : IGoogleAdminApi
                 // IMPORTANT: Exclude members
                 if (excludeEmails.Contains(user.PrimaryEmail)) continue;
 
+                // If we want exactOU, orga path must be the same, not descdendant.
                 if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
                 {
                     user.Suspended = suspend;

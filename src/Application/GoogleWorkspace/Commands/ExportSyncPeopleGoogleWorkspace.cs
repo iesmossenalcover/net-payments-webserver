@@ -61,11 +61,11 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
                 if (excludeEmails.Contains(email)) continue;
 
                 string password = "****";
-                bool change = false;
+                bool passwordGenerated = false;
                 if (newAccount || ou.UpdatePassword)
                 {
                     password = Common.Helpers.GenerateString.RandomAlphanumeric(8);
-                    change = true;
+                    passwordGenerated = true;
                 }
 
                 var ac = new AccountRow()
@@ -75,7 +75,7 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
                     Email = email,
                     Password = password,
                     Org = ou.ActiveOU,
-                    Change = change ? "True" : "False",
+                    Change = passwordGenerated && ou.ChangePasswordNextSignIn ? "True" : "False",
                     NewStatus = "Active",
                 };
 
