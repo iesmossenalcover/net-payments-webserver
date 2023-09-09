@@ -271,8 +271,24 @@ public class GoogleAdminApi : IGoogleAdminApi
             {
                 if (members.MembersValue != null)
                 {
+                    // TODO BUG
+                    /*
+                        https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
+                        {
+                            "kind": "directory#member",
+                            "id": "group member's unique ID",
+                            "email": "liz@example.com",
+                            "role": "MEMBER",
+                            "type": "GROUP"
+                        }
+                        El type de un miembro del grupo puede ser:
+
+                        GROUP: el miembro es otro grupo.
+                        MEMBER: el miembro es un usuario
+                        */
                     foreach (Member member in members.MembersValue)
                     {
+                        if (member.Type != "MEMBER") continue;
                         await service.Members.Delete(groupId, member.Id).ExecuteAsync();
                     }
                 }
