@@ -74,6 +74,11 @@ public static class RegisterRoutes
             .RequireAuthorization("Admin")
             .WithOpenApi();
 
+        app.MapPost("/api/googleworkspace/people/{id}/ou", GoogleWorkspace.MoveOUGoogleWorkspace)
+            .WithName("Update ou person")
+            .RequireAuthorization("Admin")
+            .WithOpenApi();
+
         //Wifi
         app.MapGet("/api/wifi/export", Wifi.ExportWifiUsers)
             .WithName("Export wifi users")

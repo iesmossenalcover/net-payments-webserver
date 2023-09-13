@@ -23,6 +23,11 @@ public class GoogleWorkspace
         return await m.Send(new SetPasswordGoogleWorkspaceCommand(id));
     }
 
+    public async static Task<Response<MoveOUGoogleWorkspaceCommandVm>> MoveOUGoogleWorkspace(long id, IMediator m)
+    {
+        return await m.Send(new MoveOUGoogleWorkspaceCommand(id));
+    }
+
     public async static Task<Response<SuspendGoogleWorkspaceCommandVm>> SuspendPeopleByOuGoogleWorkspace(IMediator m)
     {
         return await m.Send(new SuspendGoogleWorkspaceCommand());
