@@ -38,12 +38,6 @@ public static class RegisterRoutes
             .WithName("Upload people")
             .WithOpenApi();
 
-        // Google workspace
-        app.MapPost("/api/googleworkspace/people/sync", GoogleWorkspace.SyncPeopleToGoogleWorkspace)
-            .WithName("Sync people")
-            .RequireAuthorization("Superuser")
-            .WithOpenApi();
-
         app.MapPost("/api/googleworkspace/people/suspend", GoogleWorkspace.SuspendPeopleByOuGoogleWorkspace)
             .WithName("Suspend people")
             .RequireAuthorization("Superuser")
