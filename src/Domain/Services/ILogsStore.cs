@@ -4,6 +4,6 @@ namespace Domain.Services;
 
 public interface ILogStore
 {
-    Task<LogStoreInfo?> Save(Log log);
+    Task<LogStoreInfo> Save(Log log);
     Task<Log?> Read(LogStoreInfo logData);
 }

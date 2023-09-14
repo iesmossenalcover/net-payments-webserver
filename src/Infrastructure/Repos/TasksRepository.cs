@@ -22,7 +22,7 @@ public class TasksRepository : Repository<Domain.Entities.Tasks.Task>, ITasksRep
         try
         {
             var existingTask = await dbContext.Tasks.FirstOrDefaultAsync(x =>
-                    x.Type == Domain.Entities.Tasks.TaskType.SYNC_USERS_TO_GOOGLE_WORKSPACE // Same type task
+                    x.Type == Domain.Entities.Tasks.TaskType.MOVE_PEOPLE_GOOGLE_WORKSPACE // Same type task
                     &&
                     (x.Status == Domain.Entities.Tasks.TaskStatus.PENDING || x.Status == Domain.Entities.Tasks.TaskStatus.RUNNING) // Check for Pending or runing status
             , CancellationToken.None);

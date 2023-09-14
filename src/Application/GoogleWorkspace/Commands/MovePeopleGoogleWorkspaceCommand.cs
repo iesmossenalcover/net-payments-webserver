@@ -21,43 +21,71 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
     #region props
     private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
     private readonly IGoogleAdminApi _googleAdminApi;
-    private readonly string emailDomain;
+    private readonly ITasksRepository _tasksRepository;
+    private readonly ILogStore _logStore;
     private readonly string[] excludeEmails;
 
-    public MovePeopleGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, IConfiguration configuration)
+    public MovePeopleGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ILogStore logStore, ITasksRepository tasksRepository, IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
-        emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
-       excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
+        _tasksRepository = tasksRepository;
+        _logStore = logStore;
+        excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
     }
     #endregion
 
     public async Task<Response<MovePeopleGoogleWorkspaceCommandVm>> Handle(MovePeopleGoogleWorkspaceCommand request, CancellationToken ct)
     {
-
-        IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
-
-        foreach (var ou in ouRelations)
+        // Start Task and try to save task
+        var task = new Domain.Entities.Tasks.Task()
         {
-            GoogleApiResult<IEnumerable<string>> usersResult = await _googleAdminApi.GetAllUsers(ou.ActiveOU);
-            if (!usersResult.Success || usersResult.Data == null)
-            {
-                return Response<MovePeopleGoogleWorkspaceCommandVm>.Error(ResponseCode.InternalError, $"Error function GetAllUsers, OU: {ou.GroupMail}");
-            }
+            Status = Domain.Entities.Tasks.TaskStatus.RUNNING,
+            Start = DateTimeOffset.UtcNow,
+            Type = Domain.Entities.Tasks.TaskType.MOVE_PEOPLE_GOOGLE_WORKSPACE,
+        };
 
-            foreach (var user in usersResult.Data)
-            {
-                // IMPORTANT: Exclude members
-                if (excludeEmails.Contains(user)) continue;
+        var queuedTask = await _tasksRepository.AtomicInsertTaskAsync(task);
+        if (!queuedTask)
+        {
+            return Response<MovePeopleGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "Ja hi ha una tasca del mateix tipus en marxa.");
+        }
 
-                var result = await _googleAdminApi.MoveUserToOU(user, ou.OldOU);
-                if (!result.Success)
+        _ = Task.Run(async () =>
+        {
+            ct = CancellationToken.None;
+
+            var log = new Domain.Entities.Tasks.Log();
+            log.Add("Inici tasca");
+
+            IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
+            foreach (var ou in ouRelations)
+            {
+                GoogleApiResult<IEnumerable<string>> usersResult = await _googleAdminApi.GetAllUsers(ou.ActiveOU);
+                if (!usersResult.Success || usersResult.Data == null)
                 {
-                    return Response<MovePeopleGoogleWorkspaceCommandVm>.Error(ResponseCode.InternalError, $"Error function MoveUserToOU, OU: {ou.GroupMail} USER: {user}");
+                    log.Add($"Error recuperant usuaris OU: {ou.GroupMail}");
+                    continue;
+                }
+
+                foreach (var user in usersResult.Data)
+                {
+                    // IMPORTANT: Exclude members
+                    if (excludeEmails.Contains(user)) continue;
+
+                    var result = await _googleAdminApi.MoveUserToOU(user, ou.OldOU);
+                    if (!result.Success)
+                    {
+                        log.Add($"Error recuperant usuaris OU: {ou.GroupMail} USER: {user}");
+                    }
                 }
             }
-        }
+
+            log.Add("Fi tasca");
+            var logStoreInfo = await _logStore.Save(log);
+            task.Log = logStoreInfo;
+            await _tasksRepository.UpdateAsync(task, ct);
+        });
 
         return Response<MovePeopleGoogleWorkspaceCommandVm>.Ok(new MovePeopleGoogleWorkspaceCommandVm(true));
     }

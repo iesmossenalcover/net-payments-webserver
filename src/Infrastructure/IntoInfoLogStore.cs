@@ -14,13 +14,13 @@ public class IntoInfoLogStore : Domain.Services.ILogStore
         return Task.FromResult<Domain.Entities.Tasks.Log?>(log);
     }
 
-    public Task<Domain.Entities.Tasks.LogStoreInfo?> Save(Domain.Entities.Tasks.Log log)
+    public Task<Domain.Entities.Tasks.LogStoreInfo> Save(Domain.Entities.Tasks.Log log)
     {
         var logStoreInfo = new Domain.Entities.Tasks.LogStoreInfo()
         {
             Type = Domain.Entities.Tasks.StoreType.INTO_INFO,
             Info = log.Data,
         };
-        return Task.FromResult<Domain.Entities.Tasks.LogStoreInfo?>(logStoreInfo);
+        return Task.FromResult(logStoreInfo);
     }
 }

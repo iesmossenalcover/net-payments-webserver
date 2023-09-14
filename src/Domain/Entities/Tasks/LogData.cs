@@ -24,6 +24,6 @@ public class Log
 
     public void Add(string data)
     {
-        Data += $"[{new DateTimeOffset()}] - {data}";
+        Data += $"[{new DateTimeOffset()}] - {data}\n";
     }
 }
