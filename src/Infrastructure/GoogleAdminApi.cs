@@ -208,6 +208,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
         catch (GoogleApiException apiEx)
         {
+            // https://developers.google.com/webmaster-tools/v1/errors
             return apiEx.Error.Code switch
             {
                 GOOGLE_API_ERROR_CONFLICT => new GoogleApiResult<bool>(true),
