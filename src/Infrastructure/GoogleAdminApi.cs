@@ -6,11 +6,14 @@ using Google.Apis.Admin.Directory.directory_v1.Data;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Requests;
 using Google.Apis.Services;
+using Google;
 
 namespace Infrastructure;
 
 public class GoogleAdminApi : IGoogleAdminApi
 {
+    private const int GOOGLE_API_ERROR_CONFLICT = 409;
+
     private static readonly string[] SCOPES = new string[]
     {
         DirectoryService.Scope.AdminDirectoryUser,
@@ -87,7 +90,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     }
 
     public async Task<GoogleApiResult<bool>> SetSuspendByOU(
-        string ouPath, 
+        string ouPath,
         bool suspend,
         bool exactOu
         )
@@ -124,7 +127,8 @@ public class GoogleAdminApi : IGoogleAdminApi
                 {
                     user.Suspended = suspend;
                     batchRequest.Queue(service.Users.Update(user, user.Id),
-                    (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) => {
+                    (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) =>
+                    {
                         // 
                     });
                 }
@@ -173,8 +177,6 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-
-
             DirectoryService service = CreateService();
 
             string memberId = email;
@@ -204,7 +206,15 @@ public class GoogleAdminApi : IGoogleAdminApi
             member = await addRequest.ExecuteAsync();
             return new GoogleApiResult<bool>(true);
         }
-        catch (System.Exception e)
+        catch (GoogleApiException apiEx)
+        {
+            return apiEx.Error.Code switch
+            {
+                GOOGLE_API_ERROR_CONFLICT => new GoogleApiResult<bool>(true),
+                _ => new GoogleApiResult<bool>(apiEx.Error.Message),
+            };
+        }
+        catch (Exception e)
         {
             return new GoogleApiResult<bool>(e.Message);
         }
