@@ -36,6 +36,9 @@ public class MoveOUGoogleWorkspaceCommandHandler : IRequestHandler<MoveOUGoogleW
 
     public async Task<Response<MoveOUGoogleWorkspaceCommandVm>> Handle(MoveOUGoogleWorkspaceCommand request, CancellationToken ct)
     {
+
+        
+
         IEnumerable<PersonGroupCourse> personGroupCourses = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(request.Id, ct);
         PersonGroupCourse? pgc = personGroupCourses.FirstOrDefault(x => x.Course.Active == true);
         

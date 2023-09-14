@@ -191,6 +191,11 @@ namespace Infrastructure
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Tasks.Task>()
                 .HasIndex(x => new { x.Type, x.Status }).IsDescending();
+
+            // Log
+            modelBuilder.Entity<Domain.Entities.Tasks.LogStoreInfo>()
+                .ToTable("log", "main")
+                .Property(x => x.Id).ValueGeneratedOnAdd();
         }
 
         public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

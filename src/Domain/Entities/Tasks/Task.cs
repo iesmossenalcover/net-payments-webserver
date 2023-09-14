@@ -19,4 +19,6 @@ public class Task : Entity
     public required TaskStatus Status { get; set; }
     public required DateTimeOffset Start { get; set; }
     public DateTimeOffset? End { get; set; }
+    public required LogStoreInfo Log { get; set; }
+
 }
