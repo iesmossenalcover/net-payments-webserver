@@ -4,6 +4,8 @@ using Domain.Services;
 using Domain.Entities.GoogleApi;
 using Domain.Entities.People;
 using MediatR;
+using Domain.Entities.Jobs;
+using Domain.ValueObjects;
 
 namespace Application.GoogleWorkspace.Commands;
 
@@ -21,15 +23,15 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
     #region props
     private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
     private readonly IGoogleAdminApi _googleAdminApi;
-    private readonly IJobsRepository _tasksRepository;
+    private readonly IJobsRepository _jobsRepository;
     private readonly ILogStore _logStore;
     private readonly string[] excludeEmails;
 
-    public MovePeopleGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ILogStore logStore, IJobsRepository tasksRepository, IConfiguration configuration)
+    public MovePeopleGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ILogStore logStore, IJobsRepository jobsRepository, IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
-        _tasksRepository = tasksRepository;
+        _jobsRepository = jobsRepository;
         _logStore = logStore;
         excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
     }
@@ -38,14 +40,14 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
     public async Task<Response<MovePeopleGoogleWorkspaceCommandVm>> Handle(MovePeopleGoogleWorkspaceCommand request, CancellationToken ct)
     {
         // Start Task and try to save task
-        var task = new Domain.Entities.Tasks.Job()
+        var task = new Job()
         {
-            Status = Domain.Entities.Tasks.JobStatus.RUNNING,
+            Status = JobStatus.RUNNING,
             Start = DateTimeOffset.UtcNow,
-            Type = Domain.Entities.Tasks.JobType.MOVE_PEOPLE_GOOGLE_WORKSPACE,
+            Type = JobType.MOVE_PEOPLE_GOOGLE_WORKSPACE,
         };
 
-        var queuedTask = await _tasksRepository.AtomicInsertTaskAsync(task);
+        var queuedTask = await _jobsRepository.AtomicInsertJobAsync(task);
         if (!queuedTask)
         {
             return Response<MovePeopleGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "Ja hi ha una tasca del mateix tipus en marxa.");
@@ -55,7 +57,7 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
         {
             ct = CancellationToken.None;
 
-            var log = new Domain.Entities.Tasks.Log();
+            var log = new Log();
             log.Add("Inici tasca");
 
             IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
@@ -84,7 +86,7 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
             log.Add("Fi tasca");
             var logStoreInfo = await _logStore.Save(log);
             task.Log = logStoreInfo;
-            await _tasksRepository.UpdateAsync(task, ct);
+            await _jobsRepository.UpdateAsync(task, ct);
         });
 
         return Response<MovePeopleGoogleWorkspaceCommandVm>.Ok(new MovePeopleGoogleWorkspaceCommandVm(true));

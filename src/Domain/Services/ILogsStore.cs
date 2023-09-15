@@ -1,4 +1,5 @@
-using Domain.Entities.Tasks;
+using Domain.Entities.Logs;
+using Domain.ValueObjects;
 
 namespace Domain.Services;
 

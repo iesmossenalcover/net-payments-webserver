@@ -1,24 +1,27 @@
+using Domain.Entities.Logs;
+using Domain.ValueObjects;
+
 namespace Infrastructure;
 
 public class IntoInfoLogStore : Domain.Services.ILogStore
 {
-    public Task<Domain.Entities.Tasks.Log?> Read(Domain.Entities.Tasks.LogStoreInfo logData)
+    public Task<Domain.ValueObjects.Log?> Read(Domain.Entities.Logs.LogStoreInfo logData)
     {
-        if (logData.Type != Domain.Entities.Tasks.StoreType.INTO_INFO)
+        if (logData.Type != StoreType.INTO_INFO)
         {
             throw new ArgumentException("LogStoreInfo is not of type INTO_INFO");
         }
 
-        var log = new Domain.Entities.Tasks.Log(logData.Info);
+        var log = new Log(logData.Info);
 
-        return Task.FromResult<Domain.Entities.Tasks.Log?>(log);
+        return Task.FromResult<Log?>(log);
     }
 
-    public Task<Domain.Entities.Tasks.LogStoreInfo> Save(Domain.Entities.Tasks.Log log)
+    public Task<LogStoreInfo> Save(Log log)
     {
-        var logStoreInfo = new Domain.Entities.Tasks.LogStoreInfo()
+        var logStoreInfo = new LogStoreInfo()
         {
-            Type = Domain.Entities.Tasks.StoreType.INTO_INFO,
+            Type = StoreType.INTO_INFO,
             Info = log.Data,
         };
         return Task.FromResult(logStoreInfo);

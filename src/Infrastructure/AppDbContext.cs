@@ -192,7 +192,7 @@ namespace Infrastructure
                 .HasIndex(x => new { x.Type, x.Status }).IsDescending();
 
             // Log
-            modelBuilder.Entity<Domain.Entities.Jobs.LogStoreInfo>()
+            modelBuilder.Entity<Domain.Entities.Logs.LogStoreInfo>()
                 .ToTable("log", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
         }

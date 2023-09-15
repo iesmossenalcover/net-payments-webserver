@@ -1,3 +1,5 @@
+using Domain.Entities.Logs;
+
 namespace Domain.Entities.Jobs;
 
 public enum JobStatus
