@@ -23,7 +23,7 @@ public class JobsRepository : Repository<Job>, IJobsRepository
         try
         {
             var existingTask = await dbContext.Jobs.FirstOrDefaultAsync(x =>
-                    x.Type == JobType.MOVE_PEOPLE_GOOGLE_WORKSPACE // Same type task
+                    x.Type == newTask.Type // Same type task
                     &&
                     (x.Status == JobStatus.PENDING || x.Status == JobStatus.RUNNING) // Check for Pending or runing status
             , CancellationToken.None);
