@@ -5,6 +5,7 @@ using Domain.Entities.GoogleApi;
 using MediatR;
 using Domain.Entities.Jobs;
 using Domain.ValueObjects;
+using Domain.Behaviours;
 
 namespace Application.GoogleWorkspace.Commands;
 
@@ -21,12 +22,12 @@ public class SuspendGoogleWorkspaceCommandHandler : IRequestHandler<SuspendGoogl
 {
     #region props
     private readonly IJobsRepository _jobsRepository;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ProcessRunner _processRunner;
 
-    public SuspendGoogleWorkspaceCommandHandler(IJobsRepository jobsRepository, IServiceProvider serviceProvider)
+    public SuspendGoogleWorkspaceCommandHandler(IJobsRepository jobsRepository, ProcessRunner processRunner)
     {
         _jobsRepository = jobsRepository;
-        _serviceProvider = serviceProvider;
+        _processRunner = processRunner;
     }
 
     #endregion
@@ -34,60 +35,53 @@ public class SuspendGoogleWorkspaceCommandHandler : IRequestHandler<SuspendGoogl
     public async Task<Response<SuspendGoogleWorkspaceCommandVm>> Handle(SuspendGoogleWorkspaceCommand request, CancellationToken ct)
     {
         // Start Task and try to save task
-        var task = new Job()
+        var job = new Job()
         {
             Status = JobStatus.RUNNING,
             Start = DateTimeOffset.UtcNow,
             Type = JobType.SUSPEND_GOOGLE_WORKSPACE,
         };
 
-        var queuedTask = await _jobsRepository.AtomicInsertJobAsync(task);
+        var queuedTask = await _jobsRepository.AtomicInsertJobAsync(job);
         if (!queuedTask)
         {
             return Response<SuspendGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "Ja hi ha una tasca del mateix tipus iniciada.");
         }
 
-        long taskId = task.Id;
-
-        _ = Task.Run(async () =>
-        {
-            using var scope = _serviceProvider.CreateAsyncScope();
-            IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();
-            IOUGroupRelationsRepository oUGroupRelationsRepository = scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
-            IJobsRepository jobsRepository = scope.ServiceProvider.GetRequiredService<IJobsRepository>();
-            ILogStore logStore = scope.ServiceProvider.GetRequiredService<ILogStore>();
-
-            ct = CancellationToken.None;
-            var log = new Log();
-            log.Add("Inici tasca");
-
-            IEnumerable<UoGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
-            IEnumerable<string> pendings = ouRelations.Select(x => x.OldOU).Distinct();
-
-
-            foreach (var ou in pendings)
-            {
-                GoogleApiResult<bool> result = await googleAdminApi.SetSuspendByOU(ou, true, false);
-                if (!result.Success)
-                {
-                    log.Add($"OU {ou} - [Error] {result.ErrorMessage ?? "No s'ha pogut processar"}");
-                }
-                else
-                {
-                    log.Add($"OU: {ou} - [OK]");
-                }
-            }
-
-            log.Add("Fi tasca");
-            var logStoreInfo = await logStore.Save(log);
-            task = await jobsRepository.GetByIdAsync(taskId, ct);
-            if (task == null) return;
-            task.Log = logStoreInfo;
-            task.End = DateTimeOffset.UtcNow;
-            task.Status = JobStatus.FINISHED;
-            await jobsRepository.UpdateAsync(task, ct);
-        });
+        var process = new SuspendGoogleWorkspaceProcess();
+        _processRunner.Start(process, job.Id);
 
         return Response<SuspendGoogleWorkspaceCommandVm>.Ok(new SuspendGoogleWorkspaceCommandVm(true));
+    }
+}
+
+public class SuspendGoogleWorkspaceProcess : IProcess
+{
+    public async Task Run(IServiceProvider serviceProvider, Log log, CancellationToken ct)
+    {
+        using var scope = serviceProvider.CreateAsyncScope();
+        IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();
+        IOUGroupRelationsRepository oUGroupRelationsRepository = scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
+        IJobsRepository jobsRepository = scope.ServiceProvider.GetRequiredService<IJobsRepository>();
+        ILogStore logStore = scope.ServiceProvider.GetRequiredService<ILogStore>();
+
+        log.Add("Inici tasca");
+
+        IEnumerable<UoGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
+        IEnumerable<string> pendings = ouRelations.Select(x => x.OldOU).Distinct();
+
+
+        foreach (var ou in pendings)
+        {
+            GoogleApiResult<bool> result = await googleAdminApi.SetSuspendByOU(ou, true, false);
+            if (!result.Success)
+            {
+                log.Add($"OU {ou} - [Error] {result.ErrorMessage ?? "No s'ha pogut processar"}");
+            }
+            else
+            {
+                log.Add($"OU: {ou} - [OK]");
+            }
+        }
     }
 }
