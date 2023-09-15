@@ -5,7 +5,7 @@ namespace Infrastructure;
 
 public class IntoInfoLogStore : Domain.Services.ILogStore
 {
-    public Task<Domain.ValueObjects.Log?> Read(Domain.Entities.Logs.LogStoreInfo logData)
+    public Task<Log?> Read(LogStoreInfo logData)
     {
         if (logData.Type != StoreType.INTO_INFO)
         {

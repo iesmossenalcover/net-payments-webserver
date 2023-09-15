@@ -13,6 +13,9 @@ public class Log
 
     public void Add(string data)
     {
-        Data += $"[{new DateTimeOffset()}] - {data}\n";
+        lock (Data)
+        {
+            Data += $"[{DateTimeOffset.UtcNow}] - {data}\n";
+        }
     }
 }

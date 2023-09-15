@@ -21,18 +21,14 @@ public record MovePeopleGoogleWorkspaceCommandVm(bool ok);
 public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopleGoogleWorkspaceCommand, Response<MovePeopleGoogleWorkspaceCommandVm>>
 {
     #region props
-    private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
-    private readonly IGoogleAdminApi _googleAdminApi;
     private readonly IJobsRepository _jobsRepository;
-    private readonly ILogStore _logStore;
+    private readonly IServiceProvider _serviceProvider;
     private readonly string[] excludeEmails;
 
-    public MovePeopleGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ILogStore logStore, IJobsRepository jobsRepository, IConfiguration configuration)
+    public MovePeopleGoogleWorkspaceCommandHandler(IJobsRepository jobsRepository, IServiceProvider serviceProvider, IConfiguration configuration)
     {
-        _googleAdminApi = googleAdminApi;
-        _oUGroupRelationsRepository = oUGroupRelationsRepository;
+        _serviceProvider = serviceProvider;
         _jobsRepository = jobsRepository;
-        _logStore = logStore;
         excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
     }
     #endregion
@@ -50,20 +46,25 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
         var queuedTask = await _jobsRepository.AtomicInsertJobAsync(task);
         if (!queuedTask)
         {
-            return Response<MovePeopleGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "Ja hi ha una tasca del mateix tipus en marxa.");
+            return Response<MovePeopleGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "Ja hi ha una tasca del mateix tipus iniciada.");
         }
 
         _ = Task.Run(async () =>
         {
             ct = CancellationToken.None;
+            using var scope = _serviceProvider.CreateAsyncScope();
+            IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();
+            IOUGroupRelationsRepository oUGroupRelationsRepository = scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
+            IJobsRepository jobsRepository = scope.ServiceProvider.GetRequiredService<IJobsRepository>();
+            ILogStore logStore = scope.ServiceProvider.GetRequiredService<ILogStore>();
 
             var log = new Log();
             log.Add("Inici tasca");
 
-            IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
+            IEnumerable<UoGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
             foreach (var ou in ouRelations)
             {
-                GoogleApiResult<IEnumerable<string>> usersResult = await _googleAdminApi.GetAllUsers(ou.ActiveOU);
+                GoogleApiResult<IEnumerable<string>> usersResult = await googleAdminApi.GetAllUsers(ou.ActiveOU);
                 if (!usersResult.Success || usersResult.Data == null)
                 {
                     log.Add($"Error recuperant usuaris OU: {ou.GroupMail}");
@@ -75,7 +76,7 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
                     // IMPORTANT: Exclude members
                     if (excludeEmails.Contains(user)) continue;
 
-                    var result = await _googleAdminApi.MoveUserToOU(user, ou.OldOU);
+                    var result = await googleAdminApi.MoveUserToOU(user, ou.OldOU);
                     if (!result.Success)
                     {
                         log.Add($"Error recuperant usuaris OU: {ou.GroupMail} USER: {user}");
@@ -84,8 +85,12 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
             }
 
             log.Add("Fi tasca");
-            var logStoreInfo = await _logStore.Save(log);
+            var logStoreInfo = await logStore.Save(log);
+            task = await jobsRepository.GetByIdAsync(task.Id, ct);
+            if (task == null) return;
             task.Log = logStoreInfo;
+            task.End = DateTimeOffset.UtcNow;
+            task.Status = JobStatus.FINISHED;
             await _jobsRepository.UpdateAsync(task, ct);
         });
 

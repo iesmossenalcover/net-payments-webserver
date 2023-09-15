@@ -6,13 +6,13 @@ public enum JobStatus
 {
     PENDING = 0,
     RUNNING = 1,
-    SUCCESS = 2,
-    ERROR = 3,
+    FINISHED = 2
 }
 
 public enum JobType
 {
     MOVE_PEOPLE_GOOGLE_WORKSPACE = 1,
+    SUSPEND_GOOGLE_WORKSPACE = 2,
 }
 
 public class Job : Entity

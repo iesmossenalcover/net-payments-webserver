@@ -1,3 +1,4 @@
+using Domain.Entities.Logs;
 using Infrastructure.Repos;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,9 @@ namespace Infrastructure
             services.AddScoped<Domain.Services.IOrdersRepository, OrdersRepository>();
             services.AddScoped<Domain.Services.IOUGroupRelationsRepository, UoGroupRelationRepository>();
             services.AddScoped<Domain.Services.ITransactionsService, TransactionsService>();
+            services.AddScoped<Domain.Services.IJobsRepository, JobsRepository>();
+            services.AddScoped<Domain.Services.ILogsInfoRespository, LogsInfoRepository>();
+            services.AddScoped<Domain.Services.ILogStore, IntoInfoLogStore>();
             services.AddSingleton<Domain.Services.ICsvParser, CsvParser>();
             services.AddSingleton<Domain.Services.IGoogleAdminApi, GoogleAdminApi>();
             services.AddSingleton<Domain.Services.IOAuthRepository, OAuthRepository>();

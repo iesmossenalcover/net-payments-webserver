@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repos;
 
-public class TasksRepository : Repository<Job>, IJobsRepository
+public class JobsRepository : Repository<Job>, IJobsRepository
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public TasksRepository(AppDbContext dbContext, IServiceScopeFactory serviceScopeFactory) : base(dbContext, dbContext.Jobs)
+    public JobsRepository(AppDbContext dbContext, IServiceScopeFactory serviceScopeFactory) : base(dbContext, dbContext.Jobs)
     {
         _serviceScopeFactory = serviceScopeFactory;
     }

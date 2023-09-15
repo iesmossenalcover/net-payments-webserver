@@ -33,6 +33,8 @@ namespace Infrastructure
         public DbSet<Domain.Entities.GoogleApi.UoGroupRelation> UoGroupRelations { get; set; } = default!;
 
         public DbSet<Domain.Entities.Jobs.Job> Jobs { get; set; } = default!;
+
+        public DbSet<Domain.Entities.Logs.LogStoreInfo> LogStoreInfos { get; set; } = default!;
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -189,11 +191,13 @@ namespace Infrastructure
                 .ToTable("job", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Domain.Entities.Jobs.Job>()
+                .HasOne(x => x.Log);
+            modelBuilder.Entity<Domain.Entities.Jobs.Job>()
                 .HasIndex(x => new { x.Type, x.Status }).IsDescending();
 
             // Log
             modelBuilder.Entity<Domain.Entities.Logs.LogStoreInfo>()
-                .ToTable("log", "main")
+                .ToTable("log_info", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
         }
 
