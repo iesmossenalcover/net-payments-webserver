@@ -21,11 +21,11 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
     #region props
     private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
     private readonly IGoogleAdminApi _googleAdminApi;
-    private readonly ITasksRepository _tasksRepository;
+    private readonly IJobsRepository _tasksRepository;
     private readonly ILogStore _logStore;
     private readonly string[] excludeEmails;
 
-    public MovePeopleGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ILogStore logStore, ITasksRepository tasksRepository, IConfiguration configuration)
+    public MovePeopleGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ILogStore logStore, IJobsRepository tasksRepository, IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
@@ -38,11 +38,11 @@ public class MovePeopleGoogleWorkspaceCommandHandler : IRequestHandler<MovePeopl
     public async Task<Response<MovePeopleGoogleWorkspaceCommandVm>> Handle(MovePeopleGoogleWorkspaceCommand request, CancellationToken ct)
     {
         // Start Task and try to save task
-        var task = new Domain.Entities.Tasks.Task()
+        var task = new Domain.Entities.Tasks.Job()
         {
-            Status = Domain.Entities.Tasks.TaskStatus.RUNNING,
+            Status = Domain.Entities.Tasks.JobStatus.RUNNING,
             Start = DateTimeOffset.UtcNow,
-            Type = Domain.Entities.Tasks.TaskType.MOVE_PEOPLE_GOOGLE_WORKSPACE,
+            Type = Domain.Entities.Tasks.JobType.MOVE_PEOPLE_GOOGLE_WORKSPACE,
         };
 
         var queuedTask = await _tasksRepository.AtomicInsertTaskAsync(task);

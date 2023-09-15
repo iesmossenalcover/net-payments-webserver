@@ -1,6 +1,6 @@
-namespace Domain.Entities.Tasks;
+namespace Domain.Entities.Jobs;
 
-public enum TaskStatus
+public enum JobStatus
 {
     PENDING = 0,
     RUNNING = 1,
@@ -8,15 +8,15 @@ public enum TaskStatus
     ERROR = 3,
 }
 
-public enum TaskType
+public enum JobType
 {
     MOVE_PEOPLE_GOOGLE_WORKSPACE = 1,
 }
 
-public class Task : Entity
+public class Job : Entity
 {
-    public required TaskType Type { get; set; }
-    public required TaskStatus Status { get; set; }
+    public required JobType Type { get; set; }
+    public required JobStatus Status { get; set; }
     public required DateTimeOffset Start { get; set; }
     public DateTimeOffset? End { get; set; }
     public LogStoreInfo? Log { get; set; }

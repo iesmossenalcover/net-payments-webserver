@@ -1,4 +1,4 @@
-namespace Domain.Entities.Tasks;
+namespace Domain.Entities.Jobs;
 
 public enum StoreType
 {

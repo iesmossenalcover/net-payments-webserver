@@ -1,4 +1,3 @@
-using Domain.Entities.People;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure
@@ -33,7 +32,7 @@ namespace Infrastructure
 
         public DbSet<Domain.Entities.GoogleApi.UoGroupRelation> UoGroupRelations { get; set; } = default!;
 
-        public DbSet<Domain.Entities.Tasks.Task> Tasks { get; set; } = default!;
+        public DbSet<Domain.Entities.Jobs.Job> Jobs { get; set; } = default!;
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -186,21 +185,21 @@ namespace Infrastructure
                 .HasIndex(x => x.GroupId).IsDescending();
 
             // Tasks
-            modelBuilder.Entity<Domain.Entities.Tasks.Task>()
-                .ToTable("task", "main")
+            modelBuilder.Entity<Domain.Entities.Jobs.Job>()
+                .ToTable("job", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Domain.Entities.Tasks.Task>()
+            modelBuilder.Entity<Domain.Entities.Jobs.Job>()
                 .HasIndex(x => new { x.Type, x.Status }).IsDescending();
 
             // Log
-            modelBuilder.Entity<Domain.Entities.Tasks.LogStoreInfo>()
+            modelBuilder.Entity<Domain.Entities.Jobs.LogStoreInfo>()
                 .ToTable("log", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
         }
 
         public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var entry in ChangeTracker.Entries<Person>())
+            foreach (var entry in ChangeTracker.Entries<Domain.Entities.People.Person>())
             {
                 if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
                 {
@@ -212,7 +211,7 @@ namespace Infrastructure
                 }
             }
 
-            foreach (var entry in ChangeTracker.Entries<PersonGroupCourse>())
+            foreach (var entry in ChangeTracker.Entries<Domain.Entities.People.PersonGroupCourse>())
             {
                 if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
                 {
