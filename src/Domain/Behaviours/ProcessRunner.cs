@@ -37,8 +37,18 @@ public class ProcessRunner
             await jobsRepository.UpdateAsync(job, ct);
 
             Log log = new();
-            await process.Run(_serviceProvider, log, ct);
-            
+            log.Add("Starting process...");
+            try
+            {
+                await process.Run(_serviceProvider, log, ct);
+            }
+            catch (Exception e)
+            {
+                log.Add(e.Message);
+            }
+
+            log.Add("Process finished");
+
             LogStoreInfo logStoreInfo = await logStore.Save(log);
 
             job.Log = logStoreInfo;
