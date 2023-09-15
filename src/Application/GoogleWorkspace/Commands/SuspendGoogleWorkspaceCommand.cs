@@ -57,7 +57,7 @@ public class SuspendGoogleWorkspaceCommandHandler : IRequestHandler<SuspendGoogl
 
 public class SuspendGoogleWorkspaceProcess : IProcess
 {
-    public async Task Run(IServiceProvider serviceProvider, Log log, CancellationToken ct)
+    public async Task Run(IServiceScopeFactory serviceProvider, Log log, CancellationToken ct)
     {
         using var scope = serviceProvider.CreateAsyncScope();
         IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();

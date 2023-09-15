@@ -7,14 +7,14 @@ namespace Domain.Behaviours;
 
 public interface IProcess
 {
-    Task Run(IServiceProvider serviceProvider, Log log, CancellationToken ct);
+    Task Run(IServiceScopeFactory serviceProvider, Log log, CancellationToken ct);
 }
 
 public class ProcessRunner
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _serviceProvider;
 
-    public ProcessRunner(IServiceProvider serviceProvider)
+    public ProcessRunner(IServiceScopeFactory serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
