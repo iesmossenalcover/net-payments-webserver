@@ -54,10 +54,10 @@ public static class RegisterRoutes
         //     .RequireAuthorization("Superuser")
         //     .WithOpenApi();
 
-        app.MapPost("/api/googleworkspace/people/groups", GoogleWorkspace.AddPeopleToGroupGoogleWorkspace)
-            .WithName("Add people to group")
-            .RequireAuthorization("Superuser")
-            .WithOpenApi();
+        // app.MapPost("/api/googleworkspace/people/groups", GoogleWorkspace.AddPeopleToGroupGoogleWorkspace)
+        //     .WithName("Add people to group")
+        //     .RequireAuthorization("Superuser")
+        //     .WithOpenApi();
 
         app.MapGet("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)
             .WithName("Export people")

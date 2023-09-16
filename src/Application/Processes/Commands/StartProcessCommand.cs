@@ -1,20 +1,13 @@
 using Application.Common;
-using Application.Common.Models;
 using Domain.Services;
-using Domain.Entities.GoogleApi;
 using MediatR;
 using Domain.Entities.Jobs;
-using Domain.ValueObjects;
-using Application.GoogleWorkspace.Commands.Processes;
+using Application.Processes.Commands.Implementations;
 
-namespace Application.GoogleWorkspace.Commands;
+namespace Application.Processes.Commands;
 
-// Model we receive
 public record StartProcessCommand(JobType Type) : IRequest<Response<StartProcessCommandVm>>;
 
-// Validator for the model
-
-// Optionally define a view model
 public record StartProcessCommandVm(bool Ok);
 
 // Handler

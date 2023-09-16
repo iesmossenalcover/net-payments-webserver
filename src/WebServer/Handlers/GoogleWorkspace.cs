@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.GoogleWorkspace.Commands;
+using Application.Processes.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,11 +27,6 @@ public class GoogleWorkspace
     public async static Task<Response<StartProcessCommandVm>> StartProcess(IMediator m, [FromBody] StartProcessCommand cmd)
     {
         return await m.Send(cmd);
-    }
-
-    public async static Task<Response<AddPeopleToGroupGoogleWorkspaceCommandVm>> AddPeopleToGroupGoogleWorkspace(IMediator m)
-    {
-        return await m.Send(new AddPeopleToGroupGoogleWorkspaceCommand());
     }
 
     public static async Task<IResult> ExportPeopleGoogleWorkspace(IMediator mediator)

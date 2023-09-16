@@ -4,7 +4,7 @@ using Domain.Entities.People;
 using Domain.Services;
 using Domain.ValueObjects;
 
-namespace Application.GoogleWorkspace.Commands.Processes;
+namespace Application.Processes.Commands.Implementations;
 
 public class UpdateGroupMembersWorkspaceProcess : IProcess
 {
