@@ -22,8 +22,6 @@ public class MovePeopleGoogleWorkspaceProcess : IProcess
         IJobsRepository jobsRepository = scope.ServiceProvider.GetRequiredService<IJobsRepository>();
         ILogStore logStore = scope.ServiceProvider.GetRequiredService<ILogStore>();
 
-        log.Add("Inici tasca");
-
         IEnumerable<UoGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
         foreach (var ou in ouRelations)
         {
