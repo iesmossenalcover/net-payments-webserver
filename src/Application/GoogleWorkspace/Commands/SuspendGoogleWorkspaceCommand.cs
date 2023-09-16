@@ -5,7 +5,6 @@ using Domain.Entities.GoogleApi;
 using MediatR;
 using Domain.Entities.Jobs;
 using Domain.ValueObjects;
-using Domain.Behaviours;
 
 namespace Application.GoogleWorkspace.Commands;
 
@@ -34,14 +33,13 @@ public class SuspendGoogleWorkspaceCommandHandler : IRequestHandler<SuspendGoogl
 
     public async Task<Response<SuspendGoogleWorkspaceCommandVm>> Handle(SuspendGoogleWorkspaceCommand request, CancellationToken ct)
     {
-        // Start Task and try to save task
+        // Queue the job if it is possible.
         var job = new Job()
         {
-            Status = JobStatus.RUNNING,
+            Status = JobStatus.PENDING,
             Start = DateTimeOffset.UtcNow,
             Type = JobType.SUSPEND_GOOGLE_WORKSPACE,
         };
-
         var queuedTask = await _jobsRepository.AtomicInsertJobAsync(job);
         if (!queuedTask)
         {

@@ -3,7 +3,7 @@ using Domain.Entities.Logs;
 using Domain.Services;
 using Domain.ValueObjects;
 
-namespace Domain.Behaviours;
+namespace Domain.Services;
 
 public interface IProcess
 {
