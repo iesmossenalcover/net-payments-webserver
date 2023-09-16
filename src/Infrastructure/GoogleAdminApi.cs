@@ -282,7 +282,6 @@ public class GoogleAdminApi : IGoogleAdminApi
             {
                 if (members.MembersValue != null)
                 {
-                    // TODO BUG
                     /*
                         https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
                         {
@@ -306,7 +305,7 @@ public class GoogleAdminApi : IGoogleAdminApi
 
                 return new GoogleApiResult<bool>(true);
             }
-            catch (System.Exception)
+            catch (Exception)
             {
 
                 return new GoogleApiResult<bool>("Error");

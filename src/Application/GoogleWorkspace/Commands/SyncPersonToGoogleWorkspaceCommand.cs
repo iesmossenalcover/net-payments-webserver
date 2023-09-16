@@ -21,16 +21,14 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
     #region props
 
     private readonly IGoogleAdminApi _googleAdminApi;
-    private readonly ICoursesRepository _courseRepository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IPeopleRepository _peopleRepository;
     private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
     private readonly string emailDomain;
 
-    public SyncPersonToGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository, IPeopleRepository peopleRepository, IConfiguration configuration)
+    public SyncPersonToGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, IPersonGroupCourseRepository personGroupCourseRepository, IPeopleRepository peopleRepository, IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
-        _courseRepository = courseRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
         _peopleRepository = peopleRepository;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;

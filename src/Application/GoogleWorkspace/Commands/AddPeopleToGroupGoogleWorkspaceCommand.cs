@@ -16,6 +16,8 @@ public record AddPeopleToGroupGoogleWorkspaceCommand() : IRequest<Response<AddPe
 public record AddPeopleToGroupGoogleWorkspaceCommandVm(bool ok);
 
 // Handler
+
+// TODO: MOVE TO PROCESS
 public class AddPeopleToGroupGoogleWorkspaceCommandHandler : IRequestHandler<AddPeopleToGroupGoogleWorkspaceCommand, Response<AddPeopleToGroupGoogleWorkspaceCommandVm>>
 {
     #region props
@@ -24,19 +26,12 @@ public class AddPeopleToGroupGoogleWorkspaceCommandHandler : IRequestHandler<Add
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly ICoursesRepository _courseRepository;
 
-
-    private readonly string emailDomain;
-    private readonly string[] excludeEmails;
-
     public AddPeopleToGroupGoogleWorkspaceCommandHandler(ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository, IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
         _oUGroupRelationsRepository = oUGroupRelationsRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
         _courseRepository = courseRepository;
-
-        emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
-        excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
     }
     #endregion
 
