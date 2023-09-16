@@ -5,6 +5,7 @@ using Domain.Entities.GoogleApi;
 using MediatR;
 using Domain.Entities.Jobs;
 using Domain.ValueObjects;
+using Application.GoogleWorkspace.Commands.Processes;
 
 namespace Application.GoogleWorkspace.Commands;
 
@@ -34,35 +35,21 @@ public class StartProcessCommandHandler : IRequestHandler<StartProcessCommand, R
 
     public async Task<Response<StartProcessCommandVm>> Handle(StartProcessCommand request, CancellationToken ct)
     {
-        IProcess? process = null;
+        IProcess? process = InstantiateProcess(request.Type);
+        if (process == null) return Response<StartProcessCommandVm>.Error(ResponseCode.BadRequest, "Tasca no vàlida");
 
-        switch (request.Type)
-        {
-            case JobType.SUSPEND_GOOGLE_WORKSPACE:
-                process = new SuspendGoogleWorkspaceProcess();
-                break;
-            case JobType.MOVE_PEOPLE_GOOGLE_WORKSPACE:
-                var configuration = _serviceProvider.GetRequiredService<IConfiguration>();
-                var excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
-                process = new MovePeopleGoogleWorkspaceProcess(excludeEmails);
-                break;
-            default:
-                break;
-        }
-
-        if (process == null)
-        {
-            return Response<StartProcessCommandVm>.Error(ResponseCode.BadRequest, "Tipus de tasca no valid");
-        }
-
-        // Queue the job if it is possible.
         var job = new Job()
         {
             Status = JobStatus.PENDING,
             Start = DateTimeOffset.UtcNow,
             Type = request.Type,
         };
-
+        
+        /*
+            Right now it is hardcoded that only one task of same type can be running.
+            IProcess could implment a method to determine if a process can be spawned or not.
+            This way each processs could have its own logic.
+        */
         var queuedTask = await _jobsRepository.AtomicInsertJobAsync(job);
         if (!queuedTask)
         {
@@ -70,6 +57,26 @@ public class StartProcessCommandHandler : IRequestHandler<StartProcessCommand, R
         }
 
         _processRunner.Start(process, job.Id);
+
         return Response<StartProcessCommandVm>.Ok(new StartProcessCommandVm(true));
+    }
+
+    private IProcess? InstantiateProcess(JobType type)
+    {
+        switch (type)
+        {
+            case JobType.SUSPEND_GOOGLE_WORKSPACE:
+
+                return new SuspendGoogleWorkspaceProcess();
+
+            case JobType.MOVE_PEOPLE_GOOGLE_WORKSPACE:
+
+                var configuration = _serviceProvider.GetRequiredService<IConfiguration>();
+                var excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
+                return new MovePeopleGoogleWorkspaceProcess(excludeEmails);
+
+            default:
+                return null;
+        }
     }
 }
