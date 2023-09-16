@@ -18,19 +18,14 @@ public class GoogleWorkspace
         return await m.Send(new SetPasswordGoogleWorkspaceCommand(id));
     }
 
-    public async static Task<Response<MoveOUGoogleWorkspaceCommandVm>> MoveOUGoogleWorkspace(long id, IMediator m)
+    public async static Task<Response<UpdateUserOUAndGroupWorkspaceCommandVm>> MoveOUGoogleWorkspace(long id, IMediator m)
     {
-        return await m.Send(new MoveOUGoogleWorkspaceCommand(id));
+        return await m.Send(new UpdateUserOUAndGroupWorkspaceCommand(id));
     }
 
-    public async static Task<Response<SuspendGoogleWorkspaceCommandVm>> SuspendPeopleByOuGoogleWorkspace(IMediator m)
+    public async static Task<Response<StartProcessCommandVm>> StartProcess(IMediator m, [FromBody] StartProcessCommand cmd)
     {
-        return await m.Send(new SuspendGoogleWorkspaceCommand());
-    }
-
-    public async static Task<Response<MovePeopleGoogleWorkspaceCommandVm>> MovePeopleByOuGoogleWorkspace(IMediator m)
-    {
-        return await m.Send(new MovePeopleGoogleWorkspaceCommand());
+        return await m.Send(cmd);
     }
 
     public async static Task<Response<AddPeopleToGroupGoogleWorkspaceCommandVm>> AddPeopleToGroupGoogleWorkspace(IMediator m)

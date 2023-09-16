@@ -13,6 +13,7 @@ public enum JobType
 {
     MOVE_PEOPLE_GOOGLE_WORKSPACE = 1,
     SUSPEND_GOOGLE_WORKSPACE = 2,
+    UPDATE_GROUP_MEMBERS_WORKSPACE = 3,
 }
 
 public class Job : Entity

@@ -12,8 +12,6 @@ public class SuspendGoogleWorkspaceProcess : IProcess
         using var scope = serviceProvider.CreateAsyncScope();
         IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();
         IOUGroupRelationsRepository oUGroupRelationsRepository = scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
-        IJobsRepository jobsRepository = scope.ServiceProvider.GetRequiredService<IJobsRepository>();
-        ILogStore logStore = scope.ServiceProvider.GetRequiredService<ILogStore>();
 
         IEnumerable<UoGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
         IEnumerable<string> pendings = ouRelations.Select(x => x.OldOU).Distinct();

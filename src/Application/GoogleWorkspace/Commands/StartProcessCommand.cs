@@ -15,7 +15,7 @@ public record StartProcessCommand(JobType Type) : IRequest<Response<StartProcess
 // Validator for the model
 
 // Optionally define a view model
-public record StartProcessCommandVm(bool ok);
+public record StartProcessCommandVm(bool Ok);
 
 // Handler
 public class StartProcessCommandHandler : IRequestHandler<StartProcessCommand, Response<StartProcessCommandVm>>
@@ -66,14 +66,15 @@ public class StartProcessCommandHandler : IRequestHandler<StartProcessCommand, R
         switch (type)
         {
             case JobType.SUSPEND_GOOGLE_WORKSPACE:
-
                 return new SuspendGoogleWorkspaceProcess();
 
             case JobType.MOVE_PEOPLE_GOOGLE_WORKSPACE:
-
                 var configuration = _serviceProvider.GetRequiredService<IConfiguration>();
                 var excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
                 return new MovePeopleGoogleWorkspaceProcess(excludeEmails);
+
+            case JobType.UPDATE_GROUP_MEMBERS_WORKSPACE:
+                return new UpdateGroupMembersWorkspaceProcess();
 
             default:
                 return null;
