@@ -18,7 +18,7 @@ public enum JobType
 public class Job : Entity
 {
     public required JobType Type { get; set; }
-    public required JobStatus Status { get; set; }
+    public required JobStatus Status { get; set; } = JobStatus.PENDING;
     public required DateTimeOffset Start { get; set; }
     public DateTimeOffset? End { get; set; }
     public LogStoreInfo? Log { get; set; }
