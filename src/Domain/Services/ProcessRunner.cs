@@ -36,6 +36,7 @@ public class ProcessRunner
             job.Status = JobStatus.RUNNING;
             await jobsRepository.UpdateAsync(job, ct);
 
+
             Log log = new();
             log.Add("Starting process...");
             try

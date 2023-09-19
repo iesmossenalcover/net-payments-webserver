@@ -22,6 +22,8 @@ public class Job : Entity
     public required JobStatus Status { get; set; } = JobStatus.PENDING;
     public required DateTimeOffset Start { get; set; }
     public DateTimeOffset? End { get; set; }
+    
+    public long? LogId { get; set; }
     public LogStoreInfo? Log { get; set; }
 
 }

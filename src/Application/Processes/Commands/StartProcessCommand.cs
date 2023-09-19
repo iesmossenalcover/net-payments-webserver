@@ -33,7 +33,7 @@ public class StartProcessCommandHandler : IRequestHandler<StartProcessCommand, R
 
         var job = new Job()
         {
-            Status = JobStatus.PENDING,
+            Status = JobStatus.RUNNING,
             Start = DateTimeOffset.UtcNow,
             Type = request.Type,
         };

@@ -28,7 +28,17 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         // Jobs
-        app.MapPost("/api/process", GoogleWorkspace.StartProcess)
+        app.MapGet("/api/processes", Processes.GetProcessess)
+            .WithName("Get Last Process")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
+        app.MapGet("/api/processes/logs/{id}", Processes.GetLog)
+            .WithName("Get Log")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
+        app.MapPost("/api/processes", Processes.StartProcess)
             .WithName("Start process")
             .RequireAuthorization("Superuser")
             .WithOpenApi();

@@ -47,4 +47,12 @@ public class JobsRepository : Repository<Job>, IJobsRepository
             return false;
         }
     }
+
+    public async Task<IEnumerable<Job>> GetLastOfEachType(CancellationToken ct)
+    {
+        return await _dbSet
+            .GroupBy(x => x.Type)
+            .Select(x => x.OrderByDescending(y => y.Start).First())
+            .ToListAsync();
+    }
 }
