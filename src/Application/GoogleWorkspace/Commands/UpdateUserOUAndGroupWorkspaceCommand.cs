@@ -53,6 +53,9 @@ public class UpdateUserOUAndGroupWorkspaceCommandHandler : IRequestHandler<Updat
         result = await _googleAdminApi.AddUserToGroup(p.ContactMail, oug.GroupMail);
         if (!result.Success) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? "Error cridant api google.");
 
+        result = await _googleAdminApi.SetUserStatus(p.ContactMail, true);
+        if (!result.Success) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? "Error cridant api google.");
+
         return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Ok(new UpdateUserOUAndGroupWorkspaceCommandVm());
     }
 }

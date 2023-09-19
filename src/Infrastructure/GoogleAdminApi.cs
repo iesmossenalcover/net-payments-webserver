@@ -116,28 +116,34 @@ public class GoogleAdminApi : IGoogleAdminApi
             }
             while (!string.IsNullOrEmpty(users.NextPageToken));
 
-            var batchRequest = new BatchRequest(service);
-            foreach (var user in usersToProcess)
-            {
-                // IMPORTANT: Exclude members
-                if (excludeEmails.Contains(user.PrimaryEmail)) continue;
+            int batchSize = 500;
 
-                // If we want exactOU, orga path must be the same, not descdendant.
-                if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
+            for (int i = 0; i < usersToProcess.Count; i += batchSize)
+            {
+                var batchList = usersToProcess.Skip(i).Take(batchSize);
+
+                var batchRequest = new BatchRequest(service);
+                foreach (var user in batchList)
                 {
-                    user.Suspended = suspend;
-                    batchRequest.Queue(service.Users.Update(user, user.Id),
-                    (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) =>
+                    // IMPORTANT: Exclude members
+                    if (excludeEmails.Contains(user.PrimaryEmail)) continue;
+
+                    // If we want exactOU, orga path must be the same, not descdendant.
+                    if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
                     {
-                        // 
-                    });
+                        user.Suspended = suspend;
+                        batchRequest.Queue(service.Users.Update(user, user.Id),
+                        (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) => { });
+                    }
                 }
+                await batchRequest.ExecuteAsync();
+
+                Console.WriteLine($"Processed batch {i / batchSize + 1}");
             }
-            await batchRequest.ExecuteAsync();
 
             return new GoogleApiResult<bool>(true);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             return new GoogleApiResult<bool>(e.Message);
         }
@@ -225,8 +231,6 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-
-
             DirectoryService service = CreateService();
 
             string memberId = email;
@@ -405,7 +409,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             return new GoogleApiResult<bool>(m != null);
 
         }
-        catch (Google.GoogleApiException e)
+        catch (GoogleApiException e)
         {
             if (e.Error.Code == 404)
             {
@@ -433,7 +437,7 @@ public class GoogleAdminApi : IGoogleAdminApi
 
             return new GoogleApiResult<bool>(user != null);
         }
-        catch (Google.GoogleApiException e)
+        catch (GoogleApiException e)
         {
             if (e.Error.Code == 404)
             {
@@ -441,5 +445,25 @@ public class GoogleAdminApi : IGoogleAdminApi
             }
             return new GoogleApiResult<bool>(e.Message);
         }
+    }
+
+    public async Task<GoogleApiResult<bool>> SetUserStatus(string email, bool active)
+    {
+        DirectoryService service = CreateService();
+
+        string memberId = email;
+        var userRequest = service.Users.Get(memberId);
+        var user = await userRequest.ExecuteAsync();
+        if (user == null)
+        {
+            return new GoogleApiResult<bool>("user not found");
+        }
+
+        user.Suspended = !active;
+
+        var updateRequest = service.Users.Update(user, email);
+        user = await updateRequest.ExecuteAsync();
+
+        return new GoogleApiResult<bool>(user != null);
     }
 }

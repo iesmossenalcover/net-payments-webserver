@@ -9,6 +9,7 @@ public interface IGoogleAdminApi
     public Task<GoogleApiResult<bool>> UserExists(string email);
     public Task<GoogleApiResult<bool>> SetPassword(string email, string password, bool changePasswordNexLogin = true);
     public Task<GoogleApiResult<bool>> MoveUserToOU(string email, string ouPath);
+    public Task<GoogleApiResult<bool>> SetUserStatus(string email, bool active);
     public Task<GoogleApiResult<IEnumerable<string>>> GetAllUsers(string ouPath);
     public Task<GoogleApiResult<bool>> AddUserToGroup(string email, string group);
     public Task<GoogleApiResult<bool>> ClearGroupMembers(string group);
