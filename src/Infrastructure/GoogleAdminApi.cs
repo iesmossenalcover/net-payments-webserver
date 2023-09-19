@@ -116,6 +116,8 @@ public class GoogleAdminApi : IGoogleAdminApi
             }
             while (!string.IsNullOrEmpty(users.NextPageToken));
 
+            Console.WriteLine("start #####################");
+
             int batchSize = 500;
 
             for (int i = 0; i < usersToProcess.Count; i += batchSize)
@@ -128,6 +130,8 @@ public class GoogleAdminApi : IGoogleAdminApi
                     // IMPORTANT: Exclude members
                     if (excludeEmails.Contains(user.PrimaryEmail)) continue;
 
+                    Console.WriteLine(user.PrimaryEmail);
+
                     // If we want exactOU, orga path must be the same, not descdendant.
                     if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
                     {
@@ -137,8 +141,6 @@ public class GoogleAdminApi : IGoogleAdminApi
                     }
                 }
                 await batchRequest.ExecuteAsync();
-
-                Console.WriteLine($"Processed batch {i / batchSize + 1}");
             }
 
             return new GoogleApiResult<bool>(true);
