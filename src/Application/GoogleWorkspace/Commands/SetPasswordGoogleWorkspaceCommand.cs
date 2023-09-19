@@ -20,20 +20,12 @@ public class SetPasswordGoogleWorkspaceCommandHandler : IRequestHandler<SetPassw
     #region props
 
     private readonly IGoogleAdminApi _googleAdminApi;
-    private readonly ICoursesRepository _courseRepository;
-    private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IPeopleRepository _peopleRepository;
-    private readonly IOUGroupRelationsRepository _oUGroupRelationsRepository;
-    private readonly string emailDomain;
 
-    public SetPasswordGoogleWorkspaceCommandHandler(IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository, IPeopleRepository peopleRepository, IConfiguration configuration)
+    public SetPasswordGoogleWorkspaceCommandHandler(IGoogleAdminApi googleAdminApi, IPeopleRepository peopleRepository)
     {
         _googleAdminApi = googleAdminApi;
-        _courseRepository = courseRepository;
-        _personGroupCourseRepository = personGroupCourseRepository;
         _peopleRepository = peopleRepository;
-        _oUGroupRelationsRepository = oUGroupRelationsRepository;
-        emailDomain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
     }
     #endregion
 

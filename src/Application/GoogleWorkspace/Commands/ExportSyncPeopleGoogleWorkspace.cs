@@ -14,8 +14,6 @@ public record ExportSyncPeopleGoogleWorkspaceCommand() : IRequest<FileVm>;
 public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSyncPeopleGoogleWorkspaceCommand, FileVm>
 {
     #region props
-
-    private readonly IGoogleAdminApi _googleAdminApi;
     private readonly ICoursesRepository _courseRepository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IPeopleRepository _peopleRepository;
@@ -24,9 +22,8 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
     private readonly string emailDomain;
     private readonly string[] excludeEmails;
 
-    public ExportSyncPeopleGoogleWorkspaceHandler(ICsvParser csvParser, IOUGroupRelationsRepository oUGroupRelationsRepository, IGoogleAdminApi googleAdminApi, ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository, IPeopleRepository peopleRepository, IConfiguration configuration)
+    public ExportSyncPeopleGoogleWorkspaceHandler(ICsvParser csvParser, IOUGroupRelationsRepository oUGroupRelationsRepository, ICoursesRepository courseRepository, IPersonGroupCourseRepository personGroupCourseRepository, IPeopleRepository peopleRepository, IConfiguration configuration)
     {
-        _googleAdminApi = googleAdminApi;
         _courseRepository = courseRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
         _peopleRepository = peopleRepository;

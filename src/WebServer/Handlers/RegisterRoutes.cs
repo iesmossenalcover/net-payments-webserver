@@ -27,6 +27,22 @@ public static class RegisterRoutes
             .WithName("signup")
             .WithOpenApi();
 
+        // Jobs
+        app.MapGet("/api/processes", Processes.GetProcessess)
+            .WithName("Get Last Process")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
+        app.MapGet("/api/processes/logs/{id}", Processes.GetLog)
+            .WithName("Get Log")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
+        app.MapPost("/api/processes", Processes.StartProcess)
+            .WithName("Start process")
+            .RequireAuthorization("Superuser")
+            .WithOpenApi();
+
         // Tasks
         app.MapGet("/api/tasks/people", Tasks.GetPeopleBatchUploadTemplate)
             .RequireAuthorization("Admin")
@@ -38,20 +54,20 @@ public static class RegisterRoutes
             .WithName("Upload people")
             .WithOpenApi();
 
-        app.MapPost("/api/googleworkspace/people/suspend", GoogleWorkspace.SuspendPeopleByOuGoogleWorkspace)
-            .WithName("Suspend people")
-            .RequireAuthorization("Superuser")
-            .WithOpenApi();
+        // app.MapPost("/api/googleworkspace/people/suspend", GoogleWorkspace.SuspendPeopleByOuGoogleWorkspace)
+        //     .WithName("Suspend people")
+        //     .RequireAuthorization("Superuser")
+        //     .WithOpenApi();
 
-        app.MapPost("/api/googleworkspace/people/move", GoogleWorkspace.MovePeopleByOuGoogleWorkspace)
-            .WithName("Move people")
-            .RequireAuthorization("Superuser")
-            .WithOpenApi();
-        
-        app.MapPost("/api/googleworkspace/people/groups", GoogleWorkspace.AddPeopleToGroupGoogleWorkspace)
-            .WithName("Add people to group")
-            .RequireAuthorization("Superuser")
-            .WithOpenApi();
+        // app.MapPost("/api/googleworkspace/people/move", GoogleWorkspace.MovePeopleByOuGoogleWorkspace)
+        //     .WithName("Move people")
+        //     .RequireAuthorization("Superuser")
+        //     .WithOpenApi();
+
+        // app.MapPost("/api/googleworkspace/people/groups", GoogleWorkspace.AddPeopleToGroupGoogleWorkspace)
+        //     .WithName("Add people to group")
+        //     .RequireAuthorization("Superuser")
+        //     .WithOpenApi();
 
         app.MapGet("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)
             .WithName("Export people")
@@ -203,10 +219,10 @@ public static class RegisterRoutes
             .WithName("Get active events by person document Id")
             .WithOpenApi();
 
-         app.MapGet("/api/events/export", Events.ExportEvents)
-            .RequireAuthorization("Admin")
-            .WithName("Export events info")
-            .WithOpenApi();
+        app.MapGet("/api/events/export", Events.ExportEvents)
+           .RequireAuthorization("Admin")
+           .WithName("Export events info")
+           .WithOpenApi();
 
         // Events People
         app.MapPost("/api/events/{eventCode}/people", Events.SetPeopleToEvent)
