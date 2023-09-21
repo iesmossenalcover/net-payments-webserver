@@ -163,6 +163,32 @@ public static class RegisterRoutes
             .WithName("Set active course")
             .WithOpenApi();
 
+        //OU Relations
+        app.MapGet("/api/ourelations", OURelations.ListOURelations)
+            .RequireAuthorization("Superuser")
+            .WithName("List ou relations")
+            .WithOpenApi();
+
+        app.MapGet("/api/ourelations/{id}", OURelations.GetOURelation)
+            .RequireAuthorization("Superuser")
+            .WithName("Get ou relation by id")
+            .WithOpenApi();
+
+        app.MapPost("/api/ourelations", OURelations.CreateOURelation)
+            .RequireAuthorization("Superuser")
+            .WithName("Create ou relation")
+            .WithOpenApi();
+
+        app.MapPut("/api/ourelations/{id}", OURelations.UpdateOURelation)
+            .RequireAuthorization("Superuser")
+            .WithName("Update ou relation")
+            .WithOpenApi();
+
+        app.MapDelete("/api/ourelations/{id}", OURelations.DeleteOURelation)
+            .RequireAuthorization("Superuser")
+            .WithName("Delete ou relation")
+            .WithOpenApi();
+
         // Groups
         app.MapGet("/api/groups/selector", Groups.GetGroupsSelector)
             .RequireAuthorization("Admin")
