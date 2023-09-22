@@ -61,9 +61,4 @@ public class GetOuRelationByIdQueryHandler : IRequestHandler<GetOuRelationByIdQu
 
         return Response<OuRelationVm>.Ok(ouRelationVm);
     }
-
-    Task<Response<OuRelationVm>> IRequestHandler<GetOuRelationByIdQuery, Response<OuRelationVm>>.Handle(GetOuRelationByIdQuery request, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
 }
