@@ -38,7 +38,7 @@ public class ExportSyncPeopleGoogleWorkspaceHandler : IRequestHandler<ExportSync
     public async Task<FileVm> Handle(ExportSyncPeopleGoogleWorkspaceCommand request, CancellationToken ct)
     {
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
-        IEnumerable<UoGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
+        IEnumerable<OuGroupRelation> ouRelations = await _oUGroupRelationsRepository.GetAllAsync(ct);
 
         var now = DateTimeOffset.UtcNow;
         string fileName = $"export_users_{now.Date.Year}{now.Date.Month}{now.Date.Day}{now.DateTime.Hour}{now.DateTime.Second}.csv";

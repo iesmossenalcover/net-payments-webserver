@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Domain.Entities.Authentication;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();

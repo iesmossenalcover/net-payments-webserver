@@ -30,7 +30,7 @@ namespace Infrastructure
 
         public DbSet<Domain.Entities.Orders.Order> Orders { get; set; } = default!;
 
-        public DbSet<Domain.Entities.GoogleApi.UoGroupRelation> UoGroupRelations { get; set; } = default!;
+        public DbSet<Domain.Entities.GoogleApi.OuGroupRelation> UoGroupRelations { get; set; } = default!;
 
         public DbSet<Domain.Entities.Jobs.Job> Jobs { get; set; } = default!;
 
@@ -180,10 +180,10 @@ namespace Infrastructure
                 .Property(x => x.Id).ValueGeneratedOnAdd();
 
             // GoogleApi
-            modelBuilder.Entity<Domain.Entities.GoogleApi.UoGroupRelation>()
+            modelBuilder.Entity<Domain.Entities.GoogleApi.OuGroupRelation>()
                 .ToTable("uo_group_relation", "main")
                 .Property(x => x.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Domain.Entities.GoogleApi.UoGroupRelation>()
+            modelBuilder.Entity<Domain.Entities.GoogleApi.OuGroupRelation>()
                 .HasIndex(x => x.GroupId).IsDescending();
 
             // Tasks

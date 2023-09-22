@@ -17,7 +17,7 @@ public class UpdateGroupMembersWorkspaceProcess : IProcess
         IPersonGroupCourseRepository personGroupCourseRepository = scope.ServiceProvider.GetRequiredService<IPersonGroupCourseRepository>();
 
         Course course = await coursesRepository.GetCurrentCoursAsync(ct);
-        IEnumerable<UoGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
+        IEnumerable<OuGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
 
         if (!ouRelations.Any())
         {

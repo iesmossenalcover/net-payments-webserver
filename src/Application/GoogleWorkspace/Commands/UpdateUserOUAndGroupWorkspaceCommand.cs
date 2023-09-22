@@ -42,7 +42,7 @@ public class UpdateUserOUAndGroupWorkspaceCommandHandler : IRequestHandler<Updat
 
         Person p = pgc.Person;
 
-        UoGroupRelation? oug = await _oUGroupRelationsRepository.GetByGroupIdAsync(pgc.GroupId, CancellationToken.None);
+        OuGroupRelation? oug = await _oUGroupRelationsRepository.GetByGroupIdAsync(pgc.GroupId, CancellationToken.None);
         if (oug == null) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.NotFound, "No s'ha configurat la OU per aquest grup");
 
         if (string.IsNullOrEmpty(p.ContactMail)) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.BadRequest, "L'usuari no té correu.");

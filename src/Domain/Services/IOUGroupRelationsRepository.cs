@@ -2,7 +2,7 @@ using Domain.Entities.GoogleApi;
 
 namespace Domain.Services;
 
-public interface IOUGroupRelationsRepository  : IRepository<UoGroupRelation>
+public interface IOUGroupRelationsRepository  : IRepository<OuGroupRelation>
 {
-    public Task<UoGroupRelation?> GetByGroupIdAsync(long groupId, CancellationToken ct);
+    public Task<OuGroupRelation?> GetByGroupIdAsync(long groupId, CancellationToken ct);
 }

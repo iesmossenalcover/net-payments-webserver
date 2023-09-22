@@ -3,7 +3,7 @@ namespace Domain.Entities.GoogleApi;
 using Domain;
 using Domain.Entities.People;
 
-public class UoGroupRelation : Entity
+public class OuGroupRelation : Entity
 {
     public long GroupId { get; set; }
     public Group Group { get; set; } = default!;

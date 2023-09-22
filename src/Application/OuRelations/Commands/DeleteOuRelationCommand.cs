@@ -4,23 +4,23 @@ using Domain.Entities.Events;
 using MediatR;
 using Domain.Entities.GoogleApi;
 
-namespace Application.OURelations.Commands;
+namespace Application.OuRelations.Commands;
 
-public record DeleteOURelationCommand(long Id) : IRequest<Response<long?>>;
-public class DeleteOURelationCommandHandler : IRequestHandler<DeleteOURelationCommand, Response<long?>>
+public record DeleteOuRelationCommand(long Id) : IRequest<Response<long?>>;
+public class DeleteOuRelationCommandHandler : IRequestHandler<DeleteOuRelationCommand, Response<long?>>
 {
     #region IOC
     private readonly IOUGroupRelationsRepository _groupsRelationRepo;
 
-    public DeleteOURelationCommandHandler(IOUGroupRelationsRepository groupsRelationRepo)
+    public DeleteOuRelationCommandHandler(IOUGroupRelationsRepository groupsRelationRepo)
     {
         _groupsRelationRepo = groupsRelationRepo;
     }
     #endregion
 
-    public async Task<Response<long?>> Handle(DeleteOURelationCommand request, CancellationToken ct)
+    public async Task<Response<long?>> Handle(DeleteOuRelationCommand request, CancellationToken ct)
     {
-        UoGroupRelation? relation = await _groupsRelationRepo.GetByIdAsync(request.Id, ct);
+        OuGroupRelation? relation = await _groupsRelationRepo.GetByIdAsync(request.Id, ct);
 
         if (relation == null) return Response<long?>.Error(ResponseCode.BadRequest, "OU relation no existeix");
 

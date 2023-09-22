@@ -5,10 +5,10 @@ using FluentValidation;
 using MediatR;
 using Domain.Entities.GoogleApi;
 
-namespace Application.OURelations.Commands;
+namespace Application.OuRelations.Commands;
 
 // Model we receive
-public record CreateOURelationCommand : IRequest<Response<long?>>
+public record CreateOuRelationCommand : IRequest<Response<long?>>
 {
     public long GroupId { get; set; }
     public string GroupMail { get; set; } = string.Empty;
@@ -20,7 +20,7 @@ public record CreateOURelationCommand : IRequest<Response<long?>>
 }
 
 // Validator
-public class CreateOURelationCommandValidator : AbstractValidator<CreateOURelationCommand>
+public class CreateOURelationCommandValidator : AbstractValidator<CreateOuRelationCommand>
 {
     private readonly IGroupsRepository _groupsRepository;
 
@@ -29,24 +29,24 @@ public class CreateOURelationCommandValidator : AbstractValidator<CreateOURelati
         _groupsRepository = groupsRepository;
 
         RuleFor(x => x.GroupMail)
-        .NotEmpty().WithMessage("S'ha d'indicar un GroupMail.");
+        .NotEmpty().WithMessage(@"S'ha d'indicar un GroupMail.");
         RuleFor(x => x.OldOU)
-        .NotEmpty().WithMessage("S'ha d'indicar un OldOU.");
+        .NotEmpty().WithMessage(@"S'ha d'indicar un OldOU.");
         RuleFor(x => x.ActiveOU)
-        .NotEmpty().WithMessage("S'ha d'indicar un ActiveOU.");
+        .NotEmpty().WithMessage(@"S'ha d'indicar un ActiveOU.");
         RuleFor(x => x.GroupId)
-        .NotEmpty().WithMessage("S'ha d'indicar un GroupId.")
-        .MustAsync(CheckGroupExistsAsync).WithMessage("Ja existeix un grup amb aquest nom");
+        .NotEmpty().WithMessage("@S'ha d'indicar un GroupId.")
+        .MustAsync(CheckGroupExistsAsync).WithMessage(@"Ja existeix un grup amb aquest nom");
     }
-    private async Task<bool> CheckGroupExistsAsync(CreateOURelationCommand cmd, long id, CancellationToken ct)
+    private async Task<bool> CheckGroupExistsAsync(CreateOuRelationCommand cmd, long id, CancellationToken ct)
     {
-        var group = await _groupsRepository.GetByIdAsync(id, ct);
+        Group? group = await _groupsRepository.GetByIdAsync(id, ct);
         return group != null;
     }
 }
 
 // Handler
-public class CreateOURelationCommandHandler : IRequestHandler<CreateOURelationCommand, Response<long?>>
+public class CreateOURelationCommandHandler : IRequestHandler<CreateOuRelationCommand, Response<long?>>
 {
 
     private readonly IOUGroupRelationsRepository _groupsRelationRepo;
@@ -58,10 +58,10 @@ public class CreateOURelationCommandHandler : IRequestHandler<CreateOURelationCo
         _groupsRelationRepo = groupsRelationRepo;
     }
 
-    public async Task<Response<long?>> Handle(CreateOURelationCommand request, CancellationToken ct)
+    public async Task<Response<long?>> Handle(CreateOuRelationCommand request, CancellationToken ct)
     {
 
-        UoGroupRelation uorelation = new UoGroupRelation()
+        OuGroupRelation uorelation = new OuGroupRelation()
         {
             GroupId = request.GroupId,
             GroupMail = request.GroupMail,

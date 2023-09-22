@@ -7,12 +7,10 @@ public static class RegisterRoutes
             .WithName("Health")
             .WithOpenApi();
 
-        // auth related actions are in WebServer layer dueto related session storage.
         app.MapPost("/api/signin", Authentication.Auth.SigninPost)
             .WithName("signin")
             .WithOpenApi();
 
-        // auth related actions are in WebServer layer dueto related session storage.
         app.MapPost("/api/oauth/", Authentication.Auth.SigninOAuth)
             .WithName("External OAuth Signin")
             .WithOpenApi();
@@ -53,21 +51,6 @@ public static class RegisterRoutes
             .RequireAuthorization("Admin")
             .WithName("Upload people")
             .WithOpenApi();
-
-        // app.MapPost("/api/googleworkspace/people/suspend", GoogleWorkspace.SuspendPeopleByOuGoogleWorkspace)
-        //     .WithName("Suspend people")
-        //     .RequireAuthorization("Superuser")
-        //     .WithOpenApi();
-
-        // app.MapPost("/api/googleworkspace/people/move", GoogleWorkspace.MovePeopleByOuGoogleWorkspace)
-        //     .WithName("Move people")
-        //     .RequireAuthorization("Superuser")
-        //     .WithOpenApi();
-
-        // app.MapPost("/api/googleworkspace/people/groups", GoogleWorkspace.AddPeopleToGroupGoogleWorkspace)
-        //     .WithName("Add people to group")
-        //     .RequireAuthorization("Superuser")
-        //     .WithOpenApi();
 
         app.MapGet("/api/googleworkspace/people/export", GoogleWorkspace.ExportPeopleGoogleWorkspace)
             .WithName("Export people")
@@ -164,27 +147,27 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         //OU Relations
-        app.MapGet("/api/ourelations", OURelations.ListOURelations)
+        app.MapGet("/api/ourelations", OuRelations.ListOuRelations)
             .RequireAuthorization("Superuser")
             .WithName("List ou relations")
             .WithOpenApi();
 
-        app.MapGet("/api/ourelations/{id}", OURelations.GetOURelation)
+        app.MapGet("/api/ourelations/{id}", OuRelations.GetOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Get ou relation by id")
             .WithOpenApi();
 
-        app.MapPost("/api/ourelations", OURelations.CreateOURelation)
+        app.MapPost("/api/ourelations", OuRelations.CreateOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Create ou relation")
             .WithOpenApi();
 
-        app.MapPut("/api/ourelations/{id}", OURelations.UpdateOURelation)
+        app.MapPut("/api/ourelations/{id}", OuRelations.UpdateOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Update ou relation")
             .WithOpenApi();
 
-        app.MapDelete("/api/ourelations/{id}", OURelations.DeleteOURelation)
+        app.MapDelete("/api/ourelations/{id}", OuRelations.DeleteOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Delete ou relation")
             .WithOpenApi();

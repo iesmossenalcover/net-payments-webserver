@@ -44,7 +44,7 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
 
         Person p = pgc.Person;
 
-        UoGroupRelation? oug = await _oUGroupRelationsRepository.GetByGroupIdAsync(pgc.GroupId, CancellationToken.None);
+        OuGroupRelation? oug = await _oUGroupRelationsRepository.GetByGroupIdAsync(pgc.GroupId, CancellationToken.None);
         if (oug == null) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.NotFound, "No s'ha configurat la OU per aquest grup");
         string? password = null;
 
