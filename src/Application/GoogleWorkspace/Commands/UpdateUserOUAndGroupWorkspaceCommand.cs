@@ -37,7 +37,7 @@ public class UpdateUserOUAndGroupWorkspaceCommandHandler : IRequestHandler<Updat
     {
         IEnumerable<PersonGroupCourse> personGroupCourses = await _personGroupCourseRepository.GetPersonGroupCoursesByPersonIdAsync(request.Id, ct);
         PersonGroupCourse? pgc = personGroupCourses.FirstOrDefault(x => x.Course.Active == true);
-        
+
         if (pgc == null) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.NotFound, "Aquesta persona no està matriculada al curs actual");
 
         Person p = pgc.Person;
@@ -50,9 +50,13 @@ public class UpdateUserOUAndGroupWorkspaceCommandHandler : IRequestHandler<Updat
         GoogleApiResult<bool> result = await _googleAdminApi.MoveUserToOU(p.ContactMail, oug.ActiveOU);
         if (!result.Success) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? "Error cridant api google.");
 
+        Thread.Sleep(2000);
+
         result = await _googleAdminApi.AddUserToGroup(p.ContactMail, oug.GroupMail);
         if (!result.Success) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? "Error cridant api google.");
 
+        Thread.Sleep(2000);
+        
         result = await _googleAdminApi.SetUserStatus(p.ContactMail, true);
         if (!result.Success) return Response<UpdateUserOUAndGroupWorkspaceCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? "Error cridant api google.");
 
