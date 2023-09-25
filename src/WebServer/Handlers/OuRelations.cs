@@ -16,7 +16,7 @@ public class OuRelations
     }
 
 
-    public static async Task<Response<OuRelationVm>> GetOuRelation(
+    public static async Task<Response<OuRelationPageVm>> GetOuRelation(
         long id,
         IMediator mediator)
     {

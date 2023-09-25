@@ -1,4 +1,5 @@
 namespace WebServer.Handlers;
+
 public static class RegisterRoutes
 {
     public static void MapRoutes(this WebApplication app)
@@ -147,27 +148,27 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         //OU Relations
-        app.MapGet("/api/ourelations", OuRelations.ListOuRelations)
+        app.MapGet("/api/ougrouprelations", OuRelations.ListOuRelations)
             .RequireAuthorization("Superuser")
             .WithName("List ou relations")
             .WithOpenApi();
 
-        app.MapGet("/api/ourelations/{id}", OuRelations.GetOuRelation)
+        app.MapGet("/api/ougrouprelations/{id}", OuRelations.GetOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Get ou relation by id")
             .WithOpenApi();
 
-        app.MapPost("/api/ourelations", OuRelations.CreateOuRelation)
+        app.MapPost("/api/ougrouprelations", OuRelations.CreateOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Create ou relation")
             .WithOpenApi();
 
-        app.MapPut("/api/ourelations/{id}", OuRelations.UpdateOuRelation)
+        app.MapPut("/api/ougrouprelations/{id}", OuRelations.UpdateOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Update ou relation")
             .WithOpenApi();
 
-        app.MapDelete("/api/ourelations/{id}", OuRelations.DeleteOuRelation)
+        app.MapDelete("/api/ougrouprelations/{id}", OuRelations.DeleteOuRelation)
             .RequireAuthorization("Superuser")
             .WithName("Delete ou relation")
             .WithOpenApi();
@@ -229,9 +230,9 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapGet("/api/events/export", Events.ExportEvents)
-           .RequireAuthorization("Admin")
-           .WithName("Export events info")
-           .WithOpenApi();
+            .RequireAuthorization("Admin")
+            .WithName("Export events info")
+            .WithOpenApi();
 
         // Events People
         app.MapPost("/api/events/{eventCode}/people", Events.SetPeopleToEvent)
@@ -245,9 +246,9 @@ public static class RegisterRoutes
             .WithOpenApi();
 
         app.MapGet("/api/events/{eventCode}/payments", Events.ListEventPayments)
-                .RequireAuthorization("Admin")
-                .WithName("List event payments")
-                .WithOpenApi();
+            .RequireAuthorization("Admin")
+            .WithName("List event payments")
+            .WithOpenApi();
 
         app.MapPut("/api/events/{eventPersonId}/payment", Events.SetPersonEventPaid)
             .RequireAuthorization("Admin")

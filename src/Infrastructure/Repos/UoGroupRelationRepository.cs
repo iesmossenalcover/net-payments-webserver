@@ -6,10 +6,19 @@ namespace Infrastructure.Repos;
 
 public class UoGroupRelationRepository : Repository<OuGroupRelation>, IOUGroupRelationsRepository
 {
-    public UoGroupRelationRepository(AppDbContext dbContext) : base(dbContext, dbContext.UoGroupRelations) { }
+    public UoGroupRelationRepository(AppDbContext dbContext) : base(dbContext, dbContext.UoGroupRelations)
+    {
+    }
 
     public Task<OuGroupRelation?> GetByGroupIdAsync(long groupId, CancellationToken ct)
     {
-        return _dbSet.FirstOrDefaultAsync(x => x.GroupId == groupId);
+        return _dbSet.FirstOrDefaultAsync(x => x.GroupId == groupId, ct);
+    }
+
+    public async Task<IEnumerable<OuGroupRelation>> GetAllWithRelationsAsync(CancellationToken ct)
+    {
+        return await _dbSet
+            .Include(x => x.Group)
+            .ToListAsync(ct);
     }
 }
