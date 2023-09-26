@@ -24,7 +24,7 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Domain
         {
             query = baseQuery.Where(x =>
                 (
-                    EF.Functions.Like(x.Person.DocumentId, $"%{q}%") ||
+                    EF.Functions.ILike(x.Person.DocumentId, $"%{q}%") ||
                     EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname1), $"%{q}%") ||
                     EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Name), $"%{q}%") ||
                     (x.Person.Surname2 != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Person.Surname2), $"%{q}%")) ||
