@@ -12,8 +12,8 @@ public record CreateOuRelationCommand : IRequest<Response<long?>>
 {
     public long GroupId { get; set; }
     public string GroupMail { get; set; } = string.Empty;
-    public string OldOU { get; set; } = string.Empty;
-    public string ActiveOU { get; set; } = string.Empty;
+    public string OldOu { get; set; } = string.Empty;
+    public string ActiveOu { get; set; } = string.Empty;
     public bool UpdatePassword { get; set; }
     public bool ChangePasswordNextSignIn { get; set; }
 
@@ -30,9 +30,9 @@ public class CreateOURelationCommandValidator : AbstractValidator<CreateOuRelati
 
         RuleFor(x => x.GroupMail)
         .NotEmpty().WithMessage(@"S'ha d'indicar un GroupMail.");
-        RuleFor(x => x.OldOU)
+        RuleFor(x => x.OldOu)
         .NotEmpty().WithMessage(@"S'ha d'indicar un OldOU.");
-        RuleFor(x => x.ActiveOU)
+        RuleFor(x => x.ActiveOu)
         .NotEmpty().WithMessage(@"S'ha d'indicar un ActiveOU.");
         RuleFor(x => x.GroupId)
         .NotEmpty().WithMessage("@S'ha d'indicar un GroupId.")
@@ -65,8 +65,8 @@ public class CreateOURelationCommandHandler : IRequestHandler<CreateOuRelationCo
         {
             GroupId = request.GroupId,
             GroupMail = request.GroupMail,
-            OldOU = request.OldOU,
-            ActiveOU = request.ActiveOU,
+            OldOU = request.OldOu,
+            ActiveOU = request.ActiveOu,
             UpdatePassword = request.UpdatePassword,
             ChangePasswordNextSignIn = request.ChangePasswordNextSignIn,
 

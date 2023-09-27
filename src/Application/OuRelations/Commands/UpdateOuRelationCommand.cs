@@ -32,9 +32,9 @@ public class UpdateOuRelationCommandValidator : AbstractValidator<UpdateOuRelati
             .WithMessage(@"El camp no pot ser buid.");
         RuleFor(x => x.GroupMail)
             .NotEmpty().WithMessage(@"S'ha d'indicar un GroupMail.");
-        RuleFor(x => x.OldOU)
+        RuleFor(x => x.OldOu)
             .NotEmpty().WithMessage(@"S'ha d'indicar un OldOU.");
-        RuleFor(x => x.ActiveOU)
+        RuleFor(x => x.ActiveOu)
             .NotEmpty().WithMessage(@"S'ha d'indicar un ActiveOU.");
         RuleFor(x => x.GroupId)
             .NotEmpty().WithMessage(@"S'ha d'indicar un GroupId.")
@@ -80,8 +80,8 @@ public class UpdateOuRelationCommandHandler : IRequestHandler<UpdateOuRelationCo
 
         relation.GroupId = request.GroupId;
         relation.GroupMail = request.GroupMail;
-        relation.OldOU = request.OldOU;
-        relation.ActiveOU = request.ActiveOU;
+        relation.OldOU = request.OldOu;
+        relation.ActiveOU = request.ActiveOu;
         relation.UpdatePassword = request.UpdatePassword;
         relation.ChangePasswordNextSignIn = request.ChangePasswordNextSignIn;
 

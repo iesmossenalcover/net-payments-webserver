@@ -18,7 +18,7 @@ public record OuRelationVm(
     bool UpdatePassword,
     bool ChangePasswordNextSignIn);
 
-public record OuRelationPageVm(OuRelationVm OuRelation, SelectorVm Groups);
+public record OuRelationPageVm(OuRelationVm OuGroupRelation, SelectorVm Groups);
 
 #endregion
 
