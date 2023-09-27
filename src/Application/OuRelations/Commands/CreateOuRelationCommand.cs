@@ -35,11 +35,12 @@ public class CreateOURelationCommandValidator : AbstractValidator<CreateOuRelati
         RuleFor(x => x.ActiveOu)
         .NotEmpty().WithMessage(@"S'ha d'indicar un ActiveOU.");
         RuleFor(x => x.GroupId)
-        .NotEmpty().WithMessage("@S'ha d'indicar un GroupId.")
-        .MustAsync(CheckGroupExistsAsync).WithMessage(@"Ja existeix un grup amb aquest nom");
+        .NotEmpty().WithMessage(@"S'ha d'indicar un Group.")
+        .MustAsync(CheckGroupExistsAsync).WithMessage(@"El grup seleccionat no existeix.");
     }
     private async Task<bool> CheckGroupExistsAsync(CreateOuRelationCommand cmd, long id, CancellationToken ct)
     {
+        if (id == 0) return true;
         Group? group = await _groupsRepository.GetByIdAsync(id, ct);
         return group != null;
     }
