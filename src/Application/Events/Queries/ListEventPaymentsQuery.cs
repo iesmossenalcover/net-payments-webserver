@@ -7,7 +7,7 @@ using MediatR;
 namespace Application.Events.Queries;
 
 public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid);
-public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group, uint Quantity);
+public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group, uint Quantity, DateTimeOffset? DatePaid);
 public record ListEventPaymentsVm(
     long Id, string Name, string Code, DateTimeOffset Date,
     PaymentSummaryVm Summary, IEnumerable<EventPaymentVm> PaidEvents, IEnumerable<EventPaymentVm> UnPaidEvents,
@@ -59,7 +59,8 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                 ep.Paid ? ep.AmmountPaid(ep.Event) : pgc.PriceForEvent(ep.Event),
                 ep.Paid,
                 pgc.Group.Name,
-                quantitySelector && ep.Paid ? ep.Quantity : 1
+                quantitySelector && ep.Paid ? ep.Quantity : 1,
+                ep.DatePaid
             );
             payments.Add(epVm);
         }
