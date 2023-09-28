@@ -83,7 +83,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             e.Code,
             e.Date,
             summaryVm,
-            payments.Where(x => x.Paid).OrderBy(x => x.DatePaid).ThenBy(x => x.Group).ThenBy(x => x.FullName),
+            payments.Where(x => x.Paid).OrderByDescending(x => x.DatePaid).ThenBy(x => x.Group).ThenBy(x => x.FullName),
             payments.Where(x => !x.Paid).OrderBy(x => x.Group).ThenBy(x => x.FullName),
             quantitySelector,
             quantitySelector ? e.MaxQuantity : null
