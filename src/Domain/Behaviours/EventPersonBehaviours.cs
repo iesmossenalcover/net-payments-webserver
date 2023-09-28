@@ -7,14 +7,46 @@ namespace Domain.Behaviours;
 public class EventPersonProcessingService
 {
     #region IOC
-    private readonly Domain.Services.IPersonGroupCourseRepository _personGroupCourseRepository;
 
-    public EventPersonProcessingService(IPersonGroupCourseRepository personGroupCourseRepository)
+    private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
+    private readonly IEventsPeopleRespository _eventsPeopleRepository;
+
+    public EventPersonProcessingService(IPersonGroupCourseRepository personGroupCourseRepository,
+        IEventsPeopleRespository eventsPeopleRepository)
     {
         _personGroupCourseRepository = personGroupCourseRepository;
+        _eventsPeopleRepository = eventsPeopleRepository;
     }
 
     #endregion
+
+    public async Task UnPayEvents(IEnumerable<EventPerson> personEvents, CancellationToken ct)
+    {
+        // Mark all event person as unpaid
+        foreach (var ep in personEvents)
+        {
+            ep.Paid = false;
+            ep.DatePaid = null;
+            ep.PaidAsAmipa = false;
+        }
+
+        await _eventsPeopleRepository.UpdateManyAsync(personEvents, ct);
+        await ProcessPaidEvents(personEvents, false, ct);
+    }
+
+    public async Task PayEvents(IEnumerable<EventPerson> personEvents, bool paidAsAmipa, CancellationToken ct)
+    {
+        // Mark all event person as paid
+        foreach (var ep in personEvents)
+        {
+            ep.Paid = true;
+            ep.DatePaid = DateTimeOffset.UtcNow;
+            ep.PaidAsAmipa = paidAsAmipa;
+        }
+
+        await _eventsPeopleRepository.UpdateManyAsync(personEvents, ct);
+        await ProcessPaidEvents(personEvents, true, ct);
+    }
 
     public async Task ProcessPaidEvents(IEnumerable<EventPerson> personEvents, bool paid, CancellationToken ct)
     {
@@ -35,7 +67,8 @@ public class EventPersonProcessingService
     {
         if (!ep.Event.Enrollment && !ep.Event.Amipa) return;
 
-        PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(ep.PersonId, ep.Event.CourseId, ct);
+        PersonGroupCourse? pgc =
+            await _personGroupCourseRepository.GetCoursePersonGroupById(ep.PersonId, ep.Event.CourseId, ct);
         if (pgc == null) return;
 
         // enrollment
@@ -53,6 +86,7 @@ public class EventPersonProcessingService
             pgc.Amipa = paid;
             pgc.AmipaDate = paid ? DateTimeOffset.UtcNow : null;
         }
+
         await _personGroupCourseRepository.UpdateAsync(pgc, ct);
     }
 }
