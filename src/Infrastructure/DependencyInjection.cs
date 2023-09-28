@@ -15,7 +15,7 @@ namespace Infrastructure
             services.AddScoped<AppDbContext, AppDbContext>();
 
             // Domain
-            services.AddScoped<Domain.Behaviours.EventPersonProcessingService, Domain.Behaviours.EventPersonProcessingService>();
+            services.AddScoped<Domain.Behaviours.EventPersonBehaviours, Domain.Behaviours.EventPersonBehaviours>();
 
             // Infrastructure
             services.AddScoped<Domain.Services.IUsersRepository, Repos.UserRepository>();

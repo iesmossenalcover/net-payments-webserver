@@ -7,6 +7,7 @@ public class EventPerson : Entity
 {
     public required uint Quantity { get; set; } = 1;
     public bool Paid { get; set; }
+    public DateTimeOffset? DatePaid { get; set; }
     public bool PaidAsAmipa { get; set; } = false;
 
     public long PersonId { get; set; }
@@ -21,5 +22,4 @@ public class EventPerson : Entity
     public bool CanBePaid => Event.IsActive && !Paid;
 
     public decimal AmmountPaid(Event e) => (PaidAsAmipa ? e.AmipaPrice : e.Price) * Quantity;
-
 }
