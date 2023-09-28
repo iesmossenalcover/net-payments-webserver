@@ -4,14 +4,14 @@ using Domain.Services;
 
 namespace Domain.Behaviours;
 
-public class EventPersonProcessingService
+public class EventPersonBehaviours
 {
     #region IOC
 
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IEventsPeopleRespository _eventsPeopleRepository;
 
-    public EventPersonProcessingService(IPersonGroupCourseRepository personGroupCourseRepository,
+    public EventPersonBehaviours(IPersonGroupCourseRepository personGroupCourseRepository,
         IEventsPeopleRespository eventsPeopleRepository)
     {
         _personGroupCourseRepository = personGroupCourseRepository;
@@ -48,7 +48,7 @@ public class EventPersonProcessingService
         await ProcessPaidEvents(personEvents, true, ct);
     }
 
-    public async Task ProcessPaidEvents(IEnumerable<EventPerson> personEvents, bool paid, CancellationToken ct)
+    private async Task ProcessPaidEvents(IEnumerable<EventPerson> personEvents, bool paid, CancellationToken ct)
     {
         EventPerson? e = personEvents.FirstOrDefault(x => x.Event.Enrollment);
         if (e != null)
@@ -63,7 +63,7 @@ public class EventPersonProcessingService
         }
     }
 
-    public async Task ProcessPaidEvent(EventPerson ep, bool paid, CancellationToken ct)
+    private async Task ProcessPaidEvent(EventPerson ep, bool paid, CancellationToken ct)
     {
         if (!ep.Event.Enrollment && !ep.Event.Amipa) return;
 

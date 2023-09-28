@@ -25,15 +25,15 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRedsys _redsys;
-    private readonly Domain.Behaviours.EventPersonProcessingService _eventPersonProcessingService;
+    private readonly Domain.Behaviours.EventPersonBehaviours _eventPersonBehaviours;
 
-    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository, IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys, EventPersonProcessingService eventPersonProcessingService)
+    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository, IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys, EventPersonBehaviours eventPersonBehaviours)
     {
         _eventsPeopleRespository = eventsPeopleRespository;
         _personGroupCourseRepository = personGroupCourseRepository;
         _ordersRepository = ordersRepository;
         _redsys = redsys;
-        _eventPersonProcessingService = eventPersonProcessingService;
+        _eventPersonBehaviours = eventPersonBehaviours;
     }
     #endregion
 
@@ -77,16 +77,9 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
 
         order.Status = OrderStatus.Paid;
         order.PaidDate = DateTimeOffset.UtcNow;
-        foreach (var ep in personEvents)
-        {
-            ep.Paid = true;
-            ep.PaidAsAmipa = pgc.Amipa;
-        }
-
-        await _eventsPeopleRespository.UpdateManyAsync(personEvents, ct);
-
-        // Bussiness logic when an event is paid
-        await _eventPersonProcessingService.ProcessPaidEvents(personEvents, true, ct);
+        await _ordersRepository.UpdateAsync(order, ct);
+        
+        await _eventPersonBehaviours.PayEvents(personEvents, pgc.Amipa, ct);
 
         return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
     }
