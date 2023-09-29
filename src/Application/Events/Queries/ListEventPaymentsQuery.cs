@@ -66,12 +66,12 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
         }
 
         PaymentSummaryVm summaryVm = new PaymentSummaryVm(
-            payments.Count(),
-            payments.Where(x => x.Amipa).Count(),
-            payments.Where(x => !x.Amipa).Count(),
-            payments.Where(x => x.Paid).Count(),
-            payments.Where(x => x.Amipa && x.Paid).Count(),
-            payments.Where(x => !x.Amipa && x.Paid).Count(),
+            payments.Count,
+            payments.Count(x => x.Amipa),
+            payments.Count(x => !x.Amipa),
+            payments.Count(x => x.Paid),
+            payments.Count(x => x.Amipa && x.Paid),
+            payments.Count(x => !x.Amipa && x.Paid),
             payments.Where(x => x.Paid).Sum(x => x.Price),
             payments.Where(x => x.Amipa && x.Paid).Sum(x => x.Price),
             payments.Where(x => !x.Amipa && x.Paid).Sum(x => x.Price)
