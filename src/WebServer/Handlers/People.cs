@@ -57,4 +57,11 @@ public class People
     {
         return await mediator.Send(new DeletePersonCommand(id));
     }
+    
+    public static async Task<Response<GetPersonPaymentsVm>> PersonPayments(
+        long id,
+        IMediator mediator)
+    {
+        return await mediator.Send(new GetPersonPaymentsQuery(id));
+    }
 }

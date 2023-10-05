@@ -115,6 +115,11 @@ public static class RegisterRoutes
             .RequireAuthorization("Admin")
             .WithName("Delete person")
             .WithOpenApi();
+        
+        app.MapGet("/api/people/{id}/payments", People.PersonPayments)
+            .RequireAuthorization("Admin")
+            .WithName("Person payments")
+            .WithOpenApi();
 
         // Courses
         app.MapGet("/api/courses/{id}", Courses.GetCourse)

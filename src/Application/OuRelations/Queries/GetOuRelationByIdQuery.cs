@@ -66,7 +66,7 @@ public class GetOuRelationByIdQueryHandler : IRequestHandler<GetOuRelationByIdQu
             relation.ChangePasswordNextSignIn
         );
 
-        SelectorVm selectorVm = new SelectorVm(
+        var selectorVm = new SelectorVm(
             groups
                 .Select(x => new SelectOptionVm($"{x.Id}", x.Name))
                 .OrderBy(x => x.Value)
