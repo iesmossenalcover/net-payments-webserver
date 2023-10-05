@@ -53,7 +53,9 @@ public class GetPersonPaymentsQueryHandler : IRequestHandler<GetPersonPaymentsQu
                     y.Id,
                     y.EventId,
                     y.Event.Name,
-                    y.AmmountPaid(y.Event), y.OrderId.HasValue, y.DatePaid))
+                    y.AmmountPaid(y.Event),
+                    !y.OrderId.HasValue,
+                    y.DatePaid))
         ));
         return Response<GetPersonPaymentsVm>.Ok(new GetPersonPaymentsVm(coursesVm));
     }
