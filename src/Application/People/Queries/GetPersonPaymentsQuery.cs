@@ -43,15 +43,17 @@ public class GetPersonPaymentsQueryHandler : IRequestHandler<GetPersonPaymentsQu
                 @"No s'ha trobat cap persona amb aquest id");
 
         IEnumerable<EventPerson> events = await _eventsPeopleRepository.GetAllByPersonId(person.Id, ct);
-        var groupedEvents = events.GroupBy(x => x.Event.CourseId);
+        var groupedEvents = events.GroupBy(x => x.Event.Course).OrderByDescending(x => x.Key.StartDate);
         var coursesVm = groupedEvents.Select(x => new PersonCoursePaymentsVm(
             x.First().Event.CourseId,
             x.First().Event.Course.Name,
-            x.Select(y => new PersonPaymentInfoVm(
-                y.Id,
-                y.EventId,
-                y.Event.Name,
-                y.AmmountPaid(y.Event), y.OrderId.HasValue, y.DatePaid))
+            x
+                .OrderByDescending(y => y.DatePaid)
+                .Select(y => new PersonPaymentInfoVm(
+                    y.Id,
+                    y.EventId,
+                    y.Event.Name,
+                    y.AmmountPaid(y.Event), y.OrderId.HasValue, y.DatePaid))
         ));
         return Response<GetPersonPaymentsVm>.Ok(new GetPersonPaymentsVm(coursesVm));
     }

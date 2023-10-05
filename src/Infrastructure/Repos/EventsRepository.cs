@@ -50,7 +50,7 @@ public class EventsPeopleRepository : Repository<EventPerson>, Domain.Services.I
         return await _dbSet
             .Where(x => x.PersonId == personId)
             .Include(x => x.Person)
-            .Include(x => x.Event)
+            .Include(x => x.Event).ThenInclude(x => x.Course)
             .Include(x => x.Order)
             .ToListAsync(ct);
     }
