@@ -28,12 +28,15 @@ public record AdminInfoVm(
 #endregion
 
 #region Query
+
 public record GetAdminInfoQuery() : IRequest<AdminInfoVm>;
+
 #endregion
 
 public class GetAdminInfoQueryHandler : IRequestHandler<GetAdminInfoQuery, AdminInfoVm>
 {
-    #region  IOC
+    #region IOC
+
     private readonly ICoursesRepository _coursesRepository;
     private readonly IEventsRespository _eventsRepository;
     private readonly IGroupsRepository _groupsRepository;
@@ -41,7 +44,12 @@ public class GetAdminInfoQueryHandler : IRequestHandler<GetAdminInfoQuery, Admin
     private readonly IOrdersRepository _ordersReposiroty;
     private readonly IAppConfigRepository _appConfigReposiroty;
 
-    public GetAdminInfoQueryHandler(ICoursesRepository coursesRepository, IEventsRespository eventsRepository, IGroupsRepository groupsRepository, IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersReposiroty, IAppConfigRepository appConfigReposiroty)
+    public GetAdminInfoQueryHandler(ICoursesRepository coursesRepository,
+        IEventsRespository eventsRepository,
+        IGroupsRepository groupsRepository,
+        IPersonGroupCourseRepository personGroupCourseRepository,
+        IOrdersRepository ordersReposiroty,
+        IAppConfigRepository appConfigReposiroty)
     {
         _coursesRepository = coursesRepository;
         _eventsRepository = eventsRepository;
@@ -51,15 +59,16 @@ public class GetAdminInfoQueryHandler : IRequestHandler<GetAdminInfoQuery, Admin
         _appConfigReposiroty = appConfigReposiroty;
     }
 
-
     #endregion
+
     public async Task<AdminInfoVm> Handle(GetAdminInfoQuery request, CancellationToken ct)
     {
         Course c = await _coursesRepository.GetCurrentCoursAsync(ct);
         IEnumerable<Event> events = await _eventsRepository.GetAllEventsByCourseIdAsync(c.Id, ct);
-        IEnumerable<Group> groups = await _groupsRepository.GetAllAsync(ct);
+        IEnumerable<Group> groups = await _groupsRepository.GetAllAsync(true, ct);
         IEnumerable<Order> orders = await _ordersReposiroty.GetTodayPaidOrdersAsync(ct);
-        IEnumerable<PersonGroupCourse> pgcs = _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(c.Id,ct).ToList();
+        IEnumerable<PersonGroupCourse> pgcs = _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(c.Id, ct)
+            .ToList();
         AppConfig appConfig = await _appConfigReposiroty.GetAsync(ct);
 
         return new AdminInfoVm(
@@ -72,7 +81,5 @@ public class GetAdminInfoQueryHandler : IRequestHandler<GetAdminInfoQuery, Admin
             orders.Count(),
             new AppConfigVm(appConfig.DisplayEnrollment)
         );
-
-
     }
 }

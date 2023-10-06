@@ -43,7 +43,7 @@ public class UpdateOuRelationCommandValidator : AbstractValidator<UpdateOuRelati
 
     private async Task<bool> CheckGroupExistsAsync(CreateOuRelationCommand cmd, long id, CancellationToken ct)
     {
-        Group? group = await _groupsRepository.GetByIdAsync(id, ct);
+        Group? group = await _groupsRepository.GetByIdAsync(id, false, ct);
         return group != null;
     }
 }
@@ -59,23 +59,16 @@ public class UpdateOuRelationCommandHandler : IRequestHandler<UpdateOuRelationCo
         _groupsRelationRepo = groupsRelationRepo;
     }
 
-
-    private async Task<bool> CheckGroupExistsAsync(UpdateOuRelationCommand cmd, long id, CancellationToken ct)
-    {
-        var group = await _groupsRepo.GetByIdAsync(id, ct);
-        return group != null;
-    }
-
     public async Task<Response<long?>> Handle(UpdateOuRelationCommand request, CancellationToken ct)
     {
-        OuGroupRelation? relation = await _groupsRelationRepo.GetByIdAsync(request.Id, ct);
+        OuGroupRelation? relation = await _groupsRelationRepo.GetByIdAsync(request.Id, false, ct);
 
         if (relation == null)
         {
             return Response<long?>.Error(ResponseCode.BadRequest, "Bad request from UpdateOURelationCommand");
         }
 
-        var group = await _groupsRepo.GetByIdAsync(request.GroupId, ct);
+        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId, false, ct);
         if (group == null) return Response<long?>.Error(ResponseCode.BadRequest, "There is no Group with this id");
 
         relation.GroupId = request.GroupId;

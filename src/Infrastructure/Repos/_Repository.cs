@@ -10,31 +10,31 @@ public class Repository<T> : IRepository<T> where T : Entity
 
     protected readonly AppDbContext _dbContext;
     protected readonly DbSet<T> _dbSet;
-    
+
 
     public Repository(AppDbContext dbContext, DbSet<T> dbSet)
     {
         _dbContext = dbContext;
         _dbSet = dbSet;
     }
-    
+
     #endregion
 
-    public IQueryable<T> DbSet(bool readOnly) => readOnly ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
+    protected IQueryable<T> DbSet(bool readOnly) => readOnly ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
 
-    public async Task<T?> GetByIdAsync(long id, CancellationToken ct)
+    public async Task<T?> GetByIdAsync(long id, bool readOnly, CancellationToken ct)
     {
-        return await _dbSet.FindAsync(id);
+        return await DbSet(readOnly).Where(x => x.Id == id).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IEnumerable<T>> GetByIdAsync(IEnumerable<long> ids, CancellationToken ct)
+    public async Task<IEnumerable<T>> GetByIdAsync(IEnumerable<long> ids, bool readOnly, CancellationToken ct)
     {
-        return await _dbSet.Where(x => ids.Contains(x.Id)).ToListAsync();
+        return await DbSet(readOnly).Where(x => ids.Contains(x.Id)).ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct)
+    public async Task<IEnumerable<T>> GetAllAsync(bool readOnly, CancellationToken ct)
     {
-        return await _dbSet.ToListAsync(ct);
+        return await DbSet(readOnly).ToListAsync(ct);
     }
 
     public async Task InsertAsync(T entity, CancellationToken ct)
@@ -73,6 +73,7 @@ public class Repository<T> : IRepository<T> where T : Entity
         {
             _dbContext.Entry(e).State = EntityState.Modified;
         }
+
         await _dbContext.SaveChangesAsync(ct);
     }
 }

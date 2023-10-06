@@ -18,12 +18,12 @@ public class GetAllGroupsSelectorQueryHandler : IRequestHandler<GetAllGroupsSele
 
     public async Task<SelectorVm> Handle(GetAllGroupsSelectorQuery request, CancellationToken ct)
     {
-        IEnumerable<Group> groups = (await _groupsRepository.GetAllAsync(ct)).OrderBy(x => x.Name);
+        IEnumerable<Group> groups = (await _groupsRepository.GetAllAsync(true, ct)).OrderBy(x => x.Name);
         long activeGroupId = groups.Any() ? groups.First().Id : 0;
 
         List<SelectOptionVm> options = new List<SelectOptionVm>(groups.Count());
 
-        foreach (var c in groups)
+        foreach (Group c in groups)
         {
             options.Add(new SelectOptionVm(c.Id.ToString(), c.Name));
         }

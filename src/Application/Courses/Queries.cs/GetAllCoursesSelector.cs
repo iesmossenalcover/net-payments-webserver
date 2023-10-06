@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Application.Courses.Queries;
 
-public record GetAllCoursesSelectorQuery() : IRequest<SelectorVm>;
+public record GetAllCoursesSelectorQuery : IRequest<SelectorVm>;
 
 public class GetAllCoursesSelectorQueryHandler : IRequestHandler<GetAllCoursesSelectorQuery, SelectorVm>
 {
@@ -18,16 +18,14 @@ public class GetAllCoursesSelectorQueryHandler : IRequestHandler<GetAllCoursesSe
 
     public async Task<SelectorVm> Handle(GetAllCoursesSelectorQuery request, CancellationToken ct)
     {
-        IEnumerable<Course> courses = await _coursesRepository.GetAllAsync(ct);
+        IEnumerable<Course> courses = await _coursesRepository.GetAllAsync(true, ct);
 
-        long activeCourseId = 0;
         List<SelectOptionVm> options = new List<SelectOptionVm>(courses.Count());
-        foreach (var c in courses)
+        foreach (Course c in courses)
         {
             options.Add(new SelectOptionVm(c.Id.ToString(), c.Name));
-            if (c.Active) activeCourseId = c.Id;
         }
-        
+
         return new SelectorVm(options);
     }
 }

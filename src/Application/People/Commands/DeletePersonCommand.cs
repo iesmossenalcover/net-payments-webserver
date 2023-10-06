@@ -24,7 +24,7 @@ public class DeletePersonCommandValidator : AbstractValidator<DeletePersonComman
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("El camp no pot ser buid.");
+            .WithMessage(@"El camp no pot ser buid.");
     }
 }
 
@@ -39,7 +39,7 @@ public class DeletePersonCommandHandler : IRequestHandler<DeletePersonCommand, l
     }
     public async Task<long> Handle(DeletePersonCommand request, CancellationToken ct)
     {
-        Person ? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
+        Person? p = await _peopleRepo.GetByIdAsync(request.Id, false, ct);
         if (p == null)
         {
             throw new Exception("Bad request");

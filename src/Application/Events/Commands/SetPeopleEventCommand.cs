@@ -16,24 +16,25 @@ public record SetPeopleEventCommand : IRequest<Response<bool?>>
 
 public class SetPeopleEventCommandValidator : AbstractValidator<SetPeopleEventCommand>
 {
-    public SetPeopleEventCommandValidator()
-    {
-    }
 }
 
 public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventCommand, Response<bool?>>
 {
     #region IOC
+
     private readonly IPeopleRepository _peopleRepository;
     private readonly IEventsRespository _eventsRespository;
     private readonly IEventsPeopleRespository _eventsPeopleRepository;
 
-    public SetPeopleEventCommandHandler(IPeopleRepository peopleRepository, IEventsRespository eventsRespository, IEventsPeopleRespository eventsPeopleRepository)
+    public SetPeopleEventCommandHandler(IPeopleRepository peopleRepository,
+        IEventsRespository eventsRespository,
+        IEventsPeopleRespository eventsPeopleRepository)
     {
         _peopleRepository = peopleRepository;
         _eventsRespository = eventsRespository;
         _eventsPeopleRepository = eventsPeopleRepository;
     }
+
     #endregion
 
     public async Task<Response<bool?>> Handle(SetPeopleEventCommand request, CancellationToken ct)
@@ -41,15 +42,16 @@ public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventComman
         Event? e = await _eventsRespository.GetEventByCodeAsync(request.EventCode, ct);
         if (e == null)
         {
-            return Response<bool?>.Error(ResponseCode.BadRequest, "L'esdeveniment no existeix.");
+            return Response<bool?>.Error(ResponseCode.BadRequest, @"L'esdeveniment no existeix.");
         }
 
         IEnumerable<long> peopleIds = request.PeopleIds.Distinct();
-        IEnumerable<Person> people = await _peopleRepository.GetByIdAsync(peopleIds, ct);
+        IEnumerable<Person> people = await _peopleRepository.GetByIdAsync(peopleIds, false, ct);
 
         if (peopleIds.Count() != people.Count())
         {
-            return Response<bool?>.Error(ResponseCode.BadRequest, "S'han proporcionat identificaadors de persona que no existeixn.");
+            return Response<bool?>.Error(ResponseCode.BadRequest,
+                @"S'han proporcionat identificaadors de persona que no existeixn.");
         }
 
         IEnumerable<EventPerson> eventPeople = await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct);
@@ -57,7 +59,7 @@ public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventComman
         IEnumerable<EventPerson> eventsPeopleToDelte = eventPeople.Where(x => !peopleIds.Contains(x.PersonId));
         if (eventsPeopleToDelte.Any(x => x.Paid))
         {
-            return Response<bool?>.Error(ResponseCode.BadRequest, "No es poden eliminar persones que ja han pagat.");
+            return Response<bool?>.Error(ResponseCode.BadRequest, @"No es poden eliminar persones que ja han pagat.");
         }
 
 
@@ -88,12 +90,12 @@ public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventComman
     // move
     private static string RandomString(int length)
     {
-        const string pool = "abcdefghijklmnopqrstuvwxyz";
+        const string pool = @"abcdefghijklmnopqrstuvwxyz";
         var builder = new StringBuilder(length);
         var random = new Random();
-        for (var i = 0; i < length; i++)
+        for (int i = 0; i < length; i++)
         {
-            var c = pool[random.Next(0, pool.Length)];
+            char c = pool[random.Next(0, pool.Length)];
             builder.Append(c);
         }
 

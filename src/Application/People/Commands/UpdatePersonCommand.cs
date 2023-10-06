@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Application.People.Commands;
 
-public record UpdatePersonCommand : CreatePersonCommand, IRequest<Response<long?>>
+public record UpdatePersonCommand : CreatePersonCommand
 {
     public long Id { get; set; }
 
@@ -49,7 +49,7 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
             .WithMessage(@"Aquest document d'identitat ja està associat a una altra persona");
 
         RuleFor(x => x.AcademicRecordNumber)
-            .MustAsync(CheckUniqueAcademicRecordNumberdAsync)
+            .MustAsync(CheckUniqueAcademicRecordNumberAsync)
             .WithMessage(@"Aquest expedient acadèmic ja està associat a una altra persona");
 
         RuleFor(x => x.ContactPhone)
@@ -59,7 +59,7 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
             .MustAsync(CheckUniqueEmailAsync).WithMessage(@"Aquest email ja està associat a una altra persona.");
     }
 
-    private async Task<bool> CheckUniqueAcademicRecordNumberdAsync(UpdatePersonCommand cmd,
+    private async Task<bool> CheckUniqueAcademicRecordNumberAsync(UpdatePersonCommand cmd,
         long? academicRecordNumber,
         CancellationToken ct)
     {
@@ -124,7 +124,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
 
     public async Task<Response<long?>> Handle(UpdatePersonCommand request, CancellationToken ct)
     {
-        Person? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
+        Person? p = await _peopleRepo.GetByIdAsync(request.Id, false, ct);
         if (p == null)
         {
             return Response<long?>.Error(ResponseCode.BadRequest, @"La persona que es vol actualitzar no existeix.");

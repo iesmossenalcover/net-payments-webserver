@@ -32,7 +32,7 @@ public class GetGroupByIdQueryHandler : IRequestHandler<GetGroupByIdQuery, Respo
 
     public async Task<Response<GroupVm>> Handle(GetGroupByIdQuery request, CancellationToken ct)
     {
-        Group? group = await _groupsRepository.GetByIdAsync(request.Id, ct);
+        Group? group = await _groupsRepository.GetByIdAsync(request.Id, true, ct);
         if (group == null) return Response<GroupVm>.Error(ResponseCode.NotFound, "There is no group with this id");
 
 

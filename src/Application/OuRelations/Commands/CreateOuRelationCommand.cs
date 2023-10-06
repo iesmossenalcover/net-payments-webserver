@@ -16,7 +16,6 @@ public record CreateOuRelationCommand : IRequest<Response<long?>>
     public string ActiveOu { get; set; } = string.Empty;
     public bool UpdatePassword { get; set; }
     public bool ChangePasswordNextSignIn { get; set; }
-
 }
 
 // Validator
@@ -29,19 +28,20 @@ public class CreateOURelationCommandValidator : AbstractValidator<CreateOuRelati
         _groupsRepository = groupsRepository;
 
         RuleFor(x => x.GroupMail)
-        .NotEmpty().WithMessage(@"S'ha d'indicar un GroupMail.");
+            .NotEmpty().WithMessage(@"S'ha d'indicar un GroupMail.");
         RuleFor(x => x.OldOu)
-        .NotEmpty().WithMessage(@"S'ha d'indicar un OldOU.");
+            .NotEmpty().WithMessage(@"S'ha d'indicar un OldOU.");
         RuleFor(x => x.ActiveOu)
-        .NotEmpty().WithMessage(@"S'ha d'indicar un ActiveOU.");
+            .NotEmpty().WithMessage(@"S'ha d'indicar un ActiveOU.");
         RuleFor(x => x.GroupId)
-        .NotEmpty().WithMessage(@"S'ha d'indicar un Group.")
-        .MustAsync(CheckGroupExistsAsync).WithMessage(@"El grup seleccionat no existeix.");
+            .NotEmpty().WithMessage(@"S'ha d'indicar un Group.")
+            .MustAsync(CheckGroupExistsAsync).WithMessage(@"El grup seleccionat no existeix.");
     }
+
     private async Task<bool> CheckGroupExistsAsync(CreateOuRelationCommand cmd, long id, CancellationToken ct)
     {
         if (id == 0) return true;
-        Group? group = await _groupsRepository.GetByIdAsync(id, ct);
+        Group? group = await _groupsRepository.GetByIdAsync(id, true, ct);
         return group != null;
     }
 }
@@ -49,7 +49,6 @@ public class CreateOURelationCommandValidator : AbstractValidator<CreateOuRelati
 // Handler
 public class CreateOURelationCommandHandler : IRequestHandler<CreateOuRelationCommand, Response<long?>>
 {
-
     private readonly IOUGroupRelationsRepository _groupsRelationRepo;
 
     public CreateOURelationCommandHandler(
@@ -61,8 +60,7 @@ public class CreateOURelationCommandHandler : IRequestHandler<CreateOuRelationCo
 
     public async Task<Response<long?>> Handle(CreateOuRelationCommand request, CancellationToken ct)
     {
-
-        OuGroupRelation uorelation = new OuGroupRelation()
+        var uoRelation = new OuGroupRelation()
         {
             GroupId = request.GroupId,
             GroupMail = request.GroupMail,
@@ -70,11 +68,10 @@ public class CreateOURelationCommandHandler : IRequestHandler<CreateOuRelationCo
             ActiveOU = request.ActiveOu,
             UpdatePassword = request.UpdatePassword,
             ChangePasswordNextSignIn = request.ChangePasswordNextSignIn,
-
         };
 
-        await _groupsRelationRepo.InsertAsync(uorelation, CancellationToken.None);
+        await _groupsRelationRepo.InsertAsync(uoRelation, CancellationToken.None);
 
-        return Response<long?>.Ok(uorelation.Id);
+        return Response<long?>.Ok(uoRelation.Id);
     }
 }

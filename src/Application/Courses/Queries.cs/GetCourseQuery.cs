@@ -18,9 +18,10 @@ public class GetCourseQueryHandler : IRequestHandler<GetCourseQuery, Response<Co
 
     public async Task<Response<CourseVm>> Handle(GetCourseQuery request, CancellationToken ct)
     {
-        Course? course = await _coursesRepository.GetByIdAsync(request.Id, ct);
-        if (course == null) return Response<CourseVm>.Error(ResponseCode.NotFound, "No s'ha trobat el curs que es vol editar");
-
-        return Response<CourseVm>.Ok(new CourseVm(course.Id, course.Name, course.StartDate, course.EndDate, course.Active));
+        Course? course = await _coursesRepository.GetByIdAsync(request.Id, true, ct);
+        return course == null
+            ? Response<CourseVm>.Error(ResponseCode.NotFound, @"No s'ha trobat el curs que es vol editar")
+            : Response<CourseVm>.Ok(new CourseVm(course.Id, course.Name, course.StartDate, course.EndDate,
+                course.Active));
     }
 }

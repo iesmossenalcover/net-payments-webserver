@@ -49,12 +49,12 @@ public class GetOuRelationByIdQueryHandler : IRequestHandler<GetOuRelationByIdQu
 
     public async Task<Response<OuRelationPageVm>> Handle(GetOuRelationByIdQuery request, CancellationToken ct)
     {
-        OuGroupRelation? relation = await _groupsRelationRepo.GetByIdAsync(request.Id, ct);
+        OuGroupRelation? relation = await _groupsRelationRepo.GetByIdAsync(request.Id, true, ct);
         if (relation == null)
             return Response<OuRelationPageVm>.Error(ResponseCode.NotFound,
                 @"There is no OU Relational Group with this id");
 
-        IEnumerable<Group> groups = await _groupsRepository.GetAllAsync(ct);
+        IEnumerable<Group> groups = await _groupsRepository.GetAllAsync(true, ct);
 
         var ouRelationVm = new OuRelationVm(
             relation.Id,

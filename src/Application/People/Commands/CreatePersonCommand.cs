@@ -91,7 +91,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
         if (!request.GroupId.HasValue)
             return Response<long?>.Error(ResponseCode.BadRequest, @"S'ha d'especificar un grup.");
 
-        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId.Value, ct);
+        Group? group = await _groupsRepo.GetByIdAsync(request.GroupId.Value, false, ct);
         if (group == null)
             return Response<long?>.Error(ResponseCode.NotFound, nameof(request.GroupId),
                 @"El grup especificat no existeix.");

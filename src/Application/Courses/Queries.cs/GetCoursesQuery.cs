@@ -5,7 +5,8 @@ using MediatR;
 namespace Application.Courses.Queries;
 
 public record CourseVm(long Id, string Name, DateTimeOffset StartDate, DateTimeOffset EndDate, bool Active);
-public record GetCoursesQuery() : IRequest<IEnumerable<CourseVm>>;
+
+public record GetCoursesQuery : IRequest<IEnumerable<CourseVm>>;
 
 public class GetCoursesQueryHandler : IRequestHandler<GetCoursesQuery, IEnumerable<CourseVm>>
 {
@@ -18,10 +19,10 @@ public class GetCoursesQueryHandler : IRequestHandler<GetCoursesQuery, IEnumerab
 
     public async Task<IEnumerable<CourseVm>> Handle(GetCoursesQuery request, CancellationToken ct)
     {
-        IEnumerable<Course> courses = await _coursesRepository.GetAllAsync(ct);
+        IEnumerable<Course> courses = await _coursesRepository.GetAllAsync(true, ct);
         return courses
-                    .Select(x => new CourseVm(x.Id, x.Name, x.StartDate, x.EndDate, x.Active))
-                    .OrderByDescending(x => x.StartDate)
-                    .ThenByDescending(x => x.EndDate);
+            .Select(x => new CourseVm(x.Id, x.Name, x.StartDate, x.EndDate, x.Active))
+            .OrderByDescending(x => x.StartDate)
+            .ThenByDescending(x => x.EndDate);
     }
 }

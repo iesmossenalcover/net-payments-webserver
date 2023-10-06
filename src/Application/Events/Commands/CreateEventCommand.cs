@@ -22,35 +22,32 @@ public record EventData
     public DateTime? UnpublishDate { get; set; } = default!;
 }
 
-public record CreateEventCommand : EventData, IRequest<Response<string?>>
-{ }
+public record CreateEventCommand : EventData, IRequest<Response<string?>>;
 
 public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
 {
     public CreateEventCommandValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
-        RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
-        RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
-        RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
-        RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
-        RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
+        RuleFor(x => x.Name).NotEmpty().WithMessage(@"S'ha de proporcionar un nom per l'event");
+        RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage(@"S'ha de posar un preu positiu");
+        RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage(@"S'ha de posar un preu positiu");
+        RuleFor(x => x.Date).NotNull().WithMessage(@"S'ha de seleccionar una data.");
+        RuleFor(x => x.PublishDate).NotNull().WithMessage(@"S'ha de seleccionar una data de publicació");
+        RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage(@"La quanitat màxima ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
             {
                 if (!unpublish.HasValue) return true;
-
-                if (unpublish.Value < request.PublishDate) return false;
-
-                return true;
-            }).WithMessage("La data ha de ser posterior a la data de publicació");
+                return unpublish.Value >= request.PublishDate;
+            }).WithMessage(@"La data ha de ser posterior a la data de publicació");
     }
 }
 
 public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Response<string?>>
 {
     #region IOC
-    private readonly int MAX_TRIES = 10;
+
+    private const int MAX_TRIES = 10;
     private readonly IEventsRespository _eventsRespository;
     private readonly ICoursesRepository _courseRepository;
 
@@ -59,6 +56,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
         _eventsRespository = eventsRespository;
         _courseRepository = courseRepository;
     }
+
     #endregion
 
     public async Task<Response<string?>> Handle(CreateEventCommand request, CancellationToken ct)
@@ -79,7 +77,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
 
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
 
-        Event e = new Event()
+        var e = new Event()
         {
             Code = code,
             Name = request.Name,
@@ -92,7 +90,9 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Description = request.Description,
             Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero),
             PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero),
-            UnpublishDate = request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null,
+            UnpublishDate = request.UnpublishDate.HasValue
+                ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero)
+                : null,
             Course = course
         };
 

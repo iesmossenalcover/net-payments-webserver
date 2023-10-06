@@ -8,8 +8,12 @@ namespace Application.People.Queries;
 
 # region ViewModels
 
-public record PersonPaymentInfoVm(long EventPersonId, long EventId, string EventName, decimal Amount,
-    bool ManualPayment, DateTimeOffset? PaidDate);
+public record PersonPaymentInfoVm(long EventPersonId,
+    long EventId,
+    string EventName,
+    decimal Amount,
+    bool ManualPayment,
+    DateTimeOffset? PaidDate);
 
 public record PersonCoursePaymentsVm(long CourseId, string CourseName, IEnumerable<PersonPaymentInfoVm> Payments);
 
@@ -37,7 +41,7 @@ public class GetPersonPaymentsQueryHandler : IRequestHandler<GetPersonPaymentsQu
 
     public async Task<Response<GetPersonPaymentsVm>> Handle(GetPersonPaymentsQuery request, CancellationToken ct)
     {
-        Person? person = await _peopleRepository.GetByIdAsync(request.Id, ct);
+        Person? person = await _peopleRepository.GetByIdAsync(request.Id, true, ct);
         if (person == null)
             return Response<GetPersonPaymentsVm>.Error(ResponseCode.NotFound,
                 @"No s'ha trobat cap persona amb aquest id");
