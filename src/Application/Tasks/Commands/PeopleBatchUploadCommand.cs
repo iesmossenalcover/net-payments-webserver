@@ -1,9 +1,7 @@
-using System.Data;
 using Application.Common;
 using Application.Common.Models;
 using Domain.Services;
 using Domain.Entities.People;
-using FluentValidation;
 using MediatR;
 
 namespace Application.Tasks.Commands;
@@ -51,7 +49,7 @@ public class
     {
         // Parse csv
         var result = _csvParser.Parse<BatchUploadRow>(request.File);
-        request.File.Dispose();
+        await request.File.DisposeAsync();
 
         if (result.Values == null)
             return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest,
@@ -60,7 +58,7 @@ public class
         IEnumerable<BatchUploadRow> rows = result.Values;
 
         // fix important data.
-        foreach (var r in rows)
+        foreach (BatchUploadRow r in rows)
         {
             r.DocumentId = r.DocumentId.ToUpper();
         }
@@ -70,13 +68,13 @@ public class
         // Process people
         IDictionary<string, Person> people = await ProcessPeople(rows, ct);
         // Process PersonGroupCourse
-        var (presonGroupCourses, personGroupCoursesToDelete) = await ProcessPersonGroupCourse(people, groups, rows, ct);
+        var (personGroupCourses, personGroupCoursesToDelete) = await ProcessPersonGroupCourse(people, groups, rows, ct);
 
         var m = new BatchUploadModel()
         {
             People = people,
             Groups = groups,
-            PersonGroupCourses = presonGroupCourses.Values,
+            PersonGroupCourses = personGroupCourses.Values,
             PersonGroupCoursesToDelete = personGroupCoursesToDelete
         };
         var summary = new PeopleBatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
@@ -90,6 +88,7 @@ public class
         {
             return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest, transactionResult.Error);
         }
+
         return Response<PeopleBatchUploadSummary>.Error(ResponseCode.InternalError, "Unhandled error");
     }
 
@@ -102,24 +101,23 @@ public class
             IEnumerable<BatchUploadRow> rows,
             CancellationToken ct)
     {
-        var course = await _coursesRepo.GetCurrentCoursAsync(ct);
+        Course course = await _coursesRepo.GetCurrentCoursAsync(ct);
         var peopleIds = people.Select(x => x.Value.Id);
         var personGroupCourse =
             (await _personGroupCourseRepo.GetCurrentCourseGroupByPeopleIdsAsync(peopleIds, ct)).ToDictionary(
                 x => x.Person.DocumentId, x => x);
         IList<PersonGroupCourse> personGroupCourseToDelete = new List<PersonGroupCourse>();
-        foreach (var r in rows)
+        foreach (BatchUploadRow r in rows)
         {
             Person p = people[r.DocumentId];
             PersonGroupCourse pgc;
             if (string.IsNullOrEmpty(r.GroupName))
             {
-                if (personGroupCourse.ContainsKey(p.DocumentId))
-                {
-                    pgc = personGroupCourse[p.DocumentId];
-                    personGroupCourse.Remove(p.DocumentId);
-                    personGroupCourseToDelete.Add(pgc);
-                }
+                if (!personGroupCourse.ContainsKey(p.DocumentId)) continue;
+
+                pgc = personGroupCourse[p.DocumentId];
+                personGroupCourse.Remove(p.DocumentId);
+                personGroupCourseToDelete.Add(pgc);
             }
             else
             {
@@ -137,14 +135,13 @@ public class
                         pgc.AmipaDate = r.IsAmipa.Value ? DateTimeOffset.UtcNow : null;
                     }
 
-                    // If enrolled field is set, then update.
-                    if (r.Enrolled.HasValue)
-                    {
-                        pgc.Enrolled = r.Enrolled.Value;
-                        pgc.EnrolledDate = r.Enrolled.Value ? DateTimeOffset.UtcNow : null;
-                        pgc.EnrollmentEventId = null;
-                        pgc.EnrollmentEvent = null;
-                    }
+                    // If no enrolled field the continue.
+                    if (!r.Enrolled.HasValue) continue;
+
+                    pgc.Enrolled = r.Enrolled.Value;
+                    pgc.EnrolledDate = r.Enrolled.Value ? DateTimeOffset.UtcNow : null;
+                    pgc.EnrollmentEventId = null;
+                    pgc.EnrollmentEvent = null;
                 }
                 else
                 {
@@ -194,9 +191,9 @@ public class
         CancellationToken ct)
     {
         IEnumerable<Person> existingPeople =
-            await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.DocumentId), ct);
+            await _peopleRepo.GetPeopleByDocumentIdsAsync(rows.Select(x => x.DocumentId), false, ct);
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
-        foreach (var r in rows)
+        foreach (BatchUploadRow r in rows)
         {
             if (people.ContainsKey(r.DocumentId.Trim()))
             {
@@ -206,19 +203,19 @@ public class
                 p.DocumentId = r.DocumentId.Trim();
                 p.Name = r.FirstName.Trim();
                 p.Surname1 = r.Surname1.Trim();
-                p.Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null;
+                p.Surname2 = r.Surname2?.Trim();
                 p.ContactMail = string.IsNullOrEmpty(r.Email) ? p.ContactMail : r.Email.ToLower().Trim();
             }
             else
             {
-                Person p = new Person()
+                var p = new Person()
                 {
                     AcademicRecordNumber = r.AcademicRecordNumber,
                     ContactPhone = r.ContactPhone,
                     DocumentId = r.DocumentId.Trim(),
                     Name = r.FirstName.Trim(),
                     Surname1 = r.Surname1.Trim(),
-                    Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null,
+                    Surname2 = r.Surname2?.Trim(),
                     ContactMail = string.IsNullOrEmpty(r.Email) ? null : r.Email.ToLower().Trim(),
                 };
                 people[r.DocumentId] = p;

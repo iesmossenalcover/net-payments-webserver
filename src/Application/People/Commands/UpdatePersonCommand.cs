@@ -29,39 +29,43 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
 
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("El camp no pot ser buid.");
+            .WithMessage(@"El camp no pot ser buid.");
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage("El camp no pot ser buid.");
+            .WithMessage(@"El camp no pot ser buid.");
 
         RuleFor(x => x.GroupId)
-            .NotNull().WithMessage("S'ha d'especificar un grup")
-            .GreaterThan(0).WithMessage("S'ha d'especificar un grup");
+            .NotNull().WithMessage(@"S'ha d'especificar un grup")
+            .GreaterThan(0).WithMessage(@"S'ha d'especificar un grup");
 
         RuleFor(x => x.Surname1)
-            .NotEmpty().WithMessage("El camp no pot ser buid.");
+            .NotEmpty().WithMessage(@"El camp no pot ser buid.");
 
         RuleFor(x => x.DocumentId)
-            .NotEmpty().WithMessage("És obligatori posar un document d'indentitat")
-            .MaximumLength(50).WithMessage("Màxim 50 caràcters")
-            .MustAsync(CheckUniqueDocumentIdAsync).WithMessage("Aquest document d'identitat ja està associat a una altra persona");
+            .NotEmpty().WithMessage(@"És obligatori posar un document d'indentitat")
+            .MaximumLength(50).WithMessage(@"Màxim 50 caràcters")
+            .MustAsync(CheckUniqueDocumentIdAsync)
+            .WithMessage(@"Aquest document d'identitat ja està associat a una altra persona");
 
         RuleFor(x => x.AcademicRecordNumber)
-            .MustAsync(CheckUniqueAcademicRecordNumberdAsync).WithMessage("Aquest expedient acadèmic ja està associat a una altra persona");
+            .MustAsync(CheckUniqueAcademicRecordNumberdAsync)
+            .WithMessage(@"Aquest expedient acadèmic ja està associat a una altra persona");
 
         RuleFor(x => x.ContactPhone)
-            .MaximumLength(50).WithMessage("Màxim 15 caràcters");
+            .MaximumLength(50).WithMessage(@"Màxim 15 caràcters");
 
         RuleFor(x => x.Email)
-            .MustAsync(CheckUniqueEmailAsync).WithMessage("Aquest email ja està associat a una altra persona.");
+            .MustAsync(CheckUniqueEmailAsync).WithMessage(@"Aquest email ja està associat a una altra persona.");
     }
 
-    private async Task<bool> CheckUniqueAcademicRecordNumberdAsync(UpdatePersonCommand cmd, long? academicRecordNumber, CancellationToken ct)
+    private async Task<bool> CheckUniqueAcademicRecordNumberdAsync(UpdatePersonCommand cmd,
+        long? academicRecordNumber,
+        CancellationToken ct)
     {
         if (!academicRecordNumber.HasValue) return true;
 
-        Person? p = await _peopleRepository.GetPersonByAcademicRecordAsync(academicRecordNumber.Value, ct);
+        Person? p = await _peopleRepository.GetPersonByAcademicRecordAsync(academicRecordNumber.Value, true, ct);
         if (p == null)
         {
             return true;
@@ -72,10 +76,12 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
         }
     }
 
-    private async Task<bool> CheckUniqueDocumentIdAsync(UpdatePersonCommand cmd, string documentId, CancellationToken ct)
+    private async Task<bool> CheckUniqueDocumentIdAsync(UpdatePersonCommand cmd,
+        string documentId,
+        CancellationToken ct)
     {
         if (string.IsNullOrEmpty(documentId)) return false;
-        Person? p = await _peopleRepository.GetPersonByDocumentIdAsync(documentId, ct);
+        Person? p = await _peopleRepository.GetPersonByDocumentIdAsync(documentId, true, ct);
         if (p == null)
         {
             return true;
@@ -89,7 +95,7 @@ public class UpdatePersonCommandValidator : AbstractValidator<UpdatePersonComman
     private async Task<bool> CheckUniqueEmailAsync(UpdatePersonCommand cmd, string? email, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(email)) return true;
-        Person? p = await _peopleRepository.GetPersonByEmailAsync(email, ct);
+        Person? p = await _peopleRepository.GetPersonByEmailAsync(email, true, ct);
         if (p == null)
         {
             return true;
@@ -105,13 +111,15 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
 {
     private readonly IPeopleRepository _peopleRepo;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepo;
-    private readonly ICoursesRepository _coursesRespository;
+    private readonly ICoursesRepository _coursesRepository;
 
-    public UpdatePersonCommandHandler(IPeopleRepository peopleRepo, IPersonGroupCourseRepository personGroupCourseRepo, ICoursesRepository coursesRespository)
+    public UpdatePersonCommandHandler(IPeopleRepository peopleRepo,
+        IPersonGroupCourseRepository personGroupCourseRepo,
+        ICoursesRepository coursesRepository)
     {
         _peopleRepo = peopleRepo;
         _personGroupCourseRepo = personGroupCourseRepo;
-        _coursesRespository = coursesRespository;
+        _coursesRepository = coursesRepository;
     }
 
     public async Task<Response<long?>> Handle(UpdatePersonCommand request, CancellationToken ct)
@@ -119,7 +127,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         Person? p = await _peopleRepo.GetByIdAsync(request.Id, ct);
         if (p == null)
         {
-            return Response<long?>.Error(ResponseCode.BadRequest, "La persona que es vol actualitzar no existeix.");
+            return Response<long?>.Error(ResponseCode.BadRequest, @"La persona que es vol actualitzar no existeix.");
         }
 
         p.Name = request.Name;
@@ -132,10 +140,12 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
 
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);
 
-        Course c = await _coursesRespository.GetCurrentCoursAsync(ct);
+        Course c = await _coursesRepository.GetCurrentCoursAsync(ct);
 
         // Update / create pgc
-        PersonGroupCourse? pgc = await _personGroupCourseRepo.GetCoursePersonGroupById(p.Id, c.Id, CancellationToken.None);
+        PersonGroupCourse? pgc =
+            await _personGroupCourseRepo.GetCoursePersonGroupById(p.Id, c.Id, CancellationToken.None);
+        
         if (pgc == null && request.GroupId.HasValue) // Create PGC
         {
             pgc = new PersonGroupCourse()
@@ -157,6 +167,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
                 pgc.EnrollmentEvent = null;
                 pgc.EnrollmentEventId = null;
             }
+
             pgc.Enrolled = request.Enrolled;
 
 

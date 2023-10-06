@@ -10,6 +10,7 @@ public class Repository<T> : IRepository<T> where T : Entity
 
     protected readonly AppDbContext _dbContext;
     protected readonly DbSet<T> _dbSet;
+    
 
     public Repository(AppDbContext dbContext, DbSet<T> dbSet)
     {
@@ -18,6 +19,8 @@ public class Repository<T> : IRepository<T> where T : Entity
     }
     
     #endregion
+
+    public IQueryable<T> DbSet(bool readOnly) => readOnly ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
 
     public async Task<T?> GetByIdAsync(long id, CancellationToken ct)
     {
