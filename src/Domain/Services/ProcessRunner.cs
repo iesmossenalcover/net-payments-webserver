@@ -1,6 +1,5 @@
 using Domain.Entities.Jobs;
 using Domain.Entities.Logs;
-using Domain.Services;
 using Domain.ValueObjects;
 
 namespace Domain.Services;
@@ -26,11 +25,11 @@ public class ProcessRunner
             CancellationToken ct = CancellationToken.None;
 
             // IOC
-            using var scope = _serviceProvider.CreateAsyncScope();
+            await using var scope = _serviceProvider.CreateAsyncScope();
             ILogStore logStore = scope.ServiceProvider.GetRequiredService<ILogStore>();
             IJobsRepository jobsRepository = scope.ServiceProvider.GetRequiredService<IJobsRepository>();
 
-            Job? job = await jobsRepository.GetByIdAsync(jobId, ct);
+            Job? job = await jobsRepository.GetByIdAsync(jobId, false, ct);
             if (job == null) return;
 
             job.Status = JobStatus.RUNNING;

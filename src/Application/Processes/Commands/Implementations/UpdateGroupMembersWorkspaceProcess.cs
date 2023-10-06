@@ -10,18 +10,18 @@ public class UpdateGroupMembersWorkspaceProcess : IProcess
 {
     public async Task Run(IServiceScopeFactory serviceProvider, Log log, CancellationToken ct)
     {
-        using var scope = serviceProvider.CreateAsyncScope();
+        await using var scope = serviceProvider.CreateAsyncScope();
         IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();
         IOUGroupRelationsRepository oUGroupRelationsRepository = scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
         ICoursesRepository coursesRepository = scope.ServiceProvider.GetRequiredService<ICoursesRepository>();
         IPersonGroupCourseRepository personGroupCourseRepository = scope.ServiceProvider.GetRequiredService<IPersonGroupCourseRepository>();
 
         Course course = await coursesRepository.GetCurrentCoursAsync(ct);
-        IEnumerable<OuGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
+        IEnumerable<OuGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(true, ct);
 
         if (!ouRelations.Any())
         {
-            log.Add("No hi ha unitats organitzatives configurades");
+            log.Add(@"No hi ha unitats organitzatives configurades");
         }
 
         foreach (var ou in ouRelations)
@@ -29,7 +29,7 @@ public class UpdateGroupMembersWorkspaceProcess : IProcess
             GoogleApiResult<bool> groupResult = await googleAdminApi.ClearGroupMembers(ou.GroupMail);
             if (!groupResult.Success)
             {
-                log.Add($"OU: {ou} - Error buidant membres. Missatge: {groupResult.ErrorMessage ?? string.Empty}");
+                log.Add(@$"OU: {ou} - Error buidant membres. Missatge: {groupResult.ErrorMessage ?? string.Empty}");
                 continue;
             }
 
@@ -39,15 +39,13 @@ public class UpdateGroupMembersWorkspaceProcess : IProcess
             {
                 Person p = pgc.Person;
 
-                if (!string.IsNullOrEmpty(p.ContactMail))
-                {
-                    var result = await googleAdminApi.AddUserToGroup(p.ContactMail, ou.GroupMail);
-                    if (!result.Success)
-                    {
-                        log.Add($"OU: {ou} User: {p.ContactMail} Group: {ou.GroupMail} - Error afegint usuari a grup. Missatge: {result.ErrorMessage ?? string.Empty}");
-                        continue;
-                    }
-                }
+                if (string.IsNullOrEmpty(p.ContactMail)) continue;
+                
+                var result = await googleAdminApi.AddUserToGroup(p.ContactMail, ou.GroupMail);
+                
+                if (result.Success) continue;
+                    
+                log.Add(@$"OU: {ou} User: {p.ContactMail} Group: {ou.GroupMail} - Error afegint usuari a grup. Missatge: {result.ErrorMessage ?? string.Empty}");
             }
 
         }

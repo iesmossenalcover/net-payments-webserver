@@ -9,25 +9,20 @@ public class SuspendGoogleWorkspaceProcess : IProcess
 {
     public async Task Run(IServiceScopeFactory serviceProvider, Log log, CancellationToken ct)
     {
-        using var scope = serviceProvider.CreateAsyncScope();
+        await using var scope = serviceProvider.CreateAsyncScope();
         IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();
         IOUGroupRelationsRepository oUGroupRelationsRepository = scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
 
-        IEnumerable<OuGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
-        IEnumerable<string> pendings = ouRelations.Select(x => x.OldOU).Distinct();
+        IEnumerable<OuGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(true, ct);
+        IEnumerable<string> pendingOus = ouRelations.Select(x => x.OldOU).Distinct();
 
 
-        foreach (var ou in pendings)
+        foreach (string ou in pendingOus)
         {
             GoogleApiResult<bool> result = await googleAdminApi.SetSuspendByOU(ou, true, false);
-            if (!result.Success)
-            {
-                log.Add($"OU {ou} - [Error] {result.ErrorMessage ?? "No s'ha pogut processar"}");
-            }
-            else
-            {
-                log.Add($"OU: {ou} - [OK]");
-            }
+            log.Add(!result.Success
+                ? $"OU {ou} - [Error] {result.ErrorMessage ?? @"No s'ha pogut processar"}"
+                : $"OU: {ou} - [OK]");
         }
     }
 }

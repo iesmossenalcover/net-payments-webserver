@@ -16,21 +16,22 @@ public class MovePeopleGoogleWorkspaceProcess : IProcess
 
     public async Task Run(IServiceScopeFactory serviceProvider, Log log, CancellationToken ct)
     {
-        using var scope = serviceProvider.CreateAsyncScope();
+        await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
         IGoogleAdminApi googleAdminApi = scope.ServiceProvider.GetRequiredService<IGoogleAdminApi>();
-        IOUGroupRelationsRepository oUGroupRelationsRepository = scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
+        IOUGroupRelationsRepository oUGroupRelationsRepository =
+            scope.ServiceProvider.GetRequiredService<IOUGroupRelationsRepository>();
 
-        IEnumerable<OuGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(ct);
+        IEnumerable<OuGroupRelation> ouRelations = await oUGroupRelationsRepository.GetAllAsync(true, ct);
         foreach (var ou in ouRelations)
         {
             GoogleApiResult<IEnumerable<string>> usersResult = await googleAdminApi.GetAllUsers(ou.ActiveOU);
             if (!usersResult.Success || usersResult.Data == null)
             {
-                log.Add($"Error recuperant usuaris OU: {ou.GroupMail}");
+                log.Add($@"Error recuperant usuaris OU: {ou.GroupMail}");
                 continue;
             }
 
-            foreach (var user in usersResult.Data)
+            foreach (string user in usersResult.Data)
             {
                 // IMPORTANT: Exclude members
                 if (excludeEmails.Contains(user)) continue;
@@ -38,7 +39,7 @@ public class MovePeopleGoogleWorkspaceProcess : IProcess
                 var result = await googleAdminApi.MoveUserToOU(user, ou.OldOU);
                 if (!result.Success)
                 {
-                    log.Add($"Error recuperant usuaris OU: {ou.GroupMail} USER: {user}");
+                    log.Add(@$"Error recuperant usuaris OU: {ou.GroupMail} USER: {user}");
                 }
             }
         }
