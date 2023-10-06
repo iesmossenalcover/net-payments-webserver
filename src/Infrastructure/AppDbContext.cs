@@ -4,13 +4,16 @@ namespace Infrastructure
 {
     public class AppDbContext : DbContext
     {
-
         #region constructor
+
         public AppDbContext(DbContextOptions options) : base(options)
-        { }
+        {
+        }
+
         #endregion
 
         #region sets
+
         public DbSet<Domain.Entities.Authentication.User> Users { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.UserClaim> UserClaims { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.OAuthUser> OAuthUsers { get; set; } = default!;
@@ -35,13 +38,15 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Jobs.Job> Jobs { get; set; } = default!;
 
         public DbSet<Domain.Entities.Logs.LogStoreInfo> LogStoreInfos { get; set; } = default!;
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.HasCollation("no_accent", locale: "und-u-ks-level1-kc-true", provider: "icu", deterministic: false);
+            modelBuilder.HasCollation("no_accent", locale: "und-u-ks-level1-kc-true", provider: "icu",
+                deterministic: false);
 
             // Auths
             modelBuilder.Entity<Domain.Entities.Authentication.User>()
@@ -154,6 +159,10 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .Property(x => x.Quantity).HasDefaultValue(1);
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
+                .HasIndex(x => x.PersonId);
+            modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
+                .HasIndex(x => new { x.PersonId, x.Paid });
+            modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasIndex(x => new { x.PersonId, x.EventId, x.OrderId }).IsUnique();
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasOne(x => x.Person);
@@ -161,7 +170,6 @@ namespace Infrastructure
                 .HasOne(x => x.Event);
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasOne(x => x.Order);
-
 
 
             // Orders
@@ -210,8 +218,12 @@ namespace Infrastructure
                     entry.Entity.Name = entry.Entity.Name.Trim().ToUpperInvariant();
                     entry.Entity.Surname1 = entry.Entity.Surname1.Trim().ToUpperInvariant();
                     entry.Entity.DocumentId = entry.Entity.DocumentId.Trim().ToUpperInvariant();
-                    entry.Entity.Surname2 = !string.IsNullOrEmpty(entry.Entity.Surname2) ? entry.Entity.Surname2.Trim().ToUpperInvariant() : null;
-                    entry.Entity.ContactMail = !string.IsNullOrEmpty(entry.Entity.ContactMail) ? entry.Entity.ContactMail.Trim() : null;
+                    entry.Entity.Surname2 = !string.IsNullOrEmpty(entry.Entity.Surname2)
+                        ? entry.Entity.Surname2.Trim().ToUpperInvariant()
+                        : null;
+                    entry.Entity.ContactMail = !string.IsNullOrEmpty(entry.Entity.ContactMail)
+                        ? entry.Entity.ContactMail.Trim()
+                        : null;
                 }
             }
 
@@ -219,7 +231,9 @@ namespace Infrastructure
             {
                 if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
                 {
-                    entry.Entity.SubjectsInfo = !string.IsNullOrEmpty(entry.Entity.SubjectsInfo) ? entry.Entity.SubjectsInfo.Trim() : null;
+                    entry.Entity.SubjectsInfo = !string.IsNullOrEmpty(entry.Entity.SubjectsInfo)
+                        ? entry.Entity.SubjectsInfo.Trim()
+                        : null;
                 }
             }
 
