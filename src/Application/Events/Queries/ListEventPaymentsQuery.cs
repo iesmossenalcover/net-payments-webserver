@@ -56,7 +56,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                 ep.Id, person.FullName,
                 person.DocumentId,
                 ep.Paid ? ep.PaidAsAmipa : pgc.Amipa,
-                ep.Paid ? ep.AmmountPaid(ep.Event) : pgc.PriceForEvent(ep.Event),
+                ep.Paid ? ep.AmountPaid(ep.Event) : pgc.PriceForEvent(ep.Event),
                 ep.Paid,
                 pgc.Group.Name,
                 quantitySelector && ep.Paid ? ep.Quantity : 1,

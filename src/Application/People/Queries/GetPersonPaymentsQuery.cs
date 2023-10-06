@@ -13,7 +13,8 @@ public record PersonPaymentInfoVm(long EventPersonId, long EventId, string Event
 
 public record PersonCoursePaymentsVm(long CourseId, string CourseName, IEnumerable<PersonPaymentInfoVm> Payments);
 
-public record GetPersonPaymentsVm(IEnumerable<PersonCoursePaymentsVm> CoursePayments);
+public record GetPersonPaymentsVm(string PersonName, string DocumentId,
+    IEnumerable<PersonCoursePaymentsVm> CoursePayments);
 
 #endregion
 
@@ -53,10 +54,10 @@ public class GetPersonPaymentsQueryHandler : IRequestHandler<GetPersonPaymentsQu
                     y.Id,
                     y.EventId,
                     y.Event.Name,
-                    y.AmmountPaid(y.Event),
+                    y.AmountPaid(y.Event),
                     !y.OrderId.HasValue,
                     y.DatePaid))
         ));
-        return Response<GetPersonPaymentsVm>.Ok(new GetPersonPaymentsVm(coursesVm));
+        return Response<GetPersonPaymentsVm>.Ok(new GetPersonPaymentsVm(person.FullName, person.DocumentId, coursesVm));
     }
 }
