@@ -21,13 +21,16 @@ public record ConfirmOrderCommand : IRequest<Response<ConfirmOrderCommandVm?>>
 public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, Response<ConfirmOrderCommandVm?>>
 {
     #region IOC
+
     private readonly IEventsPeopleRespository _eventsPeopleRespository;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRedsys _redsys;
     private readonly Domain.Behaviours.EventPersonBehaviours _eventPersonBehaviours;
 
-    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository, IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys, EventPersonBehaviours eventPersonBehaviours)
+    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRespository,
+        IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys,
+        EventPersonBehaviours eventPersonBehaviours)
     {
         _eventsPeopleRespository = eventsPeopleRespository;
         _personGroupCourseRepository = personGroupCourseRepository;
@@ -35,6 +38,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         _redsys = redsys;
         _eventPersonBehaviours = eventPersonBehaviours;
     }
+
     #endregion
 
     public async Task<Response<ConfirmOrderCommandVm?>> Handle(ConfirmOrderCommand request, CancellationToken ct)
@@ -57,7 +61,8 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         IEnumerable<EventPerson> personEvents = await _eventsPeopleRespository.GetAllByOrderId(order.Id, ct);
         if (!personEvents.Any())
         {
-            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, "Error, cap esdeveniment amb aquest ordre");
+            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest,
+                "Error, cap esdeveniment amb aquest ordre");
         }
 
         if (!result.Success)
@@ -72,7 +77,8 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(p.Id, courseId, ct);
         if (pgc == null)
         {
-            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, "Error, la persona no està asociada al curs");
+            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest,
+                "Error, la persona no està asociada al curs");
         }
 
         order.Status = OrderStatus.Paid;

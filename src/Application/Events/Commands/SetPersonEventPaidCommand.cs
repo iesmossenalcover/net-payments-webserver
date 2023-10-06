@@ -68,6 +68,11 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
         if (pgc == null)
             return Response<bool>.Error(ResponseCode.BadRequest, "Error, la persona no està asociada al curs");
 
+
+        // Ensure this because they may be an attempt to pay using tpv, so it is related to an unpaid order.
+        eventPerson.Order = null;
+        eventPerson.OrderId = null;
+
         eventPerson.Quantity = Math.Min(request.Quantity ?? 1, eventPerson.Event.MaxQuantity);
 
         if (request.Paid)

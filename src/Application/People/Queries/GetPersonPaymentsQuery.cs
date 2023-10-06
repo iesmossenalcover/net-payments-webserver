@@ -43,21 +43,24 @@ public class GetPersonPaymentsQueryHandler : IRequestHandler<GetPersonPaymentsQu
             return Response<GetPersonPaymentsVm>.Error(ResponseCode.NotFound,
                 @"No s'ha trobat cap persona amb aquest id");
 
-        IEnumerable<EventPerson> events = await _eventsPeopleRepository.GetAllByPersonId(person.Id, ct);
+        IEnumerable<EventPerson> events = await _eventsPeopleRepository.GetAllByPersonId(person.Id, true, ct);
+        events = events.Where(x => x.Paid);
+        
         var groupedEvents = events.GroupBy(x => x.Event.Course).OrderByDescending(x => x.Key.StartDate);
-        var coursesVm = groupedEvents.Select(x => new PersonCoursePaymentsVm(
-            x.First().Event.CourseId,
-            x.First().Event.Course.Name,
-            x
-                .OrderByDescending(y => y.DatePaid)
-                .Select(y => new PersonPaymentInfoVm(
-                    y.Id,
-                    y.EventId,
-                    y.Event.Name,
-                    y.AmountPaid(y.Event),
-                    !y.OrderId.HasValue,
-                    y.DatePaid))
-        ));
+        var coursesVm = groupedEvents
+            .Select(x => new PersonCoursePaymentsVm(
+                x.First().Event.CourseId,
+                x.First().Event.Course.Name,
+                x
+                    .OrderByDescending(y => y.DatePaid)
+                    .Select(y => new PersonPaymentInfoVm(
+                        y.Id,
+                        y.EventId,
+                        y.Event.Name,
+                        y.AmountPaid(y.Event),
+                        !y.OrderId.HasValue,
+                        y.DatePaid))
+            ));
         return Response<GetPersonPaymentsVm>.Ok(new GetPersonPaymentsVm(person.FullName, person.DocumentId, coursesVm));
     }
 }

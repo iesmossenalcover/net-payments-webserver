@@ -45,10 +45,16 @@ public class EventsPeopleRepository : Repository<EventPerson>, Domain.Services.I
             .ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<EventPerson>> GetAllByPersonId(long personId, CancellationToken ct)
+    public async Task<IEnumerable<EventPerson>> GetAllByPersonId(long personId, bool onlyPaid, CancellationToken ct)
     {
-        return await _dbSet
-            .Where(x => x.PersonId == personId)
+        var query = _dbSet.Where(x => x.PersonId == personId);
+
+        if (onlyPaid)
+        {
+            query = query.Where(x => x.PersonId == personId);
+        }
+
+        return await query
             .Include(x => x.Person)
             .Include(x => x.Event).ThenInclude(x => x.Course)
             .Include(x => x.Order)
