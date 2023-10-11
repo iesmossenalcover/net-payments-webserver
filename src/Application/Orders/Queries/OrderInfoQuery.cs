@@ -10,9 +10,12 @@ using MediatR;
 namespace Application.Orders.Queries;
 
 public record EventInfo(string Code, string Name, decimal Price, string Currency);
-public record OrderInfoVm(IEnumerable<EventInfo> events, bool DisplayEnrollment, string? EnrollmentSubjectsInfo, string? GroupDescription);
 
-public record OrderInfoQuery(string Signature, string MerchantParamenters, string SignatureVersion) : IRequest<Response<OrderInfoVm>>;
+public record OrderInfoVm(string PersonName, string PersonDocumentId, IEnumerable<EventInfo> Events,
+    bool DisplayEnrollment, string? EnrollmentSubjectsInfo, string? GroupDescription);
+
+public record OrderInfoQuery
+    (string Signature, string MerchantParamenters, string SignatureVersion) : IRequest<Response<OrderInfoVm>>;
 
 public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<OrderInfoVm>>
 {
@@ -23,7 +26,9 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
     private readonly ICoursesRepository _coursesRepository;
     private readonly IAppConfigRepository _appConfigRepository;
 
-    public OrderInfoQueryHandler(IRedsys redsys, IOrdersRepository ordersRepository, IPersonGroupCourseRepository personGroupsCourseRepository, IEventsPeopleRespository eventsPeopleRespository, ICoursesRepository coursesRepository, IAppConfigRepository appConfigRepository)
+    public OrderInfoQueryHandler(IRedsys redsys, IOrdersRepository ordersRepository,
+        IPersonGroupCourseRepository personGroupsCourseRepository, IEventsPeopleRespository eventsPeopleRespository,
+        ICoursesRepository coursesRepository, IAppConfigRepository appConfigRepository)
     {
         _redsys = redsys;
         _ordersRepository = ordersRepository;
@@ -43,8 +48,10 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
         if (order == null) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "No s'ha trobat l'ordre.");
 
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
-        PersonGroupCourse? pgc = await _personGroupsCourseRepository.GetCoursePersonGroupById(order.PersonId, course.Id, ct);
-        if (pgc == null) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "Persona no matriculada al curs actual.");
+        PersonGroupCourse? pgc =
+            await _personGroupsCourseRepository.GetCoursePersonGroupById(order.PersonId, course.Id, ct);
+        if (pgc == null)
+            return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "Persona no matriculada al curs actual.");
 
         IEnumerable<EventPerson> orderEvents = await _eventsPeopleRespository.GetAllByOrderId(order.Id, ct);
 
@@ -52,7 +59,10 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
 
         bool enrollmentEvent = orderEvents.Any(x => x.Event.Enrollment);
 
-        IEnumerable<EventInfo> eventsInfo = orderEvents.Select(x => new EventInfo(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€"));
-        return Response<OrderInfoVm>.Ok(new OrderInfoVm(eventsInfo, enrollmentEvent && config.DisplayEnrollment, pgc.SubjectsInfo, pgc.Group.Description));
+        IEnumerable<EventInfo> eventsInfo =
+            orderEvents.Select(x => new EventInfo(x.Event.Code, x.Event.Name, pgc.PriceForEvent(x.Event), "€"));
+        return Response<OrderInfoVm>.Ok(new OrderInfoVm(
+            pgc.Person.FullName, pgc.Person.DocumentId,
+            eventsInfo, enrollmentEvent && config.DisplayEnrollment, pgc.SubjectsInfo, pgc.Group.Description));
     }
 }
