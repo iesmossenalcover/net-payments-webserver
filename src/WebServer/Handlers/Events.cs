@@ -11,7 +11,8 @@ namespace WebServer.Handlers;
 
 public class Events
 {
-    public static async Task<IEnumerable<EventVm>> ListCourseEvents(IMediator mediator, bool showExpired = false)
+    public static async Task<IEnumerable<EventVm>> ListCourseEvents(IMediator mediator,
+        [FromQuery]bool showExpired = false)
     {
         return await mediator.Send(new ListEventsQuery(showExpired));
     }
