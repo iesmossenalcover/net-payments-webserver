@@ -10,9 +10,20 @@ public class EventsRepository : Repository<Event>, Domain.Services.IEventsRespos
     public async Task<IEnumerable<Event>> GetAllEventsByCourseIdAsync(long courseId, CancellationToken ct)
     {
         return await _dbSet
-                        .Where(x => x.CourseId == courseId)
-                        .OrderByDescending(x => x.Date)
-                        .ToListAsync(ct);
+                .Where(x => x.CourseId == courseId)
+                .OrderByDescending(x => x.Date)
+                .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<Event>> GetAllUnexpiredEventsByCourseIdAsync(long courseId, CancellationToken ct)
+    {
+        return await _dbSet
+                .Where(x => 
+                    x.CourseId == courseId && 
+                    UnpublishDate.HasValue && 
+                    UnpublishDate.Value > DateTimeOffset.UtcNow())
+                .OrderByDescending(x => x.Date)
+                .ToListAsync(ct);
     }
 
     public async Task<Event?> GetEventByCodeAsync(string code, CancellationToken ct)
