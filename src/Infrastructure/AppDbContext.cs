@@ -30,6 +30,7 @@ namespace Infrastructure
 
         public DbSet<Domain.Entities.Events.Event> Events { get; set; } = default!;
         public DbSet<Domain.Entities.Events.EventPerson> EventPersons { get; set; } = default!;
+        public DbSet<Domain.Entities.Events.EventPersonOrder> EventPersonOrders { get; set; } = default!;
 
         public DbSet<Domain.Entities.Orders.Order> Orders { get; set; } = default!;
 
@@ -163,14 +164,25 @@ namespace Infrastructure
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasIndex(x => new { x.PersonId, x.Paid });
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
-                .HasIndex(x => new { x.PersonId, x.EventId, x.OrderId }).IsUnique();
+                .HasIndex(x => new { x.PersonId, x.EventId, OrderId = x.PaidOrderId }).IsUnique();
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasOne(x => x.Person);
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
                 .HasOne(x => x.Event);
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()
-                .HasOne(x => x.Order);
-
+                .HasOne(x => x.PaidOrder);
+            
+            
+            // EventPersonOrder
+            modelBuilder.Entity<Domain.Entities.Events.EventPersonOrder>()
+                .ToTable("event_person_order", "main")
+                .Property(x => x.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Domain.Entities.Events.EventPersonOrder>()
+                .HasIndex(x => new { x.OrderId, x.EventPersonId });
+            modelBuilder.Entity<Domain.Entities.Events.EventPersonOrder>()
+                .HasIndex(x => x.EventPersonId);
+            modelBuilder.Entity<Domain.Entities.Events.EventPersonOrder>()
+                .HasIndex(x => x.OrderId);
 
             // Orders
             modelBuilder.Entity<Domain.Entities.Orders.Order>()

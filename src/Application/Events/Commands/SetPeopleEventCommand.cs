@@ -73,7 +73,7 @@ public class SetPeopleEventCommandHandler : IRequestHandler<SetPeopleEventComman
                     Person = p,
                     Quantity = 1,
                     Paid = false,
-                    Order = null,
+                    PaidOrder = null,
                 });
             }
         }

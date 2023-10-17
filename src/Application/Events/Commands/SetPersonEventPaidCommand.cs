@@ -70,8 +70,8 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
 
 
         // Ensure this because they may be an attempt to pay using tpv, so it is related to an unpaid order.
-        eventPerson.Order = null;
-        eventPerson.OrderId = null;
+        eventPerson.PaidOrder = null;
+        eventPerson.PaidOrderId = null;
 
         eventPerson.Quantity = Math.Min(request.Quantity ?? 1, eventPerson.Event.MaxQuantity);
 

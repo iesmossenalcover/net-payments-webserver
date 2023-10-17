@@ -16,8 +16,8 @@ public class EventPerson : Entity
     public long EventId { get; set; }
     public Event Event { get; set; } = default!;
 
-    public long? OrderId { get; set; }
-    public Order? Order { get; set; } = default!;
+    public long? PaidOrderId { get; set; }
+    public Order? PaidOrder { get; set; } = default!;
 
     public bool CanBePaid => Event.IsActive && !Paid;
 
