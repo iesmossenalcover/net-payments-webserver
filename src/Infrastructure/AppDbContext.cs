@@ -17,8 +17,6 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Authentication.User> Users { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.UserClaim> UserClaims { get; set; } = default!;
         public DbSet<Domain.Entities.Authentication.OAuthUser> OAuthUsers { get; set; } = default!;
-        // public DbSet<Domain.Entities.Authentication.GoogleGroupClaimRelation> GoogleGroupClaimRelations { get; set; } = default!;
-
 
         public DbSet<Domain.Entities.Configuration.AppConfig> AppConfigs { get; set; } = default!;
 
@@ -152,6 +150,10 @@ namespace Infrastructure
                 .HasIndex(x => x.PublishDate).IsDescending();
             modelBuilder.Entity<Domain.Entities.Events.Event>()
                 .HasIndex(x => x.UnpublishDate).IsDescending();
+            modelBuilder.Entity<Domain.Entities.Events.Event>()
+                .HasIndex(x => x.CourseId).IsDescending();
+            modelBuilder.Entity<Domain.Entities.Events.Event>()
+                .HasIndex(x => new { x.CourseId, x.UnpublishDate }).IsDescending();
 
 
             modelBuilder.Entity<Domain.Entities.Events.EventPerson>()

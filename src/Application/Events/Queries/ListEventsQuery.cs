@@ -12,7 +12,7 @@ namespace Application.Events.Queries;
 #endregion
 
 #region Query
-public record ListEventsQuery() : IRequest<IEnumerable<EventVm>>;
+public record ListEventsQuery(bool showExpired) : IRequest<IEnumerable<EventVm>>;
 #endregion
 
 public class ListEventsQueryHandler : IRequestHandler<ListEventsQuery, IEnumerable<EventVm>>
@@ -31,7 +31,10 @@ public class ListEventsQueryHandler : IRequestHandler<ListEventsQuery, IEnumerab
     public async Task<IEnumerable<EventVm>> Handle(ListEventsQuery request, CancellationToken ct)
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
-        IEnumerable<Event> events = await _eventsRepository.GetAllEventsByCourseIdAsync(course.Id, ct);
+
+        IEnumerable<Event> events = request.showExpired ? 
+            await _eventsRepository.GetAllEventsByCourseIdAsync(course.Id, ct) :
+            await _eventsRepository.GetAllUnexpiredEventsByCourseIdAsync(course.Id, ct);
 
         return events.Select(x => new EventVm(x.Id, x.Code, x.Description, x.Name, x.Price, x.AmipaPrice, x.Enrollment, x.Amipa, x.MaxQuantity, x.Date, x.CreationDate, x.PublishDate, x.UnpublishDate, x.IsActive));
     }
