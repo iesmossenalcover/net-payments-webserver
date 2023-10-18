@@ -76,8 +76,11 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
                 "Error, cap esdeveniment amb aquest ordre");
         }
 
-        IEnumerable<EventPerson> personEvents = personEventOrders.Select(x => x.EventPerson);
+        IEnumerable<long> eventPersonIds = personEventOrders.Select(x => x.EventPersonId);
         
+        IEnumerable<EventPerson> personEvents =
+            await _eventsPeopleRepository.GetWithRelationsByIdsAsync(eventPersonIds, ct);
+
         long courseId = personEvents.First().Event.CourseId;
         Person p = personEvents.First().Person;
         PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(p.Id, courseId, ct);
@@ -86,7 +89,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest,
                 "Error, la persona no està asociada al curs");
         }
-        
+
         // Update order from all personEvents
         foreach (var pe in personEvents)
         {

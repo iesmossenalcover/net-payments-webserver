@@ -115,7 +115,7 @@ public static class RegisterRoutes
             .RequireAuthorization("Admin")
             .WithName("Delete person")
             .WithOpenApi();
-        
+
         app.MapGet("/api/people/{id}/payments", People.PersonPayments)
             .RequireAuthorization("Admin")
             .WithName("Person payments")
@@ -274,6 +274,12 @@ public static class RegisterRoutes
         app.MapPost("/api/orders/confirm", Orders.ConfirmOrderPost)
             .WithName("Confirm order post")
             .WithOpenApi();
+
+#if DEBUG
+        app.MapPost("/api/orders/confirm/test", Orders.ConfirmOrderTest)
+            .WithName("Confirm order post test")
+            .WithOpenApi();
+#endif
 
         app.MapGet("/api/order/info", Orders.GetOrderInfo)
             .WithName("Get order info")

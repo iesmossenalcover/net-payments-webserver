@@ -9,6 +9,16 @@ public class EventsPeopleRepository : Repository<EventPerson>, Domain.Services.I
     {
     }
 
+    public async Task<IEnumerable<EventPerson>> GetWithRelationsByIdsAsync(IEnumerable<long> ids, CancellationToken ct)
+    {
+        return await _dbSet
+            .Where(x => ids.Contains(x.Id))
+            .Include(x => x.Person)
+            .Include(x => x.Event)
+            .Include(x => x.PaidOrder)
+            .ToListAsync(ct);
+    }
+
     public async Task<IEnumerable<EventPerson>> GetAllByCourseId(long courseId, CancellationToken ct)
     {
         return await _dbSet
