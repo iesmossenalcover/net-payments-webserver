@@ -22,16 +22,6 @@ public class Orders
             Signature = ctx.Request.Form["Ds_Signature"].ToString()
         });
     }
-    
-    public static async Task<Response<ConfirmOrderCommandVm?>> ConfirmOrderTest(
-        IMediator mediator,
-        HttpContext ctx)
-    {
-        return await mediator.Send(new ConfirmOrderCommand() {
-            MerchantParamenters = string.Empty,
-            Signature = string.Empty,
-        });
-    }
 
     public static async Task<Response<OrderInfoVm>> GetOrderInfo(
         IMediator mediator,

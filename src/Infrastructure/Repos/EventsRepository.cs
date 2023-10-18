@@ -20,8 +20,8 @@ public class EventsRepository : Repository<Event>, Domain.Services.IEventsRespos
         return await _dbSet
                 .Where(x => 
                     x.CourseId == courseId && 
-                    UnpublishDate.HasValue && 
-                    UnpublishDate.Value > DateTimeOffset.UtcNow())
+                    x.UnpublishDate.HasValue && 
+                    x.UnpublishDate.Value > DateTimeOffset.UtcNow)
                 .OrderByDescending(x => x.Date)
                 .ToListAsync(ct);
     }

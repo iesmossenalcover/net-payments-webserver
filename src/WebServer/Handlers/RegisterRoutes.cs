@@ -275,12 +275,6 @@ public static class RegisterRoutes
             .WithName("Confirm order post")
             .WithOpenApi();
 
-#if DEBUG
-        app.MapPost("/api/orders/confirm/test", Orders.ConfirmOrderTest)
-            .WithName("Confirm order post test")
-            .WithOpenApi();
-#endif
-
         app.MapGet("/api/order/info", Orders.GetOrderInfo)
             .WithName("Get order info")
             .WithOpenApi();
