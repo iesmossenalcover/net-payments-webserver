@@ -7,12 +7,8 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-# region ViewModels
-
-#endregion
-
 #region Query
-public record ListEventsQuery(bool showExpired) : IRequest<IEnumerable<EventVm>>;
+public record ListEventsQuery(bool ShowExpired) : IRequest<IEnumerable<EventVm>>;
 #endregion
 
 public class ListEventsQueryHandler : IRequestHandler<ListEventsQuery, IEnumerable<EventVm>>
@@ -32,7 +28,7 @@ public class ListEventsQueryHandler : IRequestHandler<ListEventsQuery, IEnumerab
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
 
-        IEnumerable<Event> events = request.showExpired ? 
+        IEnumerable<Event> events = request.ShowExpired ? 
             await _eventsRepository.GetAllEventsByCourseIdAsync(course.Id, ct) :
             await _eventsRepository.GetAllUnexpiredEventsByCourseIdAsync(course.Id, ct);
 
