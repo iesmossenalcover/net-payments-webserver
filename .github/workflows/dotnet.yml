@@ -1,0 +1,38 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Build and Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: Build
+      run: dotnet build --configuration Release -r linux-arm64 --self-contained
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    - name: Publish
+      run: dotnet publish --no-build --configuration Release -r linux-arm64 --self-contained -o net-payments-webserver
+    - name: Create Zip
+      uses: vimtor/action-zip@v1
+      with:
+        files: net-payments-webserver/
+        dest: net-payments-webserver.zip
+    - name: Configure AWS Client
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_S3_ACCESSKEYID }}
+        aws-secret-access-key: ${{ secrets.AWS_S3_SECRETACCESSKEY}}
+        aws-region: ${{ secrets.AWS_S3_REGION }}
+    - name: Copy to S3
+      run: aws s3 cp net-payments-webserver.zip s3://${{ secrets.AWS_S3_AWSBUCKET }}
+    - name: Create AWS Deploy
+      run: aws deploy create-deployment --application-name PaymentsAPI --deployment-group-name ${{ secrets.AWS_DEPLOYMENT_GROUP }} --s3-location bucket=${{ secrets.AWS_S3_AWSBUCKET }},key=net-payments-webserver.zip,bundleType=zip

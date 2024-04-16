@@ -1,0 +1,15 @@
+[Unit]
+Description=.NET Payments API
+
+[Service]
+WorkingDirectory=/var/www/paymentsapi
+ExecStart=/var/www/paymentsapi/net-payments-webserver
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=paymentsapi
+Environment=ASPNETCORE_ENVIRONMENT=Production
+EnvironmentFile=/home/ubuntu/paymentsapi.service.env
+
+[Install]
+WantedBy=multi-user.target
