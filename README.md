@@ -43,5 +43,3 @@ insert into main.user("Username", "HashedPassword", "Firstname", "Lastname") val
 7. Add unaccent extension
 create extension unaccent schema main; 
 ALTER ROLE paymentsapi SET search_path = main, public;
-
-# DDBB model in docs folder
