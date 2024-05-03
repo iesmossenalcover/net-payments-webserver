@@ -72,7 +72,7 @@ public class SyncPersonToGoogleWorkspaceCommandHandler : IRequestHandler<SyncPer
 
             await _peopleRepository.UpdateAsync(p, ct);
         }
-        else if (!string.IsNullOrEmpty(p.ContactMail))
+        else if (!string.IsNullOrEmpty(p.ContactMail)) // If user has an email
         {
             GoogleApiResult<bool> moveUsersResult = await _googleAdminApi.MoveUserToOU(p.ContactMail, oug.ActiveOU);
             if (!moveUsersResult.Success) return Response<SyncPersonToGoogleWorkspaceCommandVm>.Error(ResponseCode.BadRequest, moveUsersResult.ErrorMessage ?? "Error movent d'OU");

@@ -42,3 +42,5 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+
+net-payments-webserver.sln
