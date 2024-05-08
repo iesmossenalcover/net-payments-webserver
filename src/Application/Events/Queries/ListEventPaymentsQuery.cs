@@ -3,13 +3,29 @@ using Domain.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
 using MediatR;
+using Application.Common.Helpers;
 
 namespace Application.Events.Queries;
 
 public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid);
 public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group, uint Quantity, DateTimeOffset? DatePaid);
+
+public record PaymentsEvent(
+    long Id, string Name, string Code,
+    string Description,
+    decimal Price,
+    decimal AmipaPrice,
+    DateTimeOffset Date,
+    DateTimeOffset PublishDate,
+    DateTimeOffset? UnpublishDate,
+    bool IsActive,
+    bool IsAmpia,
+    bool IsEnrollment,
+    bool QuantitySelector, uint? MaxQuantity = null
+);
+
 public record ListEventPaymentsVm(
-    long Id, string Name, string Code, DateTimeOffset Date,
+    PaymentsEvent Event,
     PaymentSummaryVm Summary, IEnumerable<EventPaymentVm> PaidEvents, IEnumerable<EventPaymentVm> UnPaidEvents,
     bool QuantitySelector, uint? MaxQuantity = null
 );
@@ -78,10 +94,22 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
         );
 
         var vm = new ListEventPaymentsVm(
-            e.Id,
-            e.Name,
-            e.Code,
-            e.Date,
+            new PaymentsEvent(
+                e.Id,
+                e.Name,
+                e.Code,
+                e.Description,
+                e.Price,
+                e.AmipaPrice,
+                e.Date,
+                e.PublishDate,
+                e.UnpublishDate,
+                e.IsActive,
+                e.Amipa,
+                e.Enrollment,
+                quantitySelector,
+                quantitySelector ? e.MaxQuantity : null
+            ),
             summaryVm,
             payments.Where(x => x.Paid).OrderByDescending(x => x.DatePaid).ThenBy(x => x.Group).ThenBy(x => x.FullName),
             payments.Where(x => !x.Paid).OrderBy(x => x.Group).ThenBy(x => x.FullName),
