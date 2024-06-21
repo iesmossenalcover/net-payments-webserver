@@ -25,12 +25,16 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     private readonly ICoursesRepository _coursesRepository;
     private readonly IAppConfigRepository _appConfigRepository;
 
-    public PersonActiveEventsQueryHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository, IAppConfigRepository appConfigRepository)
+    private readonly string contactPhoneNumber;
+
+    public PersonActiveEventsQueryHandler(IEventsPeopleRespository eventsPeopleRepository, IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository, IAppConfigRepository appConfigRepository, IConfiguration configuration)
     {
         _eventsPeopleRepository = eventsPeopleRepository;
         _peopleGroupCourseRepository = peopleGroupCourseRepository;
         _coursesRepository = coursesRepository;
         _appConfigRepository = appConfigRepository;
+        contactPhoneNumber = configuration.GetValue<string>("ContactPhoneNumber") ?? throw new Exception("ContactPhoneNumber");
+
     }
 
     #endregion
@@ -39,17 +43,21 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     {
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         PersonGroupCourse? pgc = await _peopleGroupCourseRepository.GetCoursePersonGroupByDocumentId(request.DocumentId.Trim(), course.Id, ct);
+        AppConfig config = await _appConfigRepository.GetAsync(ct);
 
         if (pgc == null)
         {
-            return Response<PersonActiveEventsVm>.Error(ResponseCode.NotFound, "No s'ha trobat cap persona amb aquest document al curs actual.");
+            string message = "No s'ha trobat cap persona amb aquest document al curs actual.";
+            if(config.DisplayEnrollment){
+                message = $"Contacte amb l'oficina de l'institut {contactPhoneNumber}";
+            }
+            return Response<PersonActiveEventsVm>.Error(ResponseCode.NotFound, message);
         }
 
         Person person = pgc.Person;
         IEnumerable<EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
         personEvents = personEvents.Where(x => x.CanBePaid);
 
-        AppConfig config = await _appConfigRepository.GetAsync(ct);
 
         IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => ToPublicEventVm(x, pgc));
 
