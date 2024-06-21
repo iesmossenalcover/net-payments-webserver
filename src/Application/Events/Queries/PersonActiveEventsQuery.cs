@@ -49,7 +49,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         {
             string message = "No s'ha trobat cap persona amb aquest document al curs actual.";
             if(config.DisplayEnrollment){
-                message = $"Contacte amb l'oficina de l'institut {contactPhoneNumber}";
+                message = $"Contacta amb l'oficina de l'institut: {contactPhoneNumber}";
             }
             return Response<PersonActiveEventsVm>.Error(ResponseCode.NotFound, message);
         }
