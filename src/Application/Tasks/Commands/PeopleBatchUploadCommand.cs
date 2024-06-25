@@ -198,12 +198,13 @@ public class
         IDictionary<string, Person> people = existingPeople.ToDictionary(x => x.DocumentId, x => x);
         foreach (var r in rows)
         {
-            if (people.ContainsKey(r.DocumentId.Trim()))
+            var documentId = r.DocumentId.Trim();
+            if (people.ContainsKey(documentId))
             {
-                Person p = people[r.DocumentId];
+                Person p = people[documentId];
                 p.AcademicRecordNumber = r.AcademicRecordNumber;
                 p.ContactPhone = r.ContactPhone;
-                p.DocumentId = r.DocumentId.Trim();
+                p.DocumentId = documentId;
                 p.Name = r.FirstName.Trim();
                 p.Surname1 = r.Surname1.Trim();
                 p.Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null;
@@ -215,13 +216,13 @@ public class
                 {
                     AcademicRecordNumber = r.AcademicRecordNumber,
                     ContactPhone = r.ContactPhone,
-                    DocumentId = r.DocumentId.Trim(),
+                    DocumentId = documentId,
                     Name = r.FirstName.Trim(),
                     Surname1 = r.Surname1.Trim(),
                     Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null,
                     ContactMail = string.IsNullOrEmpty(r.Email) ? null : r.Email.ToLower().Trim(),
                 };
-                people[r.DocumentId] = p;
+                people[documentId] = p;
             }
         }
 
