@@ -123,7 +123,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             _logger.LogInformation($"Users to suspend: {usersToProcess.Count}");
 
             int batchSize = 500;
-
+            _logger.LogInformation($"Num batch {usersToProcess.Count / batchSize}");
             for (int i = 0; i < usersToProcess.Count; i += batchSize)
             {
                 var batchList = usersToProcess.Skip(i).Take(batchSize);
@@ -148,6 +148,7 @@ public class GoogleAdminApi : IGoogleAdminApi
                     }
                 }
                 await batchRequest.ExecuteAsync();
+                _logger.LogInformation($"Batch executed");
             }
 
             return new GoogleApiResult<bool>(true);
