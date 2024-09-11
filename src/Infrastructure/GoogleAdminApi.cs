@@ -108,6 +108,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             Users users;
             List<Google.Apis.Admin.Directory.directory_v1.Data.User> usersToProcess = new List<Google.Apis.Admin.Directory.directory_v1.Data.User>();
 
+            _logger.LogInformation("Start SetSuspendByOU");
             do
             {
                 users = await userListRequest.ExecuteAsync();
@@ -118,6 +119,8 @@ public class GoogleAdminApi : IGoogleAdminApi
                 }
             }
             while (!string.IsNullOrEmpty(users.NextPageToken));
+
+            _logger.LogInformation($"Users to suspend: {usersToProcess.Count}");
 
             int batchSize = 500;
 
@@ -136,8 +139,12 @@ public class GoogleAdminApi : IGoogleAdminApi
                     if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
                     {
                         user.Suspended = suspend;
+                        _logger.LogInformation($"Queue user {user.PrimaryEmail}");
                         batchRequest.Queue(service.Users.Update(user, user.Id),
-                        (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) => { });
+                        (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) =>
+                        {
+                            _logger.LogInformation($"Callback: {user.PrimaryEmail} Error?: {error?.Message} Message:? {message.Content}");
+                        });
                     }
                 }
                 await batchRequest.ExecuteAsync();
