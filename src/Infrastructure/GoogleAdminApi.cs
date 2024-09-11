@@ -29,8 +29,10 @@ public class GoogleAdminApi : IGoogleAdminApi
     private readonly string AdminGroupEmail;
     private readonly string ReaderGroupEmail;
     private readonly string[] excludeEmails;
+    private readonly ILogger _logger;
 
-    public GoogleAdminApi(IConfiguration configuration)
+
+    public GoogleAdminApi(IConfiguration configuration, ILogger<GoogleAdminApi> logger)
     {
         CredentialFilePath = configuration.GetValue<string>("GoogleApiCredentialFilePath") ?? throw new Exception("GoogleApiCredentialFilePath");
         UserEmailToImpersonate = configuration.GetValue<string>("GoogleApiUserEmailToImpersonate") ?? throw new Exception("GoogleApiUserEmailToImpersonate");
@@ -40,6 +42,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         ReaderGroupEmail = configuration.GetValue<string>("GoogleApiEmailGroupReader") ?? throw new Exception("GoogleApiEmailGroupReader");
         Domain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
         excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
+        _logger = logger;
     }
 
     public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
@@ -267,6 +270,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
+            _logger.LogInformation("Start ClearGroupMembers");
             DirectoryService service = CreateService();
 
             string groupId = group;
@@ -277,14 +281,16 @@ public class GoogleAdminApi : IGoogleAdminApi
                 return new GoogleApiResult<bool>("group not found");
             }
 
+            _logger.LogInformation($"Group {gp.Email}");
+
             MembersResource.ListRequest listRequest = service.Members.List(groupId);
             Members members = await listRequest.ExecuteAsync();
-
             // Delete each member from the group.
             try
             {
                 if (members.MembersValue != null)
                 {
+                    _logger.LogInformation($"Group has {members.MembersValue.Count}");
                     /*
                         https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
                         {
@@ -302,7 +308,9 @@ public class GoogleAdminApi : IGoogleAdminApi
                     foreach (Member member in members.MembersValue)
                     {
                         if (member.Type != "MEMBER") continue;
-                        await service.Members.Delete(groupId, member.Id).ExecuteAsync();
+                        _logger.LogInformation($"Try delete {member.Email}");
+                        var deleteResponse = await service.Members.Delete(groupId, member.Id).ExecuteAsync();
+                        _logger.LogInformation($"Delete response {deleteResponse}");
                     }
                 }
 
