@@ -309,7 +309,7 @@ public class GoogleAdminApi : IGoogleAdminApi
                             MEMBER: el miembro es un usuario
                         */
                         _logger.LogInformation($"Member {member.Email}, type: {member.Type}");
-                        if (member.Type != "MEMBER") continue;
+                        if (member.Type != "USER") continue;
                         var deleteResponse = await service.Members.Delete(groupId, member.Id).ExecuteAsync();
                         _logger.LogInformation($"Delete response {deleteResponse}");
                     }
