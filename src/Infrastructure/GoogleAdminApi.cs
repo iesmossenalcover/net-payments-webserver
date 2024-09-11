@@ -283,36 +283,39 @@ public class GoogleAdminApi : IGoogleAdminApi
 
             _logger.LogInformation($"Group {gp.Email}");
 
-            MembersResource.ListRequest listRequest = service.Members.List(groupId);
-            Members members = await listRequest.ExecuteAsync();
+
             // Delete each member from the group.
             try
             {
-                if (members.MembersValue != null)
+                MembersResource.ListRequest listRequest = service.Members.List(groupId);
+                Members members;
+                do
                 {
-                    _logger.LogInformation($"Group has {members.MembersValue.Count}");
-                    /*
-                        https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
-                        {
-                            "kind": "directory#member",
-                            "id": "group member's unique ID",
-                            "email": "liz@example.com",
-                            "role": "MEMBER",
-                            "type": "GROUP"
-                        }
-                        El type de un miembro del grupo puede ser:
-
-                        GROUP: el miembro es otro grupo.
-                        MEMBER: el miembro es un usuario
-                        */
+                    members = await listRequest.ExecuteAsync();
                     foreach (Member member in members.MembersValue)
                     {
+                        /*
+                            https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
+                            {
+                                "kind": "directory#member",
+                                "id": "group member's unique ID",
+                                "email": "liz@example.com",
+                                "role": "MEMBER",
+                                "type": "GROUP"
+                            }
+                            El type de un miembro del grupo puede ser:
+
+                            GROUP: el miembro es otro grupo.
+                            MEMBER: el miembro es un usuario
+                        */
+                        _logger.LogInformation($"Member {member.Email}, type: {member.Type}");
                         if (member.Type != "MEMBER") continue;
-                        _logger.LogInformation($"Try delete {member.Email}");
                         var deleteResponse = await service.Members.Delete(groupId, member.Id).ExecuteAsync();
                         _logger.LogInformation($"Delete response {deleteResponse}");
                     }
+                    listRequest.PageToken = members.NextPageToken;
                 }
+                while (!string.IsNullOrEmpty(members.NextPageToken));
 
                 return new GoogleApiResult<bool>(true);
             }
