@@ -1,4 +1,6 @@
-namespace WebServer.Handlers;
+using WebServer.Handlers;
+
+namespace net_payments_webserver.WebServer.Handlers;
 
 public static class RegisterRoutes
 {
@@ -8,20 +10,20 @@ public static class RegisterRoutes
             .WithName("Health")
             .WithOpenApi();
 
-        app.MapPost("/api/signin", Authentication.Auth.SigninPost)
+        app.MapPost("/api/signin", global::WebServer.Handlers.Authentication.Auth.SigninPost)
             .WithName("signin")
             .WithOpenApi();
 
-        app.MapPost("/api/oauth/", Authentication.Auth.SigninOAuth)
+        app.MapPost("/api/oauth/", global::WebServer.Handlers.Authentication.Auth.SigninOAuth)
             .WithName("External OAuth Signin")
             .WithOpenApi();
 
-        app.MapGet("/api/identity", Authentication.Auth.GetIdentity)
+        app.MapGet("/api/identity", global::WebServer.Handlers.Authentication.Auth.GetIdentity)
             .RequireAuthorization()
             .WithName("identity")
             .WithOpenApi();
 
-        app.MapPost("/api/signup", Authentication.Auth.SignupPost)
+        app.MapPost("/api/signup", global::WebServer.Handlers.Authentication.Auth.SignupPost)
             .RequireAuthorization("Admin")
             .WithName("signup")
             .WithOpenApi();

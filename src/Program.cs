@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Domain.Entities.Authentication;
+using net_payments_webserver.WebServer.Handlers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
