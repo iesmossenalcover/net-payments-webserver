@@ -92,6 +92,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<IPasswordHasher<Domain.Entities.Authentication.User>, PasswordHasher<Domain.Entities.Authentication.User>>();
 builder.Services.AddScoped<Domain.Services.ICurrentRequestService, WebServer.Services.CurrentRequestService>();
 
+// Register background services
+builder.Services.AddHostedService<Application.BackgroundServices.FailedOrdersService>();
+
+// Create the app
 var app = builder.Build();
 
 // Configure the HTTP middleware request pipeline.
