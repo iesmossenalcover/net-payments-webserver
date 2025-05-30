@@ -60,6 +60,12 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, "Error, l'ordre no existeix");
         }
 
+        // If already paid then return ok.
+        if (order.Status == OrderStatus.Paid && result.Success)
+        {
+            return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
+        }
+
         if (!result.Success)
         {
             order.Status = OrderStatus.Error;
@@ -77,7 +83,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
         }
 
         IEnumerable<long> eventPersonIds = personEventOrders.Select(x => x.EventPersonId);
-        
+
         IEnumerable<EventPerson> personEvents =
             await _eventsPeopleRepository.GetWithRelationsByIdsAsync(eventPersonIds, ct);
 
@@ -89,7 +95,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest,
                 "Error, la persona no està asociada al curs");
         }
-        
+
         // Update quantities on person_events based on person_event_order
         // IMPORTANT to avoid fraud. Always set paid order quantity.
         foreach (var epo in personEventOrders)
