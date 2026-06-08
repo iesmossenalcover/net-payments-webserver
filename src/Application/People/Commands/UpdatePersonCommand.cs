@@ -106,12 +106,16 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
     private readonly IPeopleRepository _peopleRepo;
     private readonly IPersonGroupCourseRepository _personGroupCourseRepo;
     private readonly ICoursesRepository _coursesRespository;
+    private readonly ILogger _logger;
 
-    public UpdatePersonCommandHandler(IPeopleRepository peopleRepo, IPersonGroupCourseRepository personGroupCourseRepo, ICoursesRepository coursesRespository)
+
+    public UpdatePersonCommandHandler(IPeopleRepository peopleRepo, IPersonGroupCourseRepository personGroupCourseRepo, ICoursesRepository coursesRespository, ILogger<UpdatePersonCommand> logger)
     {
         _peopleRepo = peopleRepo;
         _personGroupCourseRepo = personGroupCourseRepo;
         _coursesRespository = coursesRespository;
+        _logger = logger;
+
     }
 
     public async Task<Response<long?>> Handle(UpdatePersonCommand request, CancellationToken ct)
@@ -130,6 +134,9 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         p.Surname2 = request.Surname2;
         p.AcademicRecordNumber = request.AcademicRecordNumber;
         p.SchoolAlert = request.SchoolAlert;
+
+        _logger.LogError("School alert updated for person {PersonId}: {SchoolAlert}", p.Id, p.SchoolAlert);
+
 
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);
 
