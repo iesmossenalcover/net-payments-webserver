@@ -23,7 +23,8 @@ Inside de project folder, execute:
 ### Generate the script for the migrations
 1. `dotnet ef migrations script -o update.db`
 #### To specify migrations
-2. `dotnet ef migrations script Removecollation ChangeLastName -o update.db`
+#### DESDE darrera migracio feta HASTA nom de la migracio que es vol fer
+2. `dotnet ef migrations script DESDE HAST -o update.db`
 
 2. Execute the script into production db.
 
