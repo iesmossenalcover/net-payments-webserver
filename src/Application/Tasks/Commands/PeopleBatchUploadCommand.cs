@@ -203,6 +203,7 @@ public class
             {
                 Person p = people[documentId];
                 p.AcademicRecordNumber = r.AcademicRecordNumber;
+                p.SchoolAlert = r.SchoolAlert;
                 p.ContactPhone = r.ContactPhone;
                 p.DocumentId = documentId;
                 p.Name = r.FirstName.Trim();
@@ -221,6 +222,7 @@ public class
                     Surname1 = r.Surname1.Trim(),
                     Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null,
                     ContactMail = string.IsNullOrEmpty(r.Email) ? null : r.Email.ToLower().Trim(),
+                    SchoolAlert = r.SchoolAlert,
                 };
                 people[documentId] = p;
             }

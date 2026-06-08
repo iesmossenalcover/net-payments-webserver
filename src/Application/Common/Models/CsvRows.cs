@@ -13,6 +13,7 @@ public class BatchUploadRow
     public string? Email { get; set; }
     public bool? Enrolled { get; set; }
     public bool? IsAmipa { get; set; }
+    public string? SchoolAlert { get; set; }
 }
 
 public class WifiAccountRow
