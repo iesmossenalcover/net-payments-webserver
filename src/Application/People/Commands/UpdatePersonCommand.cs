@@ -129,6 +129,7 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
         p.Surname1 = request.Surname1;
         p.Surname2 = request.Surname2;
         p.AcademicRecordNumber = request.AcademicRecordNumber;
+        p.SchoolAlert = request.SchoolAlert;
 
         await _peopleRepo.UpdateAsync(p, CancellationToken.None);
 

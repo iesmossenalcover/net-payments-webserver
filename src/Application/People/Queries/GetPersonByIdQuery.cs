@@ -20,6 +20,7 @@ public record PersonVm
     public bool Amipa { get; set; }
     public bool Enrolled { get; set; } = false;
     public string? SubjectsInfo { get; set; }
+    public string? SchoolAlert { get; set; }
 }
 
 #endregion
@@ -64,6 +65,7 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.Surname2 = person.Surname2;
         personVm.Email = person.ContactMail;
         personVm.ContactPhone = person.ContactPhone;
+        personVm.SchoolAlert = person.SchoolAlert;
         personVm.GroupId = pgc?.GroupId;
         
         // PGC can be null for a person not in the current course.

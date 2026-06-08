@@ -40,6 +40,7 @@ public class ExportPeopleQueryQuueryHandler : IRequestHandler<ExportPeopleQuery,
             Surname1 = x.Person.Surname1,
             Surname2 = x.Person.Surname2,
             Email = x.Person.ContactMail,
+            SchoolAlert = x.Person.SchoolAlert,
         });
         
         var memStream = new MemoryStream();

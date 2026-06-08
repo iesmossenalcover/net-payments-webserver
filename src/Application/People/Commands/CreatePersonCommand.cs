@@ -15,6 +15,7 @@ public record CreatePersonCommand : IRequest<Response<long?>>
     public string DocumentId { get; set; } = string.Empty;
     public string? ContactPhone { get; set; }
     public long? AcademicRecordNumber { get; set; }
+    public string? SchoolAlert { get; set; }
     // Current course  data
     public long? GroupId { get; set; }
     public string? SubjectsInfo { get; set; }
@@ -105,6 +106,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             Surname1 = request.Surname1,
             Surname2 = request.Surname2,
             AcademicRecordNumber = request.AcademicRecordNumber,
+            SchoolAlert = request.SchoolAlert,
         };
 
         var pgc = new PersonGroupCourse()
