@@ -15,9 +15,15 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+
+builder.Services.AddOpenApi(options =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Payments API", Version = "v1" });
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info.Title = "Payments API";
+        document.Info.Version = "v1";
+        return Task.CompletedTask;
+    });
 });
 
 builder.Services.Configure<JsonOptions>(options =>
@@ -97,12 +103,8 @@ var app = builder.Build();
 // Configure the HTTP middleware request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api pagamanets IES Mossèn Alcover v1");
-        c.RoutePrefix = string.Empty;
-    });
+    // Genera el endpoint nativo en /openapi/v1.json
+    app.MapOpenApi(); 
 }
 
 app.UseCors();
