@@ -36,6 +36,9 @@ public record MerchantParametersRequest
 
     [JsonPropertyName("DS_MERCHANT_TITULAR")]
     public string Owner { get; set; } = string.Empty;
+
+    [JsonPropertyName("DS_MERCHANT_PAYMETHODS")]
+    public string PaymentMethods { get; set; } = "z"; // Z bizum: https://pagosonline.redsys.es/desarrolladores-inicio/documentacion-operativa/autorizacion/
 }
 
 public record MerchantParametersResponse
