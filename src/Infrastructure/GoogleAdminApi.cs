@@ -409,27 +409,33 @@ public class GoogleAdminApi : IGoogleAdminApi
     //         .CreateScoped(SCOPES)
     //         .CreateWithUser(UserEmailToImpersonate);
 
-    private GoogleCredential CreateCredential()
+    private DirectoryService CreateDirectoryService()
     {
         GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
         credential = credential.CreateScoped(SCOPES).CreateWithUser(UserEmailToImpersonate);
-        return credential;
+
+        // Use the credential to authenticate your API requests.
+        DirectoryService service = new DirectoryService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = ApplicationName,
+        });
+        return service;
     }
-            
 
-    private DirectoryService CreateDirectoryService() =>
-        new DirectoryService(new BaseClientService.Initializer()
+    private CalendarService CreateCalendarService()
+    {
+        GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
+        credential = credential.CreateScoped(SCOPES).CreateWithUser(UserEmailToImpersonate);
+
+        // Use the credential to authenticate your API requests.
+        CalendarService service = new CalendarService(new BaseClientService.Initializer()
         {
-            HttpClientInitializer = CreateCredential(),
+            HttpClientInitializer = credential,
             ApplicationName = ApplicationName,
         });
-
-    private CalendarService CreateCalendarService() =>
-        new CalendarService(new BaseClientService.Initializer()
-        {
-            HttpClientInitializer = CreateCredential(),
-            ApplicationName = ApplicationName,
-        });
+        return service;
+    }
 
     public async Task<GoogleApiResult<bool>> UserExists(string email)
     {
