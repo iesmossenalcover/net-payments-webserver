@@ -21,7 +21,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         DirectoryService.Scope.AdminDirectoryUser,
         DirectoryService.Scope.AdminDirectoryGroupMember,
         DirectoryService.Scope.AdminDirectoryGroup,
-        CalendarService.Scope.Calendar,
+        // CalendarService.Scope.Calendar,
     };
 
     private readonly string CredentialFilePath;
