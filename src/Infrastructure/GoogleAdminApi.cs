@@ -560,7 +560,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             Event result = await service.Events.Update(calendarEvent, calendarId, eventId).ExecuteAsync();
             return new GoogleApiResult<bool>(result != null);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             return new GoogleApiResult<bool>(e.Message);
         }

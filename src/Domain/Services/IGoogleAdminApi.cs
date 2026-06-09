@@ -31,4 +31,13 @@ public interface IGoogleAdminApi
         DateTimeOffset end
     );
 
+    public Task<GoogleApiResult<bool>> UpdateCalendarEvent(
+        string calendarId,
+        string eventId,
+        string summary,
+        string description,
+        DateTimeOffset start,
+        DateTimeOffset end
+    );
+
 }
