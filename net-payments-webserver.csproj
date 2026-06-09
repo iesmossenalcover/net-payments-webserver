@@ -13,7 +13,7 @@
   <PackageReference Include="FluentValidation" Version="11.4.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.4.0" />
     <PackageReference Include="Google.Apis.Admin.Directory.directory_v1" Version="1.68.0.3533" />
-    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.74.0.4154" />
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.68.0.3536" />
     <PackageReference Include="MediatR" Version="11.1.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.4" />
