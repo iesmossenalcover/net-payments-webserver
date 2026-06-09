@@ -27,4 +27,9 @@ public class GoogleWorkspace
         var response = await mediator.Send(new ExportSyncPeopleGoogleWorkspaceCommand());
         return Results.File(response.Stream.ToArray(), response.FileType, response.FileName);
     }
+
+    public async static Task<Response<SyncPersonToGoogleWorkspaceCommandVm>> SyncEventToCalendar(long id, IMediator m)
+    {
+        return await m.Send(new SyncPersonToGoogleWorkspaceCommand(id));
+    }
 }

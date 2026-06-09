@@ -23,4 +23,12 @@ public interface IGoogleAdminApi
         bool changePasswordNexLogin = true
     );
 
+    public Task<GoogleApiResult<string>> CreateCalendarEvent(
+        string calendarId,
+        string summary,
+        string description,
+        DateTimeOffset start,
+        DateTimeOffset end
+    );
+
 }

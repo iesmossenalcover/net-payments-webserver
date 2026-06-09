@@ -4,6 +4,8 @@ using Domain.Entities.Authentication;
 using Google.Apis.Admin.Directory.directory_v1;
 using Google.Apis.Admin.Directory.directory_v1.Data;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Requests;
 using Google.Apis.Services;
 using Google;
@@ -19,6 +21,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         DirectoryService.Scope.AdminDirectoryUser,
         DirectoryService.Scope.AdminDirectoryGroupMember,
         DirectoryService.Scope.AdminDirectoryGroup,
+        CalendarService.Scope.Calendar,
     };
 
     private readonly string CredentialFilePath;
@@ -47,7 +50,7 @@ public class GoogleAdminApi : IGoogleAdminApi
 
     public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
     {
-        DirectoryService service = CreateService();
+        DirectoryService service = CreateDirectoryService();
 
         var request = service.Groups.List();
         request.UserKey = email;
@@ -100,7 +103,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
             UsersResource.ListRequest userListRequest = service.Users.List();
             userListRequest.Query = $"orgUnitPath='{ouPath}'";
             userListRequest.Domain = Domain;
@@ -178,7 +181,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         };
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
             newUser = await service.Users.Insert(newUser).ExecuteAsync();
             return new GoogleApiResult<bool>(true);
         }
@@ -193,7 +196,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
 
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
@@ -241,7 +244,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
 
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
@@ -279,7 +282,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         try
         {
             _logger.LogInformation("Start ClearGroupMembers");
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
 
             string groupId = group;
             var groupRequest = service.Groups.Get(groupId);
@@ -344,7 +347,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
             var member = await memberRequest.ExecuteAsync();
@@ -369,7 +372,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
             List<string> usersList = new List<string>();
             UsersResource.ListRequest userListRequest = service.Users.List();
             userListRequest.Query = $"orgUnitPath='{ouPath}'";
@@ -400,10 +403,9 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
     }
 
-    private DirectoryService CreateService()
+    private DirectoryService CreateDirectoryService()
     {
         GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
-
         credential = credential.CreateScoped(SCOPES).CreateWithUser(UserEmailToImpersonate);
 
         // Use the credential to authenticate your API requests.
@@ -415,11 +417,25 @@ public class GoogleAdminApi : IGoogleAdminApi
         return service;
     }
 
+    private CalendarService CreateCalendarService()
+    {
+        GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
+        credential = credential.CreateScoped(SCOPES).CreateWithUser(UserEmailToImpersonate);
+
+        // Use the credential to authenticate your API requests.
+        CalendarService service = new CalendarService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = ApplicationName,
+        });
+        return service;
+    }
+
     public async Task<GoogleApiResult<bool>> UserExists(string email)
     {
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
 
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
@@ -442,7 +458,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateService();
+            DirectoryService service = CreateDirectoryService();
             var userRequest = service.Users.Get(email);
             var user = await userRequest.ExecuteAsync();
             if (user == null) return new GoogleApiResult<bool>("No s'ha trobat l'usuari");
@@ -467,7 +483,7 @@ public class GoogleAdminApi : IGoogleAdminApi
 
     public async Task<GoogleApiResult<bool>> SetUserStatus(string email, bool active)
     {
-        DirectoryService service = CreateService();
+        DirectoryService service = CreateDirectoryService();
 
         string memberId = email;
         var userRequest = service.Users.Get(memberId);
@@ -483,5 +499,70 @@ public class GoogleAdminApi : IGoogleAdminApi
         user = await updateRequest.ExecuteAsync();
 
         return new GoogleApiResult<bool>(user != null);
+    }
+
+
+    public async Task<GoogleApiResult<string>> CreateCalendarEvent(
+        string calendarId,
+        string summary,
+        string description,
+        DateTimeOffset start,
+        DateTimeOffset end
+        )
+    {
+        try
+        {
+            CalendarService service = CreateCalendarService();
+
+            Event calendarEvent = new Event()
+            {
+                Summary = summary,
+                Description = description,
+                Start = new EventDateTime() { DateTimeDateTimeOffset = start },
+                End = new EventDateTime() { DateTimeDateTimeOffset = end },
+            };
+
+            Event result = await service.Events.Insert(calendarEvent, calendarId).ExecuteAsync();
+            if (result.Id == null)
+            {
+                return new GoogleApiResult<string>("Error creating calendar event");
+            }
+
+            return new GoogleApiResult<string>(result.Id);
+        }
+        catch (System.Exception e)
+        {
+            return new GoogleApiResult<string>(e.Message);
+        }
+    }
+
+    public async Task<GoogleApiResult<bool>> UpdateCalendarEvent(
+        string calendarId,
+        string eventId,
+        string summary,
+        string description,
+        DateTimeOffset start,
+        DateTimeOffset end
+        )
+    {
+        try
+        {
+            CalendarService service = CreateCalendarService();
+
+            Event calendarEvent = new Event()
+            {
+                Summary = summary,
+                Description = description,
+                Start = new EventDateTime() { DateTimeDateTimeOffset = start },
+                End = new EventDateTime() { DateTimeDateTimeOffset = end },
+            };
+
+            Event result = await service.Events.Update(calendarEvent, calendarId, eventId).ExecuteAsync();
+            return new GoogleApiResult<bool>(result != null);
+        }
+        catch (System.Exception e)
+        {
+            return new GoogleApiResult<bool>(e.Message);
+        }
     }
 }

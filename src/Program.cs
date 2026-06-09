@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Domain.Entities.Authentication;
 using net_payments_webserver.WebServer.Handlers;
+using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -104,7 +105,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     // Genera el endpoint nativo en /openapi/v1.json
-    app.MapOpenApi(); 
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseCors();
