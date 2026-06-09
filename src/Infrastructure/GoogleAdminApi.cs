@@ -403,11 +403,19 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
     }
 
-    private GoogleCredential CreateCredential() =>
-        CredentialFactory.FromFile<ServiceAccountCredential>(CredentialFilePath)
-            .ToGoogleCredential()
-            .CreateScoped(SCOPES)
-            .CreateWithUser(UserEmailToImpersonate);
+    // private GoogleCredential CreateCredential() =>
+    //     CredentialFactory.FromFile<ServiceAccountCredential>(CredentialFilePath)
+    //         .ToGoogleCredential()
+    //         .CreateScoped(SCOPES)
+    //         .CreateWithUser(UserEmailToImpersonate);
+
+    private GoogleCredential CreateCredential()
+    {
+        GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
+        credential = credential.CreateScoped(SCOPES).CreateWithUser(UserEmailToImpersonate);
+        return credential;
+    }
+            
 
     private DirectoryService CreateDirectoryService() =>
         new DirectoryService(new BaseClientService.Initializer()
