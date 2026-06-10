@@ -15,11 +15,17 @@ public record CreateOrderCommandVm(string Url, string MerchantParameters, string
 
 public record SelectedEvent(string Code, uint? Quantity);
 
+public enum PaymentMethod
+{
+    Card = 0,
+    Bizum = 1,
+}
+
 public record CreateOrderCommand : IRequest<Response<CreateOrderCommandVm?>>
 {
     public string DocumentId { get; set; } = string.Empty;
     public IEnumerable<SelectedEvent> Events { get; set; } = Enumerable.Empty<SelectedEvent>();
-    public bool Bizum { get; set; } = false;
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Card;
 }
 
 public class CreateEventCommandValidator : AbstractValidator<CreateOrderCommand>
@@ -142,7 +148,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         });
         await _eventPersonOrderRepository.InsertManyAsync(eventPersonOrders, ct);
 
-        RedsysRequest redsysRequest = _redsys.CreateRedsysRequest(order, request.Bizum);
+        RedsysRequest redsysRequest = _redsys.CreateRedsysRequest(order, request.PaymentMethod == PaymentMethod.Bizum);
         var vm = new CreateOrderCommandVm(redsysRequest.Url, redsysRequest.MerchantParamenters,
             redsysRequest.SignatureVersion, redsysRequest.Signature);
         return Response<CreateOrderCommandVm?>.Ok(vm);
