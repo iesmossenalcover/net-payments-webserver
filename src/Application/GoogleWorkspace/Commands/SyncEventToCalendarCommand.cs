@@ -47,7 +47,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
                 e.Name,
                 "URL events....",
                 e.Date,
-                e.EndDate
+                e.EndDate ?? e.Date
             );
             if (!result.Success || result.Data == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error creant l'event al calendari");
             e.CalendarEventId = result.Data;

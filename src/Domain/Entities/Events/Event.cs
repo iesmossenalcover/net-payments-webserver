@@ -17,7 +17,7 @@ public class Event : Entity
     public bool Amipa { get; set; } = false;
 
     public DateTimeOffset Date { get; set; } = default!;
-    public DateTimeOffset EndDate { get; set; } = default!;
+    public DateTimeOffset? EndDate { get; set; } = default!;
 
     public DateTimeOffset CreationDate { get; set; } = default!;
     public DateTimeOffset PublishDate { get; set; } = default!;
