@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Domain.Entities.Authentication;
-using net_payments_webserver.WebServer.Handlers;
 using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -86,7 +85,7 @@ builder.Services.AddCors(options =>
 });
 
 // Add MediatR service
-// The first method call will scan our Application 
+// The first method call will scan our Application
 /// assembly and add all our Commands, Queries, and their respective handlers to the DI container.
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 // Register validation pipeline for mediatR

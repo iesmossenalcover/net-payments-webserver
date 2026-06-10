@@ -17,6 +17,7 @@ public class Event : Entity
     public bool Amipa { get; set; } = false;
 
     public DateTimeOffset Date { get; set; } = default!;
+    public DateTimeOffset EndDate { get; set; } = default!;
 
     public DateTimeOffset CreationDate { get; set; } = default!;
     public DateTimeOffset PublishDate { get; set; } = default!;
@@ -25,7 +26,7 @@ public class Event : Entity
     public long CourseId { get; set; }
     public Course Course { get; set; } = default!;
 
-    // public string? CalendarEventId { get; set; } = default!;
+    public string? CalendarEventId { get; set; } = default!;
 
     public bool IsActive => (PublishDate <= DateTimeOffset.UtcNow) && (UnpublishDate.HasValue ? DateTimeOffset.UtcNow <= UnpublishDate.Value : true);
 }

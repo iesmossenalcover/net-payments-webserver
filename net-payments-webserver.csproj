@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>net_payments_webserver</RootNamespace>
     <UserSecretsId>7e751bf1-e9e4-4efd-868b-12c3ebc45f79</UserSecretsId>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,9 +32,9 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
   </ItemGroup>
 
-  <ItemGroup> 
-    <Content Include="deploy-scripts\**" CopyToOutputDirectory="PreserveNewest" /> 
-    <Content Include="appspec.yml" CopyToOutputDirectory="PreserveNewest" /> 
+  <ItemGroup>
+    <Content Include="deploy-scripts\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="appspec.yml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

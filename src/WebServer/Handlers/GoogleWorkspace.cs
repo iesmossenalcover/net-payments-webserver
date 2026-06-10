@@ -28,8 +28,8 @@ public class GoogleWorkspace
         return Results.File(response.Stream.ToArray(), response.FileType, response.FileName);
     }
 
-    public async static Task<Response<SyncPersonToGoogleWorkspaceCommandVm>> SyncEventToCalendar(long id, IMediator m)
+    public async static Task<Response<SyncEventToCalendarCommandVm>> SyncEventToCalendar(long id, IMediator m)
     {
-        return await m.Send(new SyncPersonToGoogleWorkspaceCommand(id));
+        return await m.Send(new SyncEventToCalendarCommand(id));
     }
 }

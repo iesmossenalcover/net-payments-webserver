@@ -1,6 +1,4 @@
-using WebServer.Handlers;
-
-namespace net_payments_webserver.WebServer.Handlers;
+namespace WebServer.Handlers;
 
 public static class RegisterRoutes
 {
