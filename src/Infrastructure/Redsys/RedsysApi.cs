@@ -26,7 +26,7 @@ public class RedsysApi : IRedsys
         RedsysUrl = configuration.GetValue<string>("RedsysUrl") ?? throw new Exception("RedsysUrl");
     }
 
-    public RedsysRequest CreateRedsysRequest(Order order)
+    public RedsysRequest CreateRedsysRequest(Order order, bool bizum)
     {
         var merchantParameters = new MerchantParametersRequest()
         {
@@ -41,6 +41,7 @@ public class RedsysApi : IRedsys
             UrlRedirectKo = UrlRedirectKo,
             MerchantCode = MerchantCode,
             Owner = order.Person.FormalFullName.Substring(0, Math.Min(order.Person.FormalFullName.Length, 60)),
+            PaymentMethods = bizum ? "z" : "T"
         };
         string encodedMerchantParameters = Helpers.MerchantParametersBase64Encoded(merchantParameters);
         string signature = Helpers.CreateSignature(MerchantKey, merchantParameters.Code, encodedMerchantParameters);

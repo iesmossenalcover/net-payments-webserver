@@ -5,7 +5,7 @@ namespace Domain.Services;
 
 public interface IRedsys
 {
-    public RedsysRequest CreateRedsysRequest(Order order);
+    public RedsysRequest CreateRedsysRequest(Order order, bool bizum);
     public bool Validate(string merchantParameters, string signature);
     public RedsysResult GetResult(string merchantParameters);
 }
