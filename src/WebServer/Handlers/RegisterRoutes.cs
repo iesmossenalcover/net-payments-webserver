@@ -17,9 +17,12 @@ public static class RegisterRoutes
             .RequireAuthorization()
             .WithName("identity");
 
-        app.MapPost("/api/signup", global::WebServer.Handlers.Authentication.Auth.SignupPost)
-            .RequireAuthorization("Admin")
+        var signup = app.MapPost("/api/signup", global::WebServer.Handlers.Authentication.Auth.SignupPost)
             .WithName("signup");
+        if (!app.Environment.IsDevelopment())
+        {
+            signup.RequireAuthorization("Admin");
+        }
 
         // Jobs
         app.MapGet("/api/processes", Processes.GetProcessess)

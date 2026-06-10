@@ -12,7 +12,7 @@ nupkg/
 .vscode
 
 # SQlite
-*.db
+*.db*
 update.sql
 
 # Rider
