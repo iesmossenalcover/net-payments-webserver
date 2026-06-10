@@ -140,9 +140,6 @@ namespace netpaymentswebserver.Migrations
                     b.Property<decimal>("AmipaPrice")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("CalendarEventId")
-                        .HasColumnType("text");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -160,9 +157,6 @@ namespace netpaymentswebserver.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Enrollment")
                         .HasColumnType("boolean");
