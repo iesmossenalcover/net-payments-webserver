@@ -34,6 +34,9 @@ public class CreateEventCommandValidator : AbstractValidator<CreateOrderCommand>
     {
         RuleFor(x => x.Events)
             .NotEmpty().WithMessage("Com a mínim s'ha de seleccionar un event.");
+
+        RuleFor(x => x.PaymentMethod)
+            .IsInEnum().WithMessage("El mètode de pagament no és vàlid.");
     }
 }
 
