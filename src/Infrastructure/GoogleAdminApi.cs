@@ -16,6 +16,9 @@ public class GoogleAdminApi : IGoogleAdminApi
 {
     private const int GOOGLE_API_ERROR_CONFLICT = 409;
 
+    // Google Calendar event color id. "4" = Flamingo (pink).
+    private const string CALENDAR_EVENT_COLOR_ID = "4";
+
     private static readonly string[] SCOPES = new string[]
     {
         DirectoryService.Scope.AdminDirectoryUser,
@@ -527,6 +530,7 @@ public class GoogleAdminApi : IGoogleAdminApi
                 Description = description,
                 Start = new EventDateTime() { DateTimeDateTimeOffset = start },
                 End = new EventDateTime() { DateTimeDateTimeOffset = end },
+                ColorId = CALENDAR_EVENT_COLOR_ID,
             };
 
             Event result = await service.Events.Insert(calendarEvent, calendarId).ExecuteAsync();
@@ -562,6 +566,7 @@ public class GoogleAdminApi : IGoogleAdminApi
                 Description = description,
                 Start = new EventDateTime() { DateTimeDateTimeOffset = start },
                 End = new EventDateTime() { DateTimeDateTimeOffset = end },
+                ColorId = CALENDAR_EVENT_COLOR_ID,
             };
 
             Event result = await service.Events.Update(calendarEvent, calendarId, eventId).ExecuteAsync();

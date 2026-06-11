@@ -47,7 +47,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
             var summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
             var result = await _googleAdminApi.CreateCalendarEvent(
                 calendarId,
-                e.Name,
+                $"[EXTRAESCOLARS] {e.Name}",
                 summaryUrl,
                 e.Date,
                 e.EndDate ?? e.Date
