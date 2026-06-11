@@ -41,13 +41,14 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
         Event? e = await _eventsRepository.GetByIdAsync(request.Id, ct);
         if (e == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.NotFound, "No s'ha trobat l'event");
 
+        string title = $"[EXTRAESCOLARS] {e.Name}";
+        string summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
         if (e.CalendarEventId == null)
         {
             // Create
-            var summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
             var result = await _googleAdminApi.CreateCalendarEvent(
                 calendarId,
-                $"[EXTRAESCOLARS] {e.Name}",
+                title,
                 summaryUrl,
                 e.Date,
                 e.EndDate ?? e.Date
@@ -60,11 +61,10 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
         else
         {
             // Update
-            var summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
             var result = await _googleAdminApi.UpdateCalendarEvent(
                 calendarId,
                 e.CalendarEventId,
-                e.Name,
+                title,
                 summaryUrl,
                 e.Date,
                 e.EndDate ?? e.Date
