@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace netpaymentswebserver.Migrations
 {
     /// <inheritdoc />
-    public partial class EventSyncCalendar : Migration
+    public partial class EventSyncGoogleCalendar : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

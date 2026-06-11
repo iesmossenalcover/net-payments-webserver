@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace netpaymentswebserver.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260610100906_EventSyncCalendar")]
-    partial class EventSyncCalendar
+    [Migration("20260610115627_EventSyncGoogleCalendar")]
+    partial class EventSyncGoogleCalendar
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
