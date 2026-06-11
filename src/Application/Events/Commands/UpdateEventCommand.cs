@@ -22,6 +22,16 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
+        RuleFor(x => x.EndDate)
+            .Must((request, endDate) =>
+            {
+                if (!endDate.HasValue) return true;
+
+                if (endDate.Value < request.Date) return false;
+
+                return true;
+            }).WithMessage("La data de finalització ha de ser posterior a la data d'inici");
+            
         RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
         RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
@@ -56,6 +66,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.AmipaPrice = request.AmipaPrice;
         e.Price = request.Price;
         e.Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero);
+        e.EndDate = request.EndDate.HasValue ? new DateTimeOffset(request.EndDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
         e.MaxQuantity = request.MaxQuantity;
         e.PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero);
         e.UnpublishDate =  request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;

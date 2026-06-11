@@ -40,4 +40,9 @@ public interface IGoogleAdminApi
         DateTimeOffset end
     );
 
+    public Task<GoogleApiResult<bool>> DeleteCalendarEvent(
+        string calendarId,
+        string eventId
+    );
+
 }

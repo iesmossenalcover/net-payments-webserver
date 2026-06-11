@@ -155,11 +155,11 @@ public class GoogleAdminApi : IGoogleAdminApi
                 _logger.LogInformation($"Batch executed");
             }
 
-            return new GoogleApiResult<bool>(true);
+            return GoogleApiResult<bool>.Ok(true);
         }
         catch (Exception e)
         {
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 
@@ -184,11 +184,11 @@ public class GoogleAdminApi : IGoogleAdminApi
         {
             DirectoryService service = CreateDirectoryService();
             newUser = await service.Users.Insert(newUser).ExecuteAsync();
-            return new GoogleApiResult<bool>(true);
+            return GoogleApiResult<bool>.Ok(true);
         }
         catch (System.Exception e)
         {
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 
@@ -204,7 +204,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             var m = await memberRequest.ExecuteAsync();
             if (m == null)
             {
-                return new GoogleApiResult<bool>("user not found");
+                return GoogleApiResult<bool>.Fail("user not found");
             }
 
             Member member = new Member()
@@ -218,26 +218,26 @@ public class GoogleAdminApi : IGoogleAdminApi
             var gp = await groupRequest.ExecuteAsync();
             if (gp == null)
             {
-                return new GoogleApiResult<bool>("group not found");
+                return GoogleApiResult<bool>.Fail("group not found");
             }
 
 
             var addRequest = service.Members.Insert(member, gp.Id);
             member = await addRequest.ExecuteAsync();
-            return new GoogleApiResult<bool>(true);
+            return GoogleApiResult<bool>.Ok(true);
         }
         catch (GoogleApiException apiEx)
         {
             // https://developers.google.com/webmaster-tools/v1/errors
             return apiEx.Error.Code switch
             {
-                GOOGLE_API_ERROR_CONFLICT => new GoogleApiResult<bool>(true),
-                _ => new GoogleApiResult<bool>(apiEx.Error.Message),
+                GOOGLE_API_ERROR_CONFLICT => GoogleApiResult<bool>.Ok(true),
+                _ => GoogleApiResult<bool>.Fail(apiEx.Error.Message),
             };
         }
         catch (Exception e)
         {
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 
@@ -252,7 +252,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             var m = await memberRequest.ExecuteAsync();
             if (m == null)
             {
-                return new GoogleApiResult<bool>("user not found");
+                return GoogleApiResult<bool>.Fail("user not found");
             }
 
 
@@ -261,7 +261,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             var gp = await groupRequest.ExecuteAsync();
             if (gp == null)
             {
-                return new GoogleApiResult<bool>("group not found");
+                return GoogleApiResult<bool>.Fail("group not found");
             }
 
             MembersResource.GetRequest getRequest = service.Members.Get(groupId, email);
@@ -270,11 +270,11 @@ public class GoogleAdminApi : IGoogleAdminApi
             // Delete the member from the group.
             await service.Members.Delete(groupId, member.Id).ExecuteAsync();
 
-            return new GoogleApiResult<bool>(true);
+            return GoogleApiResult<bool>.Ok(true);
         }
         catch (System.Exception e)
         {
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 
@@ -290,7 +290,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             var gp = await groupRequest.ExecuteAsync();
             if (gp == null)
             {
-                return new GoogleApiResult<bool>("group not found");
+                return GoogleApiResult<bool>.Fail("group not found");
             }
 
             _logger.LogInformation($"Group {gp.Email}");
@@ -329,18 +329,18 @@ public class GoogleAdminApi : IGoogleAdminApi
                 }
                 while (!string.IsNullOrEmpty(members.NextPageToken));
 
-                return new GoogleApiResult<bool>(true);
+                return GoogleApiResult<bool>.Ok(true);
             }
             catch (Exception)
             {
 
-                return new GoogleApiResult<bool>("Error");
+                return GoogleApiResult<bool>.Fail("Error");
             }
 
         }
         catch (System.Exception e)
         {
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 
@@ -354,18 +354,18 @@ public class GoogleAdminApi : IGoogleAdminApi
             var member = await memberRequest.ExecuteAsync();
             if (member == null)
             {
-                return new GoogleApiResult<bool>("user not found");
+                return GoogleApiResult<bool>.Fail("user not found");
             }
 
             member.OrgUnitPath = ouPath;
 
             var updateRequest = service.Users.Update(member, memberId);
             member = await updateRequest.ExecuteAsync();
-            return new GoogleApiResult<bool>(true);
+            return GoogleApiResult<bool>.Ok(true);
         }
         catch (System.Exception e)
         {
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 
@@ -396,11 +396,11 @@ public class GoogleAdminApi : IGoogleAdminApi
             }
             while (!string.IsNullOrEmpty(users.NextPageToken));
 
-            return new GoogleApiResult<IEnumerable<string>>(usersList.AsEnumerable());
+            return GoogleApiResult<IEnumerable<string>>.Ok(usersList.AsEnumerable());
         }
         catch (System.Exception e)
         {
-            return new GoogleApiResult<IEnumerable<string>>(e.Message);
+            return GoogleApiResult<IEnumerable<string>>.Fail(e.Message);
         }
     }
 
@@ -447,16 +447,16 @@ public class GoogleAdminApi : IGoogleAdminApi
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
             var m = await memberRequest.ExecuteAsync();
-            return new GoogleApiResult<bool>(m != null);
+            return GoogleApiResult<bool>.Ok(m != null);
 
         }
         catch (GoogleApiException e)
         {
             if (e.Error.Code == 404)
             {
-                return new GoogleApiResult<bool>(false);
+                return GoogleApiResult<bool>.Ok(false);
             }
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
 
     }
@@ -468,7 +468,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             DirectoryService service = CreateDirectoryService();
             var userRequest = service.Users.Get(email);
             var user = await userRequest.ExecuteAsync();
-            if (user == null) return new GoogleApiResult<bool>("No s'ha trobat l'usuari");
+            if (user == null) return GoogleApiResult<bool>.Fail("No s'ha trobat l'usuari");
 
             user.Password = password;
             user.ChangePasswordAtNextLogin = changePasswordNexLogin;
@@ -476,15 +476,15 @@ public class GoogleAdminApi : IGoogleAdminApi
             var updateRequest = service.Users.Update(user, email);
             user = await updateRequest.ExecuteAsync();
 
-            return new GoogleApiResult<bool>(user != null);
+            return GoogleApiResult<bool>.Ok(user != null);
         }
         catch (GoogleApiException e)
         {
             if (e.Error.Code == 404)
             {
-                return new GoogleApiResult<bool>("No s'ha trobat l'usuari");
+                return GoogleApiResult<bool>.Fail("No s'ha trobat l'usuari");
             }
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 
@@ -497,7 +497,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         var user = await userRequest.ExecuteAsync();
         if (user == null)
         {
-            return new GoogleApiResult<bool>("user not found");
+            return GoogleApiResult<bool>.Fail("user not found");
         }
 
         user.Suspended = !active;
@@ -505,7 +505,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         var updateRequest = service.Users.Update(user, email);
         user = await updateRequest.ExecuteAsync();
 
-        return new GoogleApiResult<bool>(user != null);
+        return GoogleApiResult<bool>.Ok(user != null);
     }
 
 
@@ -532,14 +532,14 @@ public class GoogleAdminApi : IGoogleAdminApi
             Event result = await service.Events.Insert(calendarEvent, calendarId).ExecuteAsync();
             if (result.Id == null)
             {
-                return new GoogleApiResult<string>("Error creating calendar event");
+                return GoogleApiResult<string>.Fail("Error creating calendar event");
             }
 
-            return new GoogleApiResult<string>(result.Id);
+            return GoogleApiResult<string>.Ok(result.Id);
         }
         catch (System.Exception e)
         {
-            return new GoogleApiResult<string>(e.Message);
+            return GoogleApiResult<string>.Fail(e.Message);
         }
     }
 
@@ -565,11 +565,34 @@ public class GoogleAdminApi : IGoogleAdminApi
             };
 
             Event result = await service.Events.Update(calendarEvent, calendarId, eventId).ExecuteAsync();
-            return new GoogleApiResult<bool>(result != null);
+            return GoogleApiResult<bool>.Ok(result != null);
+        }
+        catch (GoogleApiException apiEx) when (apiEx.Error?.Code == 404 || apiEx.Error?.Code == 410)
+        {
+            return GoogleApiResult<bool>.Fail("not_found");
         }
         catch (Exception e)
         {
-            return new GoogleApiResult<bool>(e.Message);
+            return GoogleApiResult<bool>.Fail(e.Message);
+        }
+    }
+
+    public async Task<GoogleApiResult<bool>> DeleteCalendarEvent(string calendarId, string eventId)
+    {
+        try
+        {
+            CalendarService service = CreateCalendarService();
+            await service.Events.Delete(calendarId, eventId).ExecuteAsync();
+            return GoogleApiResult<bool>.Ok(true);
+        }
+        catch (GoogleApiException apiEx) when (apiEx.Error?.Code == 404 || apiEx.Error?.Code == 410)
+        {
+            // Event already deleted or never existed; treat as success.
+            return GoogleApiResult<bool>.Ok(true);
+        }
+        catch (Exception e)
+        {
+            return GoogleApiResult<bool>.Fail(e.Message);
         }
     }
 }

@@ -24,12 +24,14 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
     private readonly IGoogleAdminApi _googleAdminApi;
     private readonly IEventsRespository _eventsRepository;
     private readonly string calendarId;
+    private readonly string frontEventSummaryUrl;
 
     public SyncEventToCalendarCommandHandler(IGoogleAdminApi googleAdminApi, IEventsRespository eventsRespository, IConfiguration configuration)
     {
         _googleAdminApi = googleAdminApi;
         _eventsRepository = eventsRespository;
         calendarId = configuration.GetValue<string>("GoogleApiCalendarId") ?? throw new Exception("GoogleApiCalendarId");
+        frontEventSummaryUrl = configuration.GetValue<string>("FrontEventSummaryUrl") ?? throw new Exception("FrontEventSummaryUrl");
     }
     #endregion
 
@@ -42,22 +44,43 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
         if (e.CalendarEventId == null)
         {
             // Create
+            var summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
             var result = await _googleAdminApi.CreateCalendarEvent(
                 calendarId,
                 e.Name,
-                "URL events....",
+                summaryUrl,
                 e.Date,
                 e.EndDate ?? e.Date
             );
             if (!result.Success || result.Data == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error creant l'event al calendari");
+
             e.CalendarEventId = result.Data;
             await _eventsRepository.UpdateAsync(e, ct);
-            return Response<SyncEventToCalendarCommandVm>.Ok(new SyncEventToCalendarCommandVm(e.CalendarEventId));
         }
         else
         {
             // Update
+            var summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
+            var result = await _googleAdminApi.UpdateCalendarEvent(
+                calendarId,
+                e.CalendarEventId,
+                e.Name,
+                summaryUrl,
+                e.Date,
+                e.EndDate ?? e.Date
+            );
+            if (!result.Success)
+            {
+                // TODO: Return enum from the API to know if the error is because the event was not found, and in that case, remove the calendarEventId from the event
+                if (result.ErrorMessage == "not_found")
+                {
+                    Console.WriteLine($"Event with id {e.CalendarEventId} not found in calendar, removing calendarEventId from event");
+                    e.CalendarEventId = null;
+                    await _eventsRepository.UpdateAsync(e, ct);
+                }
+                return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error creant l'event al calendari");
+            }
         }
-        return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.InternalError, "No implementat");
+        return Response<SyncEventToCalendarCommandVm>.Ok(new SyncEventToCalendarCommandVm(e.CalendarEventId));
     }
 }
