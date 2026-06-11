@@ -66,6 +66,10 @@ public static class RegisterRoutes
             .WithName("Sync event with calendar")
             .RequireAuthorization("Superuser");
 
+        app.MapDelete("/api/googleworkspace/events/{id}", GoogleWorkspace.RemoveEventFromCalendar)
+            .WithName("Remove calendar event from google calendar")
+            .RequireAuthorization("Superuser");
+
         //Wifi
         app.MapGet("/api/wifi/export", Wifi.ExportWifiUsers)
             .WithName("Export wifi users")
