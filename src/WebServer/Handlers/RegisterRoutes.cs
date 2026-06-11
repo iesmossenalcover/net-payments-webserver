@@ -63,8 +63,8 @@ public static class RegisterRoutes
             .RequireAuthorization("Admin");
 
         app.MapPost("/api/googleworkspace/events/{id}/sync", GoogleWorkspace.SyncEventToCalendar)
-            .WithName("Sync event with calendar");
-        // .RequireAuthorization("Admin");
+            .WithName("Sync event with calendar")
+            .RequireAuthorization("Admin");
 
         //Wifi
         app.MapGet("/api/wifi/export", Wifi.ExportWifiUsers)
