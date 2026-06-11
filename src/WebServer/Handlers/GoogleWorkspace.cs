@@ -33,7 +33,7 @@ public class GoogleWorkspace
         return await m.Send(new SyncEventToCalendarCommand(id));
     }
 
-    public async static Task<Response<long?>> RemoveEventFromCalendar(long id, IMediator m)
+    public async static Task<Response<string?>> RemoveEventFromCalendar(long id, IMediator m)
     {
         return await m.Send(new RemoveEventFromCalendarCommand(id));
     }
