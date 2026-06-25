@@ -106,7 +106,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             Surname1 = request.Surname1,
             Surname2 = request.Surname2,
             AcademicRecordNumber = request.AcademicRecordNumber,
-            SchoolAlert = request.SchoolAlert,
+            SchoolAlert = string.IsNullOrEmpty(request.SchoolAlert) ? null : request.SchoolAlert.Trim(),
         };
 
         var pgc = new PersonGroupCourse()
