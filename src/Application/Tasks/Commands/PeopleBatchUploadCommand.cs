@@ -203,12 +203,12 @@ public class
             {
                 Person p = people[documentId];
                 p.AcademicRecordNumber = r.AcademicRecordNumber;
-                p.SchoolAlert = r.SchoolAlert;
                 p.ContactPhone = r.ContactPhone;
                 p.DocumentId = documentId;
                 p.Name = r.FirstName.Trim();
                 p.Surname1 = r.Surname1.Trim();
                 p.Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null;
+                p.SchoolAlert = string.IsNullOrEmpty(r.SchoolAlert) ? p.SchoolAlert : r.SchoolAlert.Trim();
                 p.ContactMail = string.IsNullOrEmpty(r.Email) ? p.ContactMail : r.Email.ToLower().Trim();
             }
             else
@@ -222,7 +222,7 @@ public class
                     Surname1 = r.Surname1.Trim(),
                     Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null,
                     ContactMail = string.IsNullOrEmpty(r.Email) ? null : r.Email.ToLower().Trim(),
-                    SchoolAlert = r.SchoolAlert,
+                    SchoolAlert = string.IsNullOrEmpty(r.SchoolAlert) ? null : r.SchoolAlert.Trim(),
                 };
                 people[documentId] = p;
             }
