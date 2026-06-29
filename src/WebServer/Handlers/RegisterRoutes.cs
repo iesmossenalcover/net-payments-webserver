@@ -111,27 +111,27 @@ public static class RegisterRoutes
 
         // Courses
         app.MapGet("/api/courses/{id}", Courses.GetCourse)
-            .RequireAuthorization("Admin")
+            .RequireAuthorization("Superuser")
             .WithName("Get course by id");
 
         app.MapGet("/api/courses", Courses.GetAllCourses)
-            .RequireAuthorization("Admin")
+            .RequireAuthorization("Superuser")
             .WithName("Get all courses");
 
         app.MapGet("/api/courses/selector", Courses.GetCoursesSelector)
-            .RequireAuthorization("Admin")
+            .RequireAuthorization("Superuser")
             .WithName("Get courses selector");
 
         app.MapPost("/api/courses", Courses.CreateCourse)
-            .RequireAuthorization("Admin")
+            .RequireAuthorization("Superuser")
             .WithName("Create course");
 
         app.MapPut("/api/courses/{id}", Courses.UpdateCourse)
-            .RequireAuthorization("Admin")
+            .RequireAuthorization("Superuser")
             .WithName("Update course");
 
         app.MapPut("/api/courses/{id}/active", Courses.SetActiveCourse)
-            .RequireAuthorization("Admin")
+            .RequireAuthorization("Superuser")
             .WithName("Set active course");
 
         //OU Relations
