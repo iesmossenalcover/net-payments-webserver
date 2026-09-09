@@ -281,70 +281,122 @@ public class GoogleAdminApi : IGoogleAdminApi
         }
     }
 
-    public async Task<GoogleApiResult<bool>> ClearGroupMembers(string group)
+    public async Task<GoogleApiResult<int>> ClearGroupMembers(string group)
     {
+        _logger.LogInformation("ClearGroupMembers: inici. Grup: {Group}", group);
         try
         {
-            _logger.LogInformation("Start ClearGroupMembers");
             DirectoryService service = CreateDirectoryService();
 
-            string groupId = group;
-            var groupRequest = service.Groups.Get(groupId);
-            var gp = await groupRequest.ExecuteAsync();
+            var gp = await service.Groups.Get(group).ExecuteAsync();
             if (gp == null)
             {
-                return GoogleApiResult<bool>.Fail("group not found");
+                _logger.LogWarning("ClearGroupMembers: grup no trobat. Grup: {Group}", group);
+                return GoogleApiResult<int>.Fail($"grup no trobat ({group})");
             }
 
-            _logger.LogInformation($"Group {gp.Email}");
+            _logger.LogInformation(
+                "ClearGroupMembers: grup trobat. Grup: {Group}, id: {GroupId}, membres directes: {DirectMembers}",
+                gp.Email, gp.Id, gp.DirectMembersCount);
 
-
-            // Delete each member from the group.
-            try
+            // Primer llistam tots els membres i després els esborram. Si esborram mentre paginam,
+            // el PageToken queda invalidat i les pàgines següents poden tornar sense membres.
+            List<Member> members = new();
+            MembersResource.ListRequest listRequest = service.Members.List(group);
+            listRequest.MaxResults = 200;
+            string? pageToken = null;
+            int page = 0;
+            do
             {
-                MembersResource.ListRequest listRequest = service.Members.List(groupId);
-                Members members;
-                do
+                listRequest.PageToken = pageToken;
+                Members response = await listRequest.ExecuteAsync();
+                page++;
+
+                // Quan la pàgina no té cap membre l'API omet "members" del JSON, per tant
+                // MembersValue és null (i no una llista buida).
+                IList<Member> pageMembers = response?.MembersValue ?? new List<Member>();
+                pageToken = response?.NextPageToken;
+
+                _logger.LogInformation(
+                    "ClearGroupMembers: grup {Group}, pàgina {Page}: {Count} membres, més pàgines: {HasMore}",
+                    group, page, pageMembers.Count, !string.IsNullOrEmpty(pageToken));
+
+                members.AddRange(pageMembers);
+            }
+            while (!string.IsNullOrEmpty(pageToken));
+
+            int removed = 0;
+            int skipped = 0;
+            List<string> errors = new();
+
+            foreach (Member member in members)
+            {
+                /*
+                    https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
+                    El type d'un membre del grup pot ser:
+                    GROUP: el membre és un altre grup.
+                    USER: el membre és un usuari.
+                */
+                if (member.Type != "USER")
                 {
-                    members = await listRequest.ExecuteAsync();
-                    foreach (Member member in members.MembersValue)
-                    {
-                        /*
-                            https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
-                            {
-                                "kind": "directory#member",
-                                "id": "group member's unique ID",
-                                "email": "liz@example.com",
-                                "role": "MEMBER",
-                                "type": "GROUP"
-                            }
-                            El type de un miembro del grupo puede ser:
-
-                            GROUP: el miembro es otro grupo.
-                            MEMBER: el miembro es un usuario
-                        */
-                        _logger.LogInformation($"Member {member.Email}, type: {member.Type}");
-                        if (member.Type != "USER") continue;
-                        var deleteResponse = await service.Members.Delete(groupId, member.Id).ExecuteAsync();
-                        _logger.LogInformation($"Delete response {deleteResponse}");
-                    }
-                    listRequest.PageToken = members.NextPageToken;
+                    skipped++;
+                    _logger.LogInformation(
+                        "ClearGroupMembers: grup {Group}, membre {Member} ignorat (type: {Type})",
+                        group, member.Email, member.Type);
+                    continue;
                 }
-                while (!string.IsNullOrEmpty(members.NextPageToken));
 
-                return GoogleApiResult<bool>.Ok(true);
+                try
+                {
+                    await service.Members.Delete(group, member.Id).ExecuteAsync();
+                    removed++;
+                    _logger.LogInformation(
+                        "ClearGroupMembers: grup {Group}, membre {Member} (id: {MemberId}) esborrat",
+                        group, member.Email, member.Id);
+                }
+                catch (GoogleApiException apiEx) when (apiEx.Error?.Code == 404 || apiEx.Error?.Code == 410)
+                {
+                    skipped++;
+                    _logger.LogWarning(
+                        "ClearGroupMembers: grup {Group}, membre {Member} ja no hi era (codi {Code})",
+                        group, member.Email, apiEx.Error?.Code);
+                }
+                catch (Exception e)
+                {
+                    errors.Add($"{member.Email}: {DescribeError(e)}");
+                    _logger.LogError(e,
+                        "ClearGroupMembers: error esborrant el membre {Member} del grup {Group}",
+                        member.Email, group);
+                }
             }
-            catch (Exception e)
+
+            _logger.LogInformation(
+                "ClearGroupMembers: fi. Grup: {Group}, trobats: {Found}, esborrats: {Removed}, ignorats: {Skipped}, errors: {Errors}",
+                group, members.Count, removed, skipped, errors.Count);
+
+            if (errors.Count > 0)
             {
-
-                return GoogleApiResult<bool>.Fail(e.Message);
+                return GoogleApiResult<int>.Fail(
+                    $"{removed}/{members.Count} membres esborrats. Errors: {string.Join(" | ", errors)}");
             }
 
+            return GoogleApiResult<int>.Ok(removed);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            return GoogleApiResult<bool>.Fail(e.Message);
+            _logger.LogError(e, "ClearGroupMembers: error buidant el grup {Group}", group);
+            return GoogleApiResult<int>.Fail(DescribeError(e));
         }
+    }
+
+    private static string DescribeError(Exception e)
+    {
+        if (e is GoogleApiException apiEx)
+        {
+            return $"GoogleApiException {apiEx.Error?.Code}: {apiEx.Error?.Message ?? apiEx.Message}";
+        }
+
+        return $"{e.GetType().Name}: {e.Message}";
     }
 
     public async Task<GoogleApiResult<bool>> MoveUserToOU(string email, string ouPath)

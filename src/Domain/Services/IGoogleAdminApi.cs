@@ -12,7 +12,7 @@ public interface IGoogleAdminApi
     public Task<GoogleApiResult<bool>> SetUserStatus(string email, bool active);
     public Task<GoogleApiResult<IEnumerable<string>>> GetAllUsers(string ouPath);
     public Task<GoogleApiResult<bool>> AddUserToGroup(string email, string group);
-    public Task<GoogleApiResult<bool>> ClearGroupMembers(string group);
+    public Task<GoogleApiResult<int>> ClearGroupMembers(string group);
     public Task<GoogleApiResult<bool>> RemoveUserFromGroup(string email, string group);
     public Task<GoogleApiResult<bool>> CreateUser(
         string email,
