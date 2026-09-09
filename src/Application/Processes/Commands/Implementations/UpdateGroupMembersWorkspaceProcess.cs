@@ -29,7 +29,7 @@ public class UpdateGroupMembersWorkspaceProcess : IProcess
             GoogleApiResult<bool> groupResult = await googleAdminApi.ClearGroupMembers(ou.GroupMail);
             if (!groupResult.Success)
             {
-                log.Add($"OU: {ou} - Error buidant membres. Missatge: {groupResult.ErrorMessage ?? string.Empty}");
+                log.Add($"OU: {ou.GroupMail} - Error buidant membres. Missatge: {groupResult.ErrorMessage ?? string.Empty}");
                 continue;
             }
 

@@ -334,10 +334,10 @@ public class GoogleAdminApi : IGoogleAdminApi
 
                 return GoogleApiResult<bool>.Ok(true);
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-                return GoogleApiResult<bool>.Fail("Error");
+                return GoogleApiResult<bool>.Fail(e.Message);
             }
 
         }
