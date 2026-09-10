@@ -17,17 +17,28 @@ public class SuspendGoogleWorkspaceProcess : IProcess
         IEnumerable<string> pendings = ouRelations.Select(x => x.OldOU).Distinct();
 
 
+        int total = 0;
         foreach (var ou in pendings)
         {
-            GoogleApiResult<bool> result = await googleAdminApi.SetSuspendByOU(ou, true, false);
+            // Una OU buida a la configuració faria una consulta sense filtre d'OU.
+            if (string.IsNullOrWhiteSpace(ou))
+            {
+                log.Add("OU buida a la configuració - [Error] no es pot processar");
+                continue;
+            }
+
+            GoogleApiResult<int> result = await googleAdminApi.SetSuspendByOU(ou, true, false);
             if (!result.Success)
             {
                 log.Add($"OU {ou} - [Error] {result.ErrorMessage ?? "No s'ha pogut processar"}");
             }
             else
             {
-                log.Add($"OU: {ou} - [OK]");
+                total += result.Data;
+                log.Add($"OU: {ou} - [OK] Usuaris suspesos: {result.Data}");
             }
         }
+
+        log.Add($"Total d'usuaris suspesos: {total}");
     }
 }

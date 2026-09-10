@@ -9,6 +9,7 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Requests;
 using Google.Apis.Services;
 using Google;
+using GoogleUser = Google.Apis.Admin.Directory.directory_v1.Data.User;
 
 namespace Infrastructure;
 
@@ -18,7 +19,10 @@ public class GoogleAdminApi : IGoogleAdminApi
 
     // Operacions simultànies contra l'API. La quota per defecte de l'Admin SDK Directory
     // és de 2.400 consultes/minut (40/s); amb 5 fils i ~1 crida cada 300 ms hi anam molt per davall.
-    private const int MEMBER_OPERATION_PARALLELISM = 5;
+    private const int GOOGLE_API_PARALLELISM = 5;
+
+    // Intents totals (el primer inclòs) davant d'errors temporals de l'API.
+    private const int MAX_ATTEMPTS = 3;
 
     // Google Calendar event color id. "4" = Flamingo (pink).
     private const string CALENDAR_EVENT_COLOR_ID = "4";
@@ -111,71 +115,188 @@ public class GoogleAdminApi : IGoogleAdminApi
         return claims;
     }
 
-    public async Task<GoogleApiResult<bool>> SetSuspendByOU(
+    public async Task<GoogleApiResult<int>> SetSuspendByOU(
         string ouPath,
         bool suspend,
         bool exactOu
         )
     {
+        _logger.LogInformation(
+            "SetSuspendByOU: inici. OU: {OuPath}, suspendre: {Suspend}, només OU exacta: {ExactOu}",
+            ouPath, suspend, exactOu);
+
+        // Sense aquesta comprovació la consulta seria orgUnitPath='' i el filtre per OU
+        // deixaria de tenir sentit.
+        if (string.IsNullOrWhiteSpace(ouPath))
+        {
+            _logger.LogWarning("SetSuspendByOU: la ruta de la unitat organitzativa és buida");
+            return GoogleApiResult<int>.Fail("la ruta de la unitat organitzativa és buida");
+        }
+
         try
         {
             DirectoryService service = _directoryService.Value;
+
             UsersResource.ListRequest userListRequest = service.Users.List();
             userListRequest.Query = $"orgUnitPath='{ouPath}'";
             userListRequest.Domain = Domain;
-            userListRequest.MaxResults = 50;
-            Users users;
-            List<Google.Apis.Admin.Directory.directory_v1.Data.User> usersToProcess = new List<Google.Apis.Admin.Directory.directory_v1.Data.User>();
+            userListRequest.MaxResults = 500;
 
-            _logger.LogInformation("Start SetSuspendByOU");
+            List<GoogleUser> usersInOu = new();
+            string? pageToken = null;
+            int page = 0;
             do
             {
-                users = await userListRequest.ExecuteAsync();
-                if (users.UsersValue != null)
-                {
-                    usersToProcess.AddRange(users.UsersValue);
-                    userListRequest.PageToken = users.NextPageToken;
-                }
+                userListRequest.PageToken = pageToken;
+                Users response = await ExecuteWithRetryAsync(
+                    () => userListRequest.ExecuteAsync(), $"llistat OU {ouPath}");
+                page++;
+
+                // Una pàgina pot arribar sense usuaris i amb token de pàgina següent.
+                // El token s'ha d'avançar sempre: si només s'avançava quan hi havia usuaris,
+                // es repetia la mateixa petició indefinidament i el procés es penjava.
+                IList<GoogleUser> pageUsers = response?.UsersValue ?? new List<GoogleUser>();
+                pageToken = response?.NextPageToken;
+
+                _logger.LogInformation(
+                    "SetSuspendByOU: OU {OuPath}, pàgina {Page}: {Count} usuaris, més pàgines: {HasMore}",
+                    ouPath, page, pageUsers.Count, !string.IsNullOrEmpty(pageToken));
+
+                usersInOu.AddRange(pageUsers);
             }
-            while (!string.IsNullOrEmpty(users.NextPageToken));
+            while (!string.IsNullOrEmpty(pageToken));
 
-            _logger.LogInformation($"Users to suspend: {usersToProcess.Count}");
+            int excluded = 0;
+            int otherOu = 0;
+            int alreadyInState = 0;
+            List<GoogleUser> pendingUsers = new();
 
-            int batchSize = 500;
-            _logger.LogInformation($"Num batch {usersToProcess.Count / batchSize}");
-            for (int i = 0; i < usersToProcess.Count; i += batchSize)
+            foreach (GoogleUser user in usersInOu)
             {
-                var batchList = usersToProcess.Skip(i).Take(batchSize);
-
-                var batchRequest = new BatchRequest(service);
-                foreach (var user in batchList)
+                // IMPORTANT: Exclude members
+                if (excludeEmails.Contains(user.PrimaryEmail))
                 {
-                    // IMPORTANT: Exclude members
-                    if (excludeEmails.Contains(user.PrimaryEmail)) continue;
-
-
-                    // If we want exactOU, orga path must be the same, not descdendant.
-                    if ((user.OrgUnitPath == ouPath || !exactOu) && user.Suspended == false)
-                    {
-                        user.Suspended = suspend;
-                        _logger.LogInformation($"Queue user {user.PrimaryEmail}");
-                        batchRequest.Queue(service.Users.Update(user, user.Id),
-                        (UsersResource.UpdateRequest content, RequestError error, int index, HttpResponseMessage message) =>
-                        {
-                            _logger.LogInformation($"Callback: {user.PrimaryEmail} Error?: {error?.Message} Message:? {message.Content}");
-                        });
-                    }
+                    excluded++;
+                    _logger.LogInformation(
+                        "SetSuspendByOU: usuari {User} exclòs per configuració", user.PrimaryEmail);
+                    continue;
                 }
-                await batchRequest.ExecuteAsync();
-                _logger.LogInformation($"Batch executed");
+
+                // If we want exactOU, orga path must be the same, not descdendant.
+                if (exactOu && user.OrgUnitPath != ouPath)
+                {
+                    otherOu++;
+                    continue;
+                }
+
+                // Suspended és bool?: quan l'API no retorna el camp val null. Comparar-lo amb
+                // "== false" feia que aquests usuaris no s'arribassin a suspendre mai.
+                bool currentlySuspended = user.Suspended == true;
+                if (currentlySuspended == suspend)
+                {
+                    alreadyInState++;
+                    continue;
+                }
+
+                pendingUsers.Add(user);
             }
 
-            return GoogleApiResult<bool>.Ok(true);
+            _logger.LogInformation(
+                "SetSuspendByOU: OU {OuPath}, trobats: {Found}, a processar: {Pending}, ja en l'estat desitjat: {Already}, exclosos: {Excluded}, d'altres OU: {OtherOu}",
+                ouPath, usersInOu.Count, pendingUsers.Count, alreadyInState, excluded, otherOu);
+
+            // Els errors es desen per posició per mantenir-los en el mateix ordre que la
+            // llista d'usuaris encara que les actualitzacions acabin desordenades.
+            string?[] userErrors = new string?[pendingUsers.Count];
+            int changed = 0;
+
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, pendingUsers.Count),
+                new ParallelOptions { MaxDegreeOfParallelism = GOOGLE_API_PARALLELISM },
+                async (index, _) =>
+                {
+                    GoogleUser user = pendingUsers[index];
+                    try
+                    {
+                        // Patch amb només el camp que canvia: amb Update es reenviava tot el
+                        // perfil llegit abans, cosa que pot desfer canvis fets mentrestant.
+                        GoogleUser patch = new GoogleUser() { Suspended = suspend };
+                        await ExecuteWithRetryAsync(
+                            () => service.Users.Patch(patch, user.Id).ExecuteAsync(), user.PrimaryEmail);
+
+                        Interlocked.Increment(ref changed);
+                        _logger.LogInformation(
+                            "SetSuspendByOU: usuari {User} (OU {UserOu}) actualitzat a suspès={Suspend}",
+                            user.PrimaryEmail, user.OrgUnitPath, suspend);
+                    }
+                    catch (Exception e)
+                    {
+                        userErrors[index] = $"{user.PrimaryEmail}: {DescribeError(e)}";
+                        _logger.LogError(e,
+                            "SetSuspendByOU: error actualitzant l'usuari {User} de l'OU {OuPath}",
+                            user.PrimaryEmail, ouPath);
+                    }
+                });
+
+            List<string> errors = userErrors.Where(e => e != null).Select(e => e!).ToList();
+
+            _logger.LogInformation(
+                "SetSuspendByOU: fi. OU {OuPath}, actualitzats: {Changed}/{Pending}, errors: {Errors}",
+                ouPath, changed, pendingUsers.Count, errors.Count);
+
+            // Abans els errors de cada usuari només s'escrivien al log i el mètode retornava
+            // sempre Ok: el procés deia [OK] mentre quedaven usuaris sense suspendre.
+            if (errors.Count > 0)
+            {
+                return GoogleApiResult<int>.Fail(
+                    $"{changed}/{pendingUsers.Count} usuaris actualitzats. Errors: {string.Join(" | ", errors)}");
+            }
+
+            return GoogleApiResult<int>.Ok(changed);
         }
         catch (Exception e)
         {
-            return GoogleApiResult<bool>.Fail(e.Message);
+            _logger.LogError(e, "SetSuspendByOU: error processant l'OU {OuPath}", ouPath);
+            return GoogleApiResult<int>.Fail(DescribeError(e));
         }
+    }
+
+    /// <summary>
+    /// Executa una crida a l'API reintentant-la quan l'error és temporal (quota o error de
+    /// servidor). Sense això una errada puntual deixava l'usuari sense processar.
+    /// </summary>
+    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, string subject)
+    {
+        for (int attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await action();
+            }
+            catch (GoogleApiException apiEx) when (attempt < MAX_ATTEMPTS && IsTransientError(apiEx))
+            {
+                TimeSpan delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1));
+                _logger.LogWarning(apiEx,
+                    "Error temporal (codi {Code}) a {Subject}. Reintent {Attempt}/{MaxAttempts} d'aquí a {Delay}s",
+                    apiEx.Error?.Code, subject, attempt, MAX_ATTEMPTS, delay.TotalSeconds);
+                await Task.Delay(delay);
+            }
+        }
+    }
+
+    private static bool IsTransientError(GoogleApiException e)
+    {
+        int? code = e.Error?.Code;
+
+        if (code == 429) return true;
+        if (code >= 500 && code < 600) return true;
+
+        // La quota superada arriba com un 403 amb un d'aquests motius.
+        return code == 403
+            && (e.Error?.Errors?.Any(x =>
+                x.Reason == "rateLimitExceeded"
+                || x.Reason == "userRateLimitExceeded"
+                || x.Reason == "quotaExceeded") ?? false);
     }
 
     public async Task<GoogleApiResult<bool>> CreateUser(
@@ -321,7 +442,8 @@ public class GoogleAdminApi : IGoogleAdminApi
             do
             {
                 listRequest.PageToken = pageToken;
-                Members response = await listRequest.ExecuteAsync();
+                Members response = await ExecuteWithRetryAsync(
+                    () => listRequest.ExecuteAsync(), $"llistat grup {group}");
                 page++;
 
                 // Quan la pàgina no té cap membre l'API omet "members" del JSON, per tant
@@ -367,13 +489,14 @@ public class GoogleAdminApi : IGoogleAdminApi
 
             await Parallel.ForEachAsync(
                 Enumerable.Range(0, usersToRemove.Count),
-                new ParallelOptions { MaxDegreeOfParallelism = MEMBER_OPERATION_PARALLELISM },
+                new ParallelOptions { MaxDegreeOfParallelism = GOOGLE_API_PARALLELISM },
                 async (index, _) =>
                 {
                     Member member = usersToRemove[index];
                     try
                     {
-                        await service.Members.Delete(group, member.Id).ExecuteAsync();
+                        await ExecuteWithRetryAsync(
+                            () => service.Members.Delete(group, member.Id).ExecuteAsync(), member.Email);
                         Interlocked.Increment(ref removed);
                         _logger.LogInformation(
                             "ClearGroupMembers: grup {Group}, membre {Member} (id: {MemberId}) esborrat",
