@@ -16,6 +16,10 @@ public class GoogleAdminApi : IGoogleAdminApi
 {
     private const int GOOGLE_API_ERROR_CONFLICT = 409;
 
+    // Operacions simultànies contra l'API. La quota per defecte de l'Admin SDK Directory
+    // és de 2.400 consultes/minut (40/s); amb 5 fils i ~1 crida cada 300 ms hi anam molt per davall.
+    private const int MEMBER_OPERATION_PARALLELISM = 5;
+
     // Google Calendar event color id. "4" = Flamingo (pink).
     private const string CALENDAR_EVENT_COLOR_ID = "4";
 
@@ -38,6 +42,11 @@ public class GoogleAdminApi : IGoogleAdminApi
     private readonly string[] excludeEmails;
     private readonly ILogger _logger;
 
+    // Els serveis de Google són thread-safe i reutilitzables: crear-ne un per cada crida
+    // rellegia el fitxer de credencials i negociava un token OAuth nou a cada operació.
+    private readonly Lazy<DirectoryService> _directoryService;
+    private readonly Lazy<CalendarService> _calendarService;
+
 
     public GoogleAdminApi(IConfiguration configuration, ILogger<GoogleAdminApi> logger)
     {
@@ -50,11 +59,14 @@ public class GoogleAdminApi : IGoogleAdminApi
         Domain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
         excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
         _logger = logger;
+
+        _directoryService = new Lazy<DirectoryService>(CreateDirectoryService);
+        _calendarService = new Lazy<CalendarService>(CreateCalendarService);
     }
 
     public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
     {
-        DirectoryService service = CreateDirectoryService();
+        DirectoryService service = _directoryService.Value;
 
         var request = service.Groups.List();
         request.UserKey = email;
@@ -107,7 +119,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
             UsersResource.ListRequest userListRequest = service.Users.List();
             userListRequest.Query = $"orgUnitPath='{ouPath}'";
             userListRequest.Domain = Domain;
@@ -185,7 +197,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         };
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
             newUser = await service.Users.Insert(newUser).ExecuteAsync();
             return GoogleApiResult<bool>.Ok(true);
         }
@@ -200,7 +212,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
 
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
@@ -248,7 +260,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
 
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
@@ -286,7 +298,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         _logger.LogInformation("ClearGroupMembers: inici. Grup: {Group}", group);
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
 
             var gp = await service.Groups.Get(group).ExecuteAsync();
             if (gp == null)
@@ -327,48 +339,63 @@ public class GoogleAdminApi : IGoogleAdminApi
 
             int removed = 0;
             int skipped = 0;
-            List<string> errors = new();
 
+            /*
+                https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
+                El type d'un membre del grup pot ser:
+                GROUP: el membre és un altre grup.
+                USER: el membre és un usuari.
+            */
+            List<Member> usersToRemove = new();
             foreach (Member member in members)
             {
-                /*
-                    https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members?hl=es-419
-                    El type d'un membre del grup pot ser:
-                    GROUP: el membre és un altre grup.
-                    USER: el membre és un usuari.
-                */
-                if (member.Type != "USER")
+                if (member.Type == "USER")
                 {
-                    skipped++;
-                    _logger.LogInformation(
-                        "ClearGroupMembers: grup {Group}, membre {Member} ignorat (type: {Type})",
-                        group, member.Email, member.Type);
+                    usersToRemove.Add(member);
                     continue;
                 }
 
-                try
-                {
-                    await service.Members.Delete(group, member.Id).ExecuteAsync();
-                    removed++;
-                    _logger.LogInformation(
-                        "ClearGroupMembers: grup {Group}, membre {Member} (id: {MemberId}) esborrat",
-                        group, member.Email, member.Id);
-                }
-                catch (GoogleApiException apiEx) when (apiEx.Error?.Code == 404 || apiEx.Error?.Code == 410)
-                {
-                    skipped++;
-                    _logger.LogWarning(
-                        "ClearGroupMembers: grup {Group}, membre {Member} ja no hi era (codi {Code})",
-                        group, member.Email, apiEx.Error?.Code);
-                }
-                catch (Exception e)
-                {
-                    errors.Add($"{member.Email}: {DescribeError(e)}");
-                    _logger.LogError(e,
-                        "ClearGroupMembers: error esborrant el membre {Member} del grup {Group}",
-                        member.Email, group);
-                }
+                skipped++;
+                _logger.LogInformation(
+                    "ClearGroupMembers: grup {Group}, membre {Member} ignorat (type: {Type})",
+                    group, member.Email, member.Type);
             }
+
+            // Els errors es desen per posició per mantenir-los sempre en el mateix ordre
+            // que la llista de membres, encara que els esborrats acabin desordenats.
+            string?[] memberErrors = new string?[usersToRemove.Count];
+
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, usersToRemove.Count),
+                new ParallelOptions { MaxDegreeOfParallelism = MEMBER_OPERATION_PARALLELISM },
+                async (index, _) =>
+                {
+                    Member member = usersToRemove[index];
+                    try
+                    {
+                        await service.Members.Delete(group, member.Id).ExecuteAsync();
+                        Interlocked.Increment(ref removed);
+                        _logger.LogInformation(
+                            "ClearGroupMembers: grup {Group}, membre {Member} (id: {MemberId}) esborrat",
+                            group, member.Email, member.Id);
+                    }
+                    catch (GoogleApiException apiEx) when (apiEx.Error?.Code == 404 || apiEx.Error?.Code == 410)
+                    {
+                        Interlocked.Increment(ref skipped);
+                        _logger.LogWarning(
+                            "ClearGroupMembers: grup {Group}, membre {Member} ja no hi era (codi {Code})",
+                            group, member.Email, apiEx.Error?.Code);
+                    }
+                    catch (Exception e)
+                    {
+                        memberErrors[index] = $"{member.Email}: {DescribeError(e)}";
+                        _logger.LogError(e,
+                            "ClearGroupMembers: error esborrant el membre {Member} del grup {Group}",
+                            member.Email, group);
+                    }
+                });
+
+            List<string> errors = memberErrors.Where(e => e != null).Select(e => e!).ToList();
 
             _logger.LogInformation(
                 "ClearGroupMembers: fi. Grup: {Group}, trobats: {Found}, esborrats: {Removed}, ignorats: {Skipped}, errors: {Errors}",
@@ -403,7 +430,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
             var member = await memberRequest.ExecuteAsync();
@@ -428,7 +455,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
             List<string> usersList = new List<string>();
             UsersResource.ListRequest userListRequest = service.Users.List();
             userListRequest.Query = $"orgUnitPath='{ouPath}'";
@@ -497,7 +524,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
 
             string memberId = email;
             var memberRequest = service.Users.Get(memberId);
@@ -520,7 +547,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            DirectoryService service = CreateDirectoryService();
+            DirectoryService service = _directoryService.Value;
             var userRequest = service.Users.Get(email);
             var user = await userRequest.ExecuteAsync();
             if (user == null) return GoogleApiResult<bool>.Fail("No s'ha trobat l'usuari");
@@ -545,7 +572,7 @@ public class GoogleAdminApi : IGoogleAdminApi
 
     public async Task<GoogleApiResult<bool>> SetUserStatus(string email, bool active)
     {
-        DirectoryService service = CreateDirectoryService();
+        DirectoryService service = _directoryService.Value;
 
         string memberId = email;
         var userRequest = service.Users.Get(memberId);
@@ -574,7 +601,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            CalendarService service = CreateCalendarService();
+            CalendarService service = _calendarService.Value;
 
             Event calendarEvent = new Event()
             {
@@ -610,7 +637,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            CalendarService service = CreateCalendarService();
+            CalendarService service = _calendarService.Value;
 
             Event calendarEvent = new Event()
             {
@@ -638,7 +665,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         try
         {
-            CalendarService service = CreateCalendarService();
+            CalendarService service = _calendarService.Value;
             await service.Events.Delete(calendarId, eventId).ExecuteAsync();
             return GoogleApiResult<bool>.Ok(true);
         }

@@ -8,6 +8,11 @@ namespace Application.Processes.Commands.Implementations;
 
 public class UpdateGroupMembersWorkspaceProcess : IProcess
 {
+    // Altes simultànies contra l'API de Google dins d'un mateix grup.
+    // Els grups es processen un darrere l'altre per no disparar el nombre total de
+    // peticions en paral·lel i per mantenir l'ordre del registre.
+    private const int ADD_MEMBER_PARALLELISM = 5;
+
     public async Task Run(IServiceScopeFactory serviceProvider, Log log, CancellationToken ct)
     {
         using var scope = serviceProvider.CreateAsyncScope();
@@ -39,24 +44,40 @@ public class UpdateGroupMembersWorkspaceProcess : IProcess
 
             int added = 0;
             int withoutMail = 0;
-            foreach (var pgc in pgcs)
+
+            // Els errors es desen per posició per escriure'ls al registre en el mateix
+            // ordre que abans, encara que les altes acabin desordenades.
+            string?[] addErrors = new string?[pgcs.Count];
+
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, pgcs.Count),
+                new ParallelOptions { MaxDegreeOfParallelism = ADD_MEMBER_PARALLELISM },
+                async (index, _) =>
+                {
+                    Person p = pgcs[index].Person;
+
+                    if (string.IsNullOrEmpty(p.ContactMail))
+                    {
+                        Interlocked.Increment(ref withoutMail);
+                        return;
+                    }
+
+                    var result = await googleAdminApi.AddUserToGroup(p.ContactMail, ou.GroupMail);
+                    if (!result.Success)
+                    {
+                        addErrors[index] = $"OU: {ou.GroupMail} User: {p.ContactMail} Group: {ou.GroupMail} - Error afegint usuari a grup. Missatge: {result.ErrorMessage ?? string.Empty}";
+                        return;
+                    }
+
+                    Interlocked.Increment(ref added);
+                });
+
+            foreach (string? addError in addErrors)
             {
-                Person p = pgc.Person;
-
-                if (string.IsNullOrEmpty(p.ContactMail))
+                if (addError != null)
                 {
-                    withoutMail++;
-                    continue;
+                    log.Add(addError);
                 }
-
-                var result = await googleAdminApi.AddUserToGroup(p.ContactMail, ou.GroupMail);
-                if (!result.Success)
-                {
-                    log.Add($"OU: {ou.GroupMail} User: {p.ContactMail} Group: {ou.GroupMail} - Error afegint usuari a grup. Missatge: {result.ErrorMessage ?? string.Empty}");
-                    continue;
-                }
-
-                added++;
             }
 
             log.Add($"OU: {ou.GroupMail} - Membres afegits: {added}/{pgcs.Count} (sense correu de contacte: {withoutMail})");
