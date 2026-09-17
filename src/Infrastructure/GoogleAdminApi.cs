@@ -40,9 +40,9 @@ public class GoogleAdminApi : IGoogleAdminApi
     private readonly string UserEmailToImpersonate;
     private readonly string Domain;
     private readonly string ApplicationName;
-    private readonly string SuperuserGroupEmail;
-    private readonly string AdminGroupEmail;
-    private readonly string ReaderGroupEmail;
+    // Rol -> grup de Google, ordenat de més a menys privilegi. Un usuari rep només el primer rol que li correspon.
+    // TODO: moure aquesta relació a la bbdd (GoogleGroupClaimRelation).
+    private readonly (string Role, string GroupEmail)[] RoleGroups;
     private readonly string[] excludeEmails;
     private readonly ILogger _logger;
 
@@ -57,9 +57,13 @@ public class GoogleAdminApi : IGoogleAdminApi
         CredentialFilePath = configuration.GetValue<string>("GoogleApiCredentialFilePath") ?? throw new Exception("GoogleApiCredentialFilePath");
         UserEmailToImpersonate = configuration.GetValue<string>("GoogleApiUserEmailToImpersonate") ?? throw new Exception("GoogleApiUserEmailToImpersonate");
         ApplicationName = configuration.GetValue<string>("GoogleApiApplicationName") ?? throw new Exception("GoogleApiApplicationName");
-        SuperuserGroupEmail = configuration.GetValue<string>("GoogleApiSuperuserGroupEmail") ?? throw new Exception("GoogleApiSuperuserGroupEmail");
-        AdminGroupEmail = configuration.GetValue<string>("GoogleApiAdminGroupEmail") ?? throw new Exception("GoogleApiAdminGroupEmail");
-        ReaderGroupEmail = configuration.GetValue<string>("GoogleApiEmailGroupReader") ?? throw new Exception("GoogleApiEmailGroupReader");
+        RoleGroups =
+        [
+            (RoleClaimValues.SUPER_USER, configuration.GetValue<string>("GoogleApiSuperuserGroupEmail") ?? throw new Exception("GoogleApiSuperuserGroupEmail")),
+            (RoleClaimValues.ADVANCED_ADMIN, configuration.GetValue<string>("GoogleApiAdvancedadminGroupEmail") ?? throw new Exception("GoogleApiAdvancedadminGroupEmail")),
+            (RoleClaimValues.ADMIN, configuration.GetValue<string>("GoogleApiAdminGroupEmail") ?? throw new Exception("GoogleApiAdminGroupEmail")),
+            (RoleClaimValues.READER, configuration.GetValue<string>("GoogleApiEmailGroupReader") ?? throw new Exception("GoogleApiEmailGroupReader")),
+        ];
         Domain = configuration.GetValue<string>("GoogleApiDomain") ?? throw new Exception("GoogleApiDomain");
         excludeEmails = configuration.GetValue<string>("GoogleApiExcludeAccounts")?.Split(" ") ?? throw new Exception("GoogleApiExcludeAccounts");
         _logger = logger;
@@ -72,47 +76,45 @@ public class GoogleAdminApi : IGoogleAdminApi
     {
         DirectoryService service = _directoryService.Value;
 
-        var request = service.Groups.List();
-        request.UserKey = email;
+        // Totes les comprovacions van en una sola petició HTTP (batch). Es fa servir HasMember
+        // (i no Groups.List) perquè també té en compte la pertinença indirecta a través de subgrups.
+        var isMember = new bool[RoleGroups.Length];
+        var batch = new BatchRequest(service);
+        for (int i = 0; i < RoleGroups.Length; i++)
+        {
+            int index = i;
+            string groupEmail = RoleGroups[i].GroupEmail;
+            batch.Queue<MembersHasMember>(service.Members.HasMember(groupEmail, email),
+                (content, error, _, _) =>
+                {
+                    if (error != null)
+                    {
+                        _logger.LogWarning("GetUserClaims: error comprovant si {Email} pertany a {Group}: {Error}", email, groupEmail, error.Message);
+                        return;
+                    }
+                    isMember[index] = content?.IsMember ?? false;
+                });
+        }
 
-        // TODO: move this mapping to db. For the moment hard coded.
-        bool isReader = false;
-        bool isAdmin = false;
-        bool isSuperuser = false;
         try
         {
-            var readerResponseTask = service.Members.HasMember(ReaderGroupEmail, email).ExecuteAsync(ct);
-            var adminResponseTask = service.Members.HasMember(AdminGroupEmail, email).ExecuteAsync(ct);
-            var superuserResponseTask = service.Members.HasMember(SuperuserGroupEmail, email).ExecuteAsync(ct);
-            Task.WaitAll(readerResponseTask, adminResponseTask, superuserResponseTask);
-
-            var readerResponse = await readerResponseTask;
-            var adminResponse = await adminResponseTask;
-            var superUserResponse = await superuserResponseTask;
-
-            isReader = readerResponse.IsMember ?? false;
-            isAdmin = adminResponse.IsMember ?? false;
-            isSuperuser = superUserResponse.IsMember ?? false;
+            await batch.ExecuteAsync(ct);
         }
-        catch (System.Exception)
-        { }
-
-
-        var claims = new List<string>(1);
-        if (isSuperuser)
+        catch (Exception e)
         {
-            claims.Add(RoleClaimValues.SUPER_USER);
-        }
-        else if (isAdmin)
-        {
-            claims.Add(RoleClaimValues.ADMIN);
-        }
-        else if (isReader)
-        {
-            claims.Add(RoleClaimValues.READER);
+            _logger.LogError(e, "GetUserClaims: error consultant els grups de {Email}", email);
+            return Array.Empty<string>();
         }
 
-        return claims;
+        for (int i = 0; i < RoleGroups.Length; i++)
+        {
+            if (isMember[i])
+            {
+                return [RoleGroups[i].Role];
+            }
+        }
+
+        return [];
     }
 
     public async Task<GoogleApiResult<int>> SetSuspendByOU(

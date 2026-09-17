@@ -1,4 +1,5 @@
 using WebServer.Handlers;
+using WebServer.Handlers.Authentication;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -64,9 +65,10 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Superuser", policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER));
-    options.AddPolicy("Admin", policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER, RoleClaimValues.ADMIN));
-    options.AddPolicy("Reader", policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER, RoleClaimValues.ADMIN, RoleClaimValues.READER));
+    options.AddPolicy(AuthorizationPolicies.SUPER_USER, policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER));
+    options.AddPolicy(AuthorizationPolicies.ADVANCED_ADMIN, policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER, RoleClaimValues.ADVANCED_ADMIN));
+    options.AddPolicy(AuthorizationPolicies.ADMIN, policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER, RoleClaimValues.ADVANCED_ADMIN, RoleClaimValues.ADMIN));
+    options.AddPolicy(AuthorizationPolicies.READER, policy => policy.RequireClaim("role", RoleClaimValues.SUPER_USER, RoleClaimValues.ADVANCED_ADMIN, RoleClaimValues.ADMIN, RoleClaimValues.READER));
 });
 
 // CORS service

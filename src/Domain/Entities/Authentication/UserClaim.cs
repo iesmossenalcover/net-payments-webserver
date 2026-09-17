@@ -3,6 +3,7 @@ namespace Domain.Entities.Authentication;
 public class RoleClaimValues
 {
     public const string SUPER_USER = "superuser";
+    public const string ADVANCED_ADMIN = "advancedadmin";
     public const string ADMIN = "admin";
     public const string READER = "reader";
 }
