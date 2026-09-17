@@ -9,17 +9,20 @@ public static class RegisterRoutes
         app.MapGet("/api/health", () => "up")
             .WithName("Health");
 
-        app.MapPost("/api/signin", global::WebServer.Handlers.Authentication.Auth.SigninPost)
+        app.MapPost("/api/signin", Auth.SigninPost)
             .WithName("signin");
 
-        app.MapPost("/api/oauth/", global::WebServer.Handlers.Authentication.Auth.SigninOAuth)
+        app.MapPost("/api/signout", Auth.SignoutPost)
+            .WithName("signout");
+
+        app.MapPost("/api/oauth/", Auth.SigninOAuth)
             .WithName("External OAuth Signin");
 
-        app.MapGet("/api/identity", global::WebServer.Handlers.Authentication.Auth.GetIdentity)
+        app.MapGet("/api/identity", Auth.GetIdentity)
             .RequireAuthorization()
             .WithName("identity");
 
-        var signup = app.MapPost("/api/signup", global::WebServer.Handlers.Authentication.Auth.SignupPost)
+        var signup = app.MapPost("/api/signup", Auth.SignupPost)
             .WithName("signup");
         if (!app.Environment.IsDevelopment())
         {

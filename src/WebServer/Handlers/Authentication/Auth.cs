@@ -78,6 +78,11 @@ public class Auth
 
     }
 
+    public static async Task SignoutPost(HttpContext ctx)
+    {
+        await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    }
+
     public static async Task SignupPost(
         [FromBody] SignupRequest model,
         HttpContext ctx,
