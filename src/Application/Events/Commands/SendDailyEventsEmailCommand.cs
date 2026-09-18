@@ -81,13 +81,13 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
                 ? Array.Empty<PersonGroupCourse>()
                 : await _personGroupCourseRepository.GetPeopleGroupByPeopleIdsAndCourseIdAsync(course.Id, peopleIds, ct);
 
-            List<GroupSummary> groups = peopleGroups
-                .GroupBy(x => x.Group.Name)
-                .Select(x => new GroupSummary(x.Key, x.Count()))
-                .OrderBy(x => x.Name)
+            List<string> groups = peopleGroups
+                .Select(x => x.Group.Name)
+                .Distinct()
+                .OrderBy(x => x)
                 .ToList();
 
-            summaries.Add(new EventSummary(e, groups, peopleIds.Length));
+            summaries.Add(new EventSummary(e, groups));
         }
 
         string subject = $"[EXTRAESCOLARS] Activitats d'avui {FormatDate(day)}";
@@ -133,11 +133,11 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
             }
             else
             {
-                html.Append($"<p style=\"margin: 0 0 4px 0;\"><strong>Grups afectats</strong> ({s.PeopleCount} alumnes):</p>");
+                html.Append("<p style=\"margin: 0 0 4px 0;\"><strong>Grups afectats:</strong></p>");
                 html.Append("<ul style=\"margin: 0 0 8px 0;\">");
-                foreach (GroupSummary g in s.Groups)
+                foreach (string g in s.Groups)
                 {
-                    html.Append($"<li>{Escape(g.Name)} &mdash; {g.PeopleCount} alumnes</li>");
+                    html.Append($"<li>{Escape(g)}</li>");
                 }
                 html.Append("</ul>");
             }
@@ -172,6 +172,5 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
 
     private static string Escape(string value) => WebUtility.HtmlEncode(value);
 
-    private record GroupSummary(string Name, int PeopleCount);
-    private record EventSummary(Event Event, List<GroupSummary> Groups, int PeopleCount);
+    private record EventSummary(Event Event, List<string> Groups);
 }
