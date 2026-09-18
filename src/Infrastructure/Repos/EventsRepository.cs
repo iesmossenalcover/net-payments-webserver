@@ -36,8 +36,14 @@ public class EventsRepository : Repository<Event>, Domain.Services.IEventsRespos
     // [from, to) sobre la data d'inici de l'event.
     public async Task<IEnumerable<Event>> GetEventsStartingBetweenAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
+        // Npgsql només accepta offset 0 als paràmetres 'timestamp with time zone': els límits
+        // poden arribar amb l'offset local (+01:00/+02:00) i s'han de passar a UTC. És el mateix
+        // instant, així que el filtre no canvia.
+        DateTimeOffset fromUtc = from.ToUniversalTime();
+        DateTimeOffset toUtc = to.ToUniversalTime();
+
         return await _dbSet
-            .Where(x => x.Date >= from && x.Date < to)
+            .Where(x => x.Date >= fromUtc && x.Date < toUtc)
             .OrderBy(x => x.Date)
             .ToListAsync(ct);
     }
