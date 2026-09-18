@@ -1,3 +1,4 @@
+using System.Text;
 using Application.Common.Models;
 using Domain.Services;
 using Domain.Entities.Authentication;
@@ -10,6 +11,9 @@ using Google.Apis.Requests;
 using Google.Apis.Services;
 using Google;
 using GoogleUser = Google.Apis.Admin.Directory.directory_v1.Data.User;
+// Amb alias: el namespace de Gmail duu un UsersResource que xoca amb el de Directory.
+using GmailService = Google.Apis.Gmail.v1.GmailService;
+using GmailMessage = Google.Apis.Gmail.v1.Data.Message;
 
 namespace Infrastructure;
 
@@ -36,10 +40,21 @@ public class GoogleAdminApi : IGoogleAdminApi
         CalendarService.Scope.CalendarEvents,
     };
 
+    // Gmail va a part de SCOPES: si la delegació de domini encara no té autoritzat gmail.send,
+    // només falla l'enviament de correu i no la resta de crides.
+    private static readonly string[] GMAIL_SCOPES = new string[]
+    {
+        GmailService.Scope.GmailSend,
+    };
+
+    // "me" fa referència a l'usuari suplantat per la credencial.
+    private const string GMAIL_AUTHENTICATED_USER = "me";
+
     private readonly string CredentialFilePath;
     private readonly string UserEmailToImpersonate;
     private readonly string Domain;
     private readonly string ApplicationName;
+    private readonly string? EmailSenderName;
     // Rol -> grup de Google, ordenat de més a menys privilegi. Un usuari rep només el primer rol que li correspon.
     // TODO: moure aquesta relació a la bbdd (GoogleGroupClaimRelation).
     private readonly (string Role, string GroupEmail)[] RoleGroups;
@@ -50,6 +65,7 @@ public class GoogleAdminApi : IGoogleAdminApi
     // rellegia el fitxer de credencials i negociava un token OAuth nou a cada operació.
     private readonly Lazy<DirectoryService> _directoryService;
     private readonly Lazy<CalendarService> _calendarService;
+    private readonly Lazy<GmailService> _gmailService;
 
 
     public GoogleAdminApi(IConfiguration configuration, ILogger<GoogleAdminApi> logger)
@@ -57,6 +73,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         CredentialFilePath = configuration.GetValue<string>("GoogleApiCredentialFilePath") ?? throw new Exception("GoogleApiCredentialFilePath");
         UserEmailToImpersonate = configuration.GetValue<string>("GoogleApiUserEmailToImpersonate") ?? throw new Exception("GoogleApiUserEmailToImpersonate");
         ApplicationName = configuration.GetValue<string>("GoogleApiApplicationName") ?? throw new Exception("GoogleApiApplicationName");
+        EmailSenderName = configuration.GetValue<string>("GoogleApiEmailSenderName");
         RoleGroups =
         [
             (RoleClaimValues.SUPER_USER, configuration.GetValue<string>("GoogleApiSuperuserGroupEmail") ?? throw new Exception("GoogleApiSuperuserGroupEmail")),
@@ -70,6 +87,7 @@ public class GoogleAdminApi : IGoogleAdminApi
 
         _directoryService = new Lazy<DirectoryService>(CreateDirectoryService);
         _calendarService = new Lazy<CalendarService>(CreateCalendarService);
+        _gmailService = new Lazy<GmailService>(CreateGmailService);
     }
 
     public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
@@ -631,6 +649,19 @@ public class GoogleAdminApi : IGoogleAdminApi
         return service;
     }
 
+    private GmailService CreateGmailService()
+    {
+        GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
+        credential = credential.CreateScoped(GMAIL_SCOPES).CreateWithUser(UserEmailToImpersonate);
+
+        GmailService service = new GmailService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = ApplicationName,
+        });
+        return service;
+    }
+
     private CalendarService CreateCalendarService()
     {
         GoogleCredential credential = GoogleCredential.FromFile(CredentialFilePath);
@@ -803,5 +834,66 @@ public class GoogleAdminApi : IGoogleAdminApi
         {
             return GoogleApiResult<bool>.Fail(e.Message);
         }
+    }
+
+    public async Task<GoogleApiResult<string>> SendHtmlEmail(string to, string subject, string htmlBody, CancellationToken ct)
+    {
+        try
+        {
+            GmailService service = _gmailService.Value;
+
+            GmailMessage message = new GmailMessage()
+            {
+                Raw = ToBase64Url(Encoding.UTF8.GetBytes(BuildMimeMessage(to, subject, htmlBody))),
+            };
+
+            GmailMessage result = await service.Users.Messages.Send(message, GMAIL_AUTHENTICATED_USER).ExecuteAsync(ct);
+            if (result.Id == null)
+            {
+                return GoogleApiResult<string>.Fail("Error enviant el correu");
+            }
+
+            _logger.LogInformation("Correu enviat a {To} amb assumpte '{Subject}' (id {MessageId})", to, subject, result.Id);
+            return GoogleApiResult<string>.Ok(result.Id);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error enviant el correu a {To}", to);
+            return GoogleApiResult<string>.Fail(e.Message);
+        }
+    }
+
+    // El cos i l'assumpte es codifiquen en base64 perquè els accents no depenguin del transport.
+    private string BuildMimeMessage(string to, string subject, string htmlBody)
+    {
+        string from = string.IsNullOrWhiteSpace(EmailSenderName)
+            ? UserEmailToImpersonate
+            : $"{EncodeHeader(EmailSenderName)} <{UserEmailToImpersonate}>";
+
+        StringBuilder mime = new StringBuilder();
+        mime.Append($"From: {from}\r\n");
+        mime.Append($"To: {to}\r\n");
+        mime.Append($"Subject: {EncodeHeader(subject)}\r\n");
+        mime.Append("MIME-Version: 1.0\r\n");
+        mime.Append("Content-Type: text/html; charset=UTF-8\r\n");
+        mime.Append("Content-Transfer-Encoding: base64\r\n");
+        mime.Append("\r\n");
+        mime.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(htmlBody), Base64FormattingOptions.InsertLineBreaks));
+
+        return mime.ToString();
+    }
+
+    // RFC 2047: capçaleres amb caràcters no ASCII.
+    private static string EncodeHeader(string value)
+    {
+        return $"=?UTF-8?B?{Convert.ToBase64String(Encoding.UTF8.GetBytes(value))}?=";
+    }
+
+    private static string ToBase64Url(byte[] bytes)
+    {
+        return Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .Replace("=", string.Empty);
     }
 }

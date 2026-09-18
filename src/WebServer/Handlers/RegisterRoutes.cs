@@ -209,6 +209,10 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.ADMIN)
             .WithName("Export events info");
 
+        app.MapPost("/api/events/daily-email", Events.SendDailyEventsEmail)
+            .RequireAuthorization(AuthorizationPolicies.SUPER_USER)
+            .WithName("Send daily events email");
+
         // Events People
         app.MapPost("/api/events/{eventCode}/people", Events.SetPeopleToEvent)
             .RequireAuthorization(AuthorizationPolicies.ADMIN)

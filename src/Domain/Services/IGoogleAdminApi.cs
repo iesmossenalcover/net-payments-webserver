@@ -45,4 +45,11 @@ public interface IGoogleAdminApi
         string eventId
     );
 
+    public Task<GoogleApiResult<string>> SendHtmlEmail(
+        string to,
+        string subject,
+        string htmlBody,
+        CancellationToken ct
+    );
+
 }

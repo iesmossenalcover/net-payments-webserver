@@ -33,6 +33,15 @@ public class EventsRepository : Repository<Event>, Domain.Services.IEventsRespos
             .ToListAsync(ct);
     }
 
+    // [from, to) sobre la data d'inici de l'event.
+    public async Task<IEnumerable<Event>> GetEventsStartingBetweenAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    {
+        return await _dbSet
+            .Where(x => x.Date >= from && x.Date < to)
+            .OrderBy(x => x.Date)
+            .ToListAsync(ct);
+    }
+
     public async Task<Event?> GetEventByCodeAsync(string code, CancellationToken ct)
     {
         return await _dbSet.FirstOrDefaultAsync(x => x.Code == code, ct);
