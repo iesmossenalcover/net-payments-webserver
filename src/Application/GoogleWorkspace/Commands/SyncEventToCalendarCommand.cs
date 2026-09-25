@@ -43,13 +43,16 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
 
         string title = $"[EXTRAESCOLARS] {e.Name}";
         string summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
+        string description = string.IsNullOrWhiteSpace(e.Description)
+            ? summaryUrl
+            : $"{summaryUrl}\n\n{e.Description.Trim()}";
         if (e.CalendarEventId == null)
         {
             // Create
             var result = await _googleAdminApi.CreateCalendarEvent(
                 calendarId,
                 title,
-                summaryUrl,
+                description,
                 e.Date,
                 e.EndDate ?? e.Date
             );
@@ -65,7 +68,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
                 calendarId,
                 e.CalendarEventId,
                 title,
-                summaryUrl,
+                description,
                 e.Date,
                 e.EndDate ?? e.Date
             );
