@@ -33,7 +33,7 @@ public class EventsRepository : Repository<Event>, Domain.Services.IEventsRespos
             .ToListAsync(ct);
     }
 
-    // [from, to) sobre la data d'inici de l'event.
+    // [from, to) sobre la data d'inici de l'esdeveniment.
     public async Task<IEnumerable<Event>> GetEventsStartingBetweenAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
         // Npgsql només accepta offset 0 als paràmetres 'timestamp with time zone': els límits

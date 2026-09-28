@@ -18,7 +18,7 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
 {
     public UpdateEventCommandValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'event");
+        RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'esdeveniment");
         RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
         RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
@@ -60,7 +60,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
     public async Task<Response<long?>> Handle(UpdateEventCommand request, CancellationToken ct)
     {
         Event? e = await _eventsRespository.GetByIdAsync(request.GetId, ct);
-        if (e == null) return Response<long?>.Error(ResponseCode.NotFound, "L'event que es vol modificar no existeix.");
+        if (e == null) return Response<long?>.Error(ResponseCode.NotFound, "L'esdeveniment que es vol modificar no existeix.");
 
         e.Name = request.Name;
         e.AmipaPrice = request.AmipaPrice;

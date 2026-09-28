@@ -33,7 +33,7 @@ public class DeleteEventCommandHandler : IRequestHandler<DeleteEventCommand, Res
             {
                 e.CalendarEventId = null;
                 await _eventsRespository.UpdateAsync(e, ct);
-                return Response<long?>.Error(ResponseCode.BadRequest, calendarResult.ErrorMessage ?? "No es pot eliminar l'event del calendari de Google");
+                return Response<long?>.Error(ResponseCode.BadRequest, calendarResult.ErrorMessage ?? "No es pot eliminar l'esdeveniment del calendari de Google");
             }
         }
 

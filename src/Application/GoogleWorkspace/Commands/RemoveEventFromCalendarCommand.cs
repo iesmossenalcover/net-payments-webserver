@@ -28,7 +28,7 @@ public class RemoveEventFromCalendarCommandHandler : IRequestHandler<RemoveEvent
     public async Task<Response<string?>> Handle(RemoveEventFromCalendarCommand request, CancellationToken ct)
     {
         Event? e = await _eventsRepository.GetByIdAsync(request.Id, ct);
-        if (e == null) return Response<string?>.Error(ResponseCode.NotFound, "No s'ha trobat l'event");
+        if (e == null) return Response<string?>.Error(ResponseCode.NotFound, "No s'ha trobat l'esdeveniment");
 
         if (e.CalendarEventId == null) return Response<string?>.Ok(null);
 
@@ -37,7 +37,7 @@ public class RemoveEventFromCalendarCommandHandler : IRequestHandler<RemoveEvent
         var result = await _googleAdminApi.DeleteCalendarEvent(calendarId, e.CalendarEventId);
         if (!result.Success)
         {
-            return Response<string?>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "No es pot eliminar l'event del calendari de Google");
+            return Response<string?>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "No es pot eliminar l'esdeveniment del calendari de Google");
         }
 
         e.CalendarEventId = null;

@@ -39,7 +39,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
     {
 
         Event? e = await _eventsRepository.GetByIdAsync(request.Id, ct);
-        if (e == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.NotFound, "No s'ha trobat l'event");
+        if (e == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.NotFound, "No s'ha trobat l'esdeveniment");
 
         string title = $"[EXTRAESCOLARS] {e.Name}";
         string summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
@@ -56,7 +56,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
                 e.Date,
                 e.EndDate ?? e.Date
             );
-            if (!result.Success || result.Data == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error creant l'event al calendari");
+            if (!result.Success || result.Data == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error creant l'esdeveniment al calendari");
 
             e.CalendarEventId = result.Data;
             await _eventsRepository.UpdateAsync(e, ct);
@@ -81,7 +81,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
                     e.CalendarEventId = null;
                     await _eventsRepository.UpdateAsync(e, ct);
                 }
-                return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error creant l'event al calendari");
+                return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? "Error creant l'esdeveniment al calendari");
             }
         }
         return Response<SyncEventToCalendarCommandVm>.Ok(new SyncEventToCalendarCommandVm(e.CalendarEventId));

@@ -142,7 +142,7 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
                 html.Append("</ul>");
             }
 
-            html.Append($"<p style=\"margin: 0;\"><a href=\"{Escape(url)}\">Veure l'event</a></p>");
+            html.Append($"<p style=\"margin: 0;\"><a href=\"{Escape(url)}\">Veure l'esdeveniment</a></p>");
             html.Append("</div>");
         }
 
