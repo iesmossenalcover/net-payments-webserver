@@ -31,8 +31,8 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
     public CreateEventCommandValidator()
     {
         RuleFor(x => x.Name).NotEmpty().WithMessage("S'ha de proporcionar un nom per l'esdeveniment");
-        RuleFor(x => x.Price).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
-        RuleFor(x => x.AmipaPrice).NotNull().GreaterThan(0).WithMessage("S'ha de posar un preu positiu");
+        RuleFor(x => x.Price).NotNull().GreaterThanOrEqualTo(0).WithMessage("S'ha de posar un preu no negatiu");
+        RuleFor(x => x.AmipaPrice).NotNull().GreaterThanOrEqualTo(0).WithMessage("S'ha de posar un preu no negatiu");
         RuleFor(x => x.Date).NotNull().WithMessage("S'ha de seleccionar una data.");
         RuleFor(x => x.EndDate)
             .Must((request, endDate) =>
