@@ -1,8 +1,46 @@
 # For development
-## Add Database connection string
-Inside de project folder, execute:
 
-`dotnet user-secrets set "PostgreSqlConnectionString" "<connection-string-value>"`
+The app only talks to PostgreSQL. There is no SQLite / in-memory option.
+
+## 1. Prepare the dev database
+On the dev PostgreSQL server, as a superuser:
+
+```sql
+CREATE DATABASE payments;
+CREATE ROLE paymentsapi WITH LOGIN PASSWORD '<password>';
+```
+
+Then, connected to the `payments` database, still as a superuser:
+
+```sql
+CREATE SCHEMA IF NOT EXISTS main AUTHORIZATION paymentsapi;
+-- The migrations do NOT create this extension and the people search needs it
+-- (EF.Functions.Unaccent in PeopleRepository / PeopleGroupCourseRepository).
+CREATE EXTENSION unaccent SCHEMA main;
+ALTER ROLE paymentsapi SET search_path = main, public;
+```
+
+## 2. Add the connection string
+Inside the project folder:
+
+`dotnet user-secrets set "PostgreSqlConnectionString" "Host=<host>;Port=5432;Database=payments;Username=paymentsapi;Password=<password>"`
+
+It is stored in the user-secrets store, outside the repo, so it is never committed.
+If it is missing the app fails on startup with `Configure PostgreSqlConnectionString`.
+
+## 3. Create the tables
+`dotnet ef database update`
+
+No `GRANT` is needed in dev: the migrations run as `paymentsapi`, so that role owns the tables.
+
+## 4. Seed the minimum rows
+The app needs a current course, an app config row and an admin user to be usable:
+
+```sql
+INSERT INTO main.course("Name", "StartDate", "EndDate", "Active") VALUES('25-26', '2025-09-01', '2026-07-30', true);
+INSERT INTO main.app_config("DisplayEnrollment") VALUES(false);
+INSERT INTO main.user("Username", "HashedPassword", "Firstname", "Lastname") VALUES('admin', '', 'Administrador', '');
+```
 
 # For migrations
 ## Requisites

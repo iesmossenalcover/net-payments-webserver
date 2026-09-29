@@ -1,4 +1,4 @@
-using Domain.Entities.Logs;
+﻿using Domain.Entities.Logs;
 using Infrastructure.Repos;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +8,10 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContextPool<AppDbContext>(o =>
-                o.UseNpgsql(configuration.GetValue<string>("PostgreSqlConnectionString"))
-            );
+            string connectionString = configuration.GetValue<string>("PostgreSqlConnectionString")
+                ?? throw new Exception("No PostgreSqlConnectionString found");
+
+            services.AddDbContextPool<AppDbContext>(o => o.UseNpgsql(connectionString));
 
             services.AddScoped<AppDbContext, AppDbContext>();
 
