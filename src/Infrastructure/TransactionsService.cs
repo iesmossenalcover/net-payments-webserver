@@ -1,6 +1,5 @@
 using Application.Common.Models;
 using Domain.Services;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 

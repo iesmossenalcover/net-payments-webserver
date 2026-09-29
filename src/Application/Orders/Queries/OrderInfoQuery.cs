@@ -17,36 +17,28 @@ public record OrderInfoVm(string PersonName, string PersonDocumentId, IEnumerabl
 public record OrderInfoQuery
     (string Signature, string MerchantParameters, string SignatureVersion) : IRequest<Response<OrderInfoVm>>;
 
-public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<OrderInfoVm>>
+/// <summary>
+/// Construeix el resum d'una ordre que es mostra a la persona un cop pagada.
+/// </summary>
+public class OrderInfoBuilder
 {
-    private readonly IRedsys _redsys;
-    private readonly IOrdersRepository _ordersRepository;
     private readonly IPersonGroupCourseRepository _personGroupsCourseRepository;
     private readonly IEventsPeopleRespository _eventsPeopleRepository;
     private readonly ICoursesRepository _coursesRepository;
     private readonly IAppConfigRepository _appConfigRepository;
 
-    public OrderInfoQueryHandler(IRedsys redsys, IOrdersRepository ordersRepository,
-        IPersonGroupCourseRepository personGroupsCourseRepository, IEventsPeopleRespository eventsPeopleRepository,
-        ICoursesRepository coursesRepository, IAppConfigRepository appConfigRepository)
+    public OrderInfoBuilder(IPersonGroupCourseRepository personGroupsCourseRepository,
+        IEventsPeopleRespository eventsPeopleRepository, ICoursesRepository coursesRepository,
+        IAppConfigRepository appConfigRepository)
     {
-        _redsys = redsys;
-        _ordersRepository = ordersRepository;
         _personGroupsCourseRepository = personGroupsCourseRepository;
         _eventsPeopleRepository = eventsPeopleRepository;
         _coursesRepository = coursesRepository;
         _appConfigRepository = appConfigRepository;
     }
 
-    public async Task<Response<OrderInfoVm>> Handle(OrderInfoQuery request, CancellationToken ct)
+    public async Task<Response<OrderInfoVm>> Build(Order order, CancellationToken ct)
     {
-        bool isValid = _redsys.Validate(request.MerchantParameters, request.Signature);
-        if (!isValid) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "Firma no vàlida");
-
-        RedsysResult data = _redsys.GetResult(request.MerchantParameters);
-        Order? order = await _ordersRepository.GetByCodeAsync(data.OrderCode, ct);
-        if (order == null) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "No s'ha trobat l'ordre.");
-
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         PersonGroupCourse? pgc =
             await _personGroupsCourseRepository.GetCoursePersonGroupById(order.PersonId, course.Id, ct);
@@ -63,8 +55,35 @@ public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<Or
             orderEvents.Select(x => new EventInfo(x.Event.Code, x.Event.Name,
                 x.Quantity,
                 pgc.PriceForEvent(x.Event) * x.Quantity, "€"));
+                
         return Response<OrderInfoVm>.Ok(new OrderInfoVm(
             pgc.Person.FullName, pgc.Person.DocumentId,
             eventsInfo, enrollmentEvent && config.DisplayEnrollment, pgc.SubjectsInfo, pgc.Group.Description));
+    }
+}
+
+public class OrderInfoQueryHandler : IRequestHandler<OrderInfoQuery, Response<OrderInfoVm>>
+{
+    private readonly IRedsys _redsys;
+    private readonly IOrdersRepository _ordersRepository;
+    private readonly OrderInfoBuilder _orderInfoBuilder;
+
+    public OrderInfoQueryHandler(IRedsys redsys, IOrdersRepository ordersRepository, OrderInfoBuilder orderInfoBuilder)
+    {
+        _redsys = redsys;
+        _ordersRepository = ordersRepository;
+        _orderInfoBuilder = orderInfoBuilder;
+    }
+
+    public async Task<Response<OrderInfoVm>> Handle(OrderInfoQuery request, CancellationToken ct)
+    {
+        bool isValid = _redsys.Validate(request.MerchantParameters, request.Signature);
+        if (!isValid) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "Firma no vàlida");
+
+        RedsysResult data = _redsys.GetResult(request.MerchantParameters);
+        Order? order = await _ordersRepository.GetByCodeAsync(data.OrderCode, ct);
+        if (order == null) return Response<OrderInfoVm>.Error(ResponseCode.BadRequest, "No s'ha trobat l'ordre.");
+
+        return await _orderInfoBuilder.Build(order, ct);
     }
 }

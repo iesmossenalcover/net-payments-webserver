@@ -12,4 +12,6 @@ public class Order : Entity
 
     public long PersonId { get; set;}
     public Person Person {get;set;} = default!;
+
+    public bool IsFree => Amount == 0;
 }

@@ -22,23 +22,16 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
 {
     #region IOC
 
-    private readonly IEventsPeopleRespository _eventsPeopleRepository;
-    private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
-    private readonly IEventPersonOrderRepository _eventPersonOrderRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRedsys _redsys;
-    private readonly Domain.Behaviours.EventPersonBehaviours _eventPersonBehaviours;
+    private readonly OrderBehaviours _orderBehaviours;
 
-    public ConfirmOrderCommandHandler(IEventsPeopleRespository eventsPeopleRepository,
-        IPersonGroupCourseRepository personGroupCourseRepository, IOrdersRepository ordersRepository, IRedsys redsys,
-        EventPersonBehaviours eventPersonBehaviours, IEventPersonOrderRepository eventPersonOrderRepository)
+    public ConfirmOrderCommandHandler(IOrdersRepository ordersRepository, IRedsys redsys,
+        OrderBehaviours orderBehaviours)
     {
-        _eventsPeopleRepository = eventsPeopleRepository;
-        _personGroupCourseRepository = personGroupCourseRepository;
         _ordersRepository = ordersRepository;
         _redsys = redsys;
-        _eventPersonBehaviours = eventPersonBehaviours;
-        _eventPersonOrderRepository = eventPersonOrderRepository;
+        _orderBehaviours = orderBehaviours;
     }
 
     #endregion
@@ -73,49 +66,11 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? string.Empty);
         }
 
-        // Get all PersonEventOrder paid by this order
-        IEnumerable<EventPersonOrder> personEventOrders =
-            await _eventPersonOrderRepository.GetAllByOrderIdAsync(order.Id, ct);
-        if (!personEventOrders.Any())
+        string? error = (await _orderBehaviours.PayOrder(order, ct)).ErrorMessage();
+        if (error != null)
         {
-            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest,
-                "Error, cap esdeveniment amb aquest ordre");
+            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, error);
         }
-
-        IEnumerable<long> eventPersonIds = personEventOrders.Select(x => x.EventPersonId);
-
-        IEnumerable<EventPerson> personEvents =
-            await _eventsPeopleRepository.GetWithRelationsByIdsAsync(eventPersonIds, ct);
-
-        long courseId = personEvents.First().Event.CourseId;
-        Person p = personEvents.First().Person;
-        PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(p.Id, courseId, ct);
-        if (pgc == null)
-        {
-            return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest,
-                "Error, la persona no està asociada al curs");
-        }
-
-        // Update quantities on person_events based on person_event_order
-        // IMPORTANT to avoid fraud. Always set paid order quantity.
-        foreach (var epo in personEventOrders)
-        {
-            EventPerson ep = personEvents.First(x => x.Id == epo.EventPersonId);
-            ep.Quantity = epo.Quantity;
-        }
-
-        // Update order from all personEvents
-        foreach (var pe in personEvents)
-        {
-            pe.PaidOrderId = order.Id;
-            pe.PaidOrder = order;
-        }
-
-        order.Status = OrderStatus.Paid;
-        order.PaidDate = DateTimeOffset.UtcNow;
-        await _ordersRepository.UpdateAsync(order, ct);
-
-        await _eventPersonBehaviours.PayEvents(personEvents, pgc.Amipa, ct);
 
         return Response<ConfirmOrderCommandVm?>.Ok(new ConfirmOrderCommandVm());
     }

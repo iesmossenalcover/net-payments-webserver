@@ -8,10 +8,18 @@ using Domain.Entities.Orders;
 using Application.Common.Helpers;
 using Application.Common.Models;
 using System.Text.RegularExpressions;
+using Application.Orders.Queries;
+using Domain.Behaviours;
 
 namespace Application.Orders.Commands;
 
-public record CreateOrderCommandVm(string Url, string MerchantParameters, string SignatureVersion, string Signature);
+public record RedsysFormVm(string Url, string MerchantParameters, string SignatureVersion, string Signature);
+
+/// <summary>
+/// Només un dels dos camps ve informat: <paramref name="Payment"/> amb les dades del formulari de Redsys
+/// si l'ordre s'ha de pagar, o <paramref name="Confirmation"/> amb el resum si era gratuïta i ja s'ha confirmat.
+/// </summary>
+public record CreateOrderCommandVm(RedsysFormVm? Payment, OrderInfoVm? Confirmation);
 
 public record SelectedEvent(string Code, uint? Quantity);
 
@@ -51,10 +59,14 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly ICoursesRepository _coursesRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRedsys _redsys;
+    private readonly OrderBehaviours _orderBehaviours;
+    private readonly OrderInfoBuilder _orderInfoBuilder;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CreateOrderCommandHandler(IEventsPeopleRespository eventsPeopleRepository,
         IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository,
-        IOrdersRepository ordersRepository, IRedsys redsys, IEventPersonOrderRepository eventPersonOrderRepository)
+        IOrdersRepository ordersRepository, IRedsys redsys, IEventPersonOrderRepository eventPersonOrderRepository,
+        OrderBehaviours orderBehaviours, OrderInfoBuilder orderInfoBuilder, IUnitOfWork unitOfWork)
     {
         _eventsPeopleRepository = eventsPeopleRepository;
         _peopleGroupCourseRepository = peopleGroupCourseRepository;
@@ -62,6 +74,9 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _ordersRepository = ordersRepository;
         _redsys = redsys;
         _eventPersonOrderRepository = eventPersonOrderRepository;
+        _orderBehaviours = orderBehaviours;
+        _orderInfoBuilder = orderInfoBuilder;
+        _unitOfWork = unitOfWork;
     }
 
     #endregion
@@ -138,22 +153,46 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             Amount = personEvents.Sum(x => pgc.PriceForEvent(x.Event) * x.Quantity),
             Person = pgc.Person,
         };
-        await _ordersRepository.InsertAsync(order, ct);
 
-        // Create person event orders
-        IEnumerable<EventPersonOrder> eventPersonOrders = personEvents.Select(x => new EventPersonOrder()
+        // L'ordre i les seves línies han d'entrar juntes: una ordre sense línies no es pot pagar mai.
+        await _unitOfWork.ExecuteInTransactionAsync(async token =>
         {
-            OrderId = order.Id,
-            Order = order,
-            EventPersonId = x.Id,
-            EventPerson = x,
-            Quantity = x.Quantity,
-        });
-        await _eventPersonOrderRepository.InsertManyAsync(eventPersonOrders, ct);
+            await _ordersRepository.InsertAsync(order, token);
+
+            // Create person event orders. Necessita l'Id de l'ordre, per això va després d'inserir-la.
+            IEnumerable<EventPersonOrder> eventPersonOrders = personEvents.Select(x => new EventPersonOrder()
+            {
+                OrderId = order.Id,
+                Order = order,
+                EventPersonId = x.Id,
+                EventPerson = x,
+                Quantity = x.Quantity,
+            });
+            await _eventPersonOrderRepository.InsertManyAsync(eventPersonOrders, token);
+        }, ct);
+
+        // Redsys no accepta imports de 0: si no hi ha res a pagar es confirma l'ordre directament i no es torna info redsys
+        if (order.IsFree)
+        {
+            string? error = (await _orderBehaviours.PayOrder(order, ct)).ErrorMessage();
+            if (error != null)
+            {
+                return Response<CreateOrderCommandVm?>.Error(ResponseCode.InternalError, error);
+            }
+
+            Response<OrderInfoVm> orderInfo = await _orderInfoBuilder.Build(order, ct);
+            if (orderInfo.Code != ResponseCode.Success)
+            {
+                return Response<CreateOrderCommandVm?>.Error(ResponseCode.InternalError,
+                    "L'inscripció s'ha confirmat però no s'ha pogut carregar el resum.");
+            }
+
+            return Response<CreateOrderCommandVm?>.Ok(new CreateOrderCommandVm(null, orderInfo.Data));
+        }
 
         RedsysRequest redsysRequest = _redsys.CreateRedsysRequest(order, request.PaymentMethod == PaymentMethod.Bizum);
-        var vm = new CreateOrderCommandVm(redsysRequest.Url, redsysRequest.MerchantParamenters,
+        var redsysForm = new RedsysFormVm(redsysRequest.Url, redsysRequest.MerchantParamenters,
             redsysRequest.SignatureVersion, redsysRequest.Signature);
-        return Response<CreateOrderCommandVm?>.Ok(vm);
+        return Response<CreateOrderCommandVm?>.Ok(new CreateOrderCommandVm(redsysForm, null));
     }
 }

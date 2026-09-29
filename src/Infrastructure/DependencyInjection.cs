@@ -1,4 +1,4 @@
-using Domain.Entities.Logs;
+﻿using Domain.Entities.Logs;
 using Infrastructure.Repos;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,14 +8,19 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContextPool<AppDbContext>(o =>
-                o.UseNpgsql(configuration.GetValue<string>("PostgreSqlConnectionString"))
-            );
+            string connectionString = configuration.GetValue<string>("PostgreSqlConnectionString")
+                ?? throw new Exception("No PostgreSqlConnectionString found");
+
+            services.AddDbContextPool<AppDbContext>(o => o.UseNpgsql(connectionString));
 
             services.AddScoped<AppDbContext, AppDbContext>();
 
             // Domain
             services.AddScoped<Domain.Behaviours.EventPersonBehaviours, Domain.Behaviours.EventPersonBehaviours>();
+            services.AddScoped<Domain.Behaviours.OrderBehaviours, Domain.Behaviours.OrderBehaviours>();
+
+            // Application
+            services.AddScoped<Application.Orders.Queries.OrderInfoBuilder>();
 
             // Infrastructure
             services.AddScoped<Domain.Services.IUsersRepository, Repos.UserRepository>();
@@ -30,6 +35,7 @@ namespace Infrastructure
             services.AddScoped<Domain.Services.IOrdersRepository, OrdersRepository>();
             services.AddScoped<Domain.Services.IOUGroupRelationsRepository, UoGroupRelationRepository>();
             services.AddScoped<Domain.Services.ITransactionsService, TransactionsService>();
+            services.AddScoped<Domain.Services.IUnitOfWork, UnitOfWork>();
             services.AddScoped<Domain.Services.IJobsRepository, JobsRepository>();
             services.AddScoped<Domain.Services.ILogsInfoRespository, LogsInfoRepository>();
             services.AddScoped<Domain.Services.ILogStore, IntoInfoLogStore>();
