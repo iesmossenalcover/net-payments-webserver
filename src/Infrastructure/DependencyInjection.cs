@@ -16,6 +16,7 @@ namespace Infrastructure
 
             // Domain
             services.AddScoped<Domain.Behaviours.EventPersonBehaviours, Domain.Behaviours.EventPersonBehaviours>();
+            services.AddScoped<Domain.Behaviours.OrderBehaviours, Domain.Behaviours.OrderBehaviours>();
 
             // Infrastructure
             services.AddScoped<Domain.Services.IUsersRepository, Repos.UserRepository>();
