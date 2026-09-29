@@ -61,11 +61,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly IRedsys _redsys;
     private readonly OrderBehaviours _orderBehaviours;
     private readonly OrderInfoBuilder _orderInfoBuilder;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CreateOrderCommandHandler(IEventsPeopleRespository eventsPeopleRepository,
         IPersonGroupCourseRepository peopleGroupCourseRepository, ICoursesRepository coursesRepository,
         IOrdersRepository ordersRepository, IRedsys redsys, IEventPersonOrderRepository eventPersonOrderRepository,
-        OrderBehaviours orderBehaviours, OrderInfoBuilder orderInfoBuilder)
+        OrderBehaviours orderBehaviours, OrderInfoBuilder orderInfoBuilder, IUnitOfWork unitOfWork)
     {
         _eventsPeopleRepository = eventsPeopleRepository;
         _peopleGroupCourseRepository = peopleGroupCourseRepository;
@@ -75,6 +76,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _eventPersonOrderRepository = eventPersonOrderRepository;
         _orderBehaviours = orderBehaviours;
         _orderInfoBuilder = orderInfoBuilder;
+        _unitOfWork = unitOfWork;
     }
 
     #endregion
@@ -151,18 +153,23 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             Amount = personEvents.Sum(x => pgc.PriceForEvent(x.Event) * x.Quantity),
             Person = pgc.Person,
         };
-        await _ordersRepository.InsertAsync(order, ct);
 
-        // Create person event orders
-        IEnumerable<EventPersonOrder> eventPersonOrders = personEvents.Select(x => new EventPersonOrder()
+        // L'ordre i les seves línies han d'entrar juntes: una ordre sense línies no es pot pagar mai.
+        await _unitOfWork.ExecuteInTransactionAsync(async token =>
         {
-            OrderId = order.Id,
-            Order = order,
-            EventPersonId = x.Id,
-            EventPerson = x,
-            Quantity = x.Quantity,
-        });
-        await _eventPersonOrderRepository.InsertManyAsync(eventPersonOrders, ct);
+            await _ordersRepository.InsertAsync(order, token);
+
+            // Create person event orders. Necessita l'Id de l'ordre, per això va després d'inserir-la.
+            IEnumerable<EventPersonOrder> eventPersonOrders = personEvents.Select(x => new EventPersonOrder()
+            {
+                OrderId = order.Id,
+                Order = order,
+                EventPersonId = x.Id,
+                EventPerson = x,
+                Quantity = x.Quantity,
+            });
+            await _eventPersonOrderRepository.InsertManyAsync(eventPersonOrders, token);
+        }, ct);
 
         // Redsys no accepta imports de 0: si no hi ha res a pagar es confirma l'ordre directament i no es torna info redsys
         if (order.IsFree)
