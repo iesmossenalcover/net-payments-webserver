@@ -29,9 +29,19 @@ It is stored in the user-secrets store, outside the repo, so it is never committ
 If it is missing the app fails on startup with `Configure PostgreSqlConnectionString`.
 
 ## 3. Create the tables
-`dotnet ef database update`
+Never run `dotnet ef database update`. Migrations are **always** applied through a SQL script
+that we execute ourselves, in every environment. Generate the whole schema from scratch:
 
-No `GRANT` is needed in dev: the migrations run as `paymentsapi`, so that role owns the tables.
+`dotnet ef migrations script --idempotent -o schema.sql`
+
+With no migration names it goes from zero to the latest migration, so it builds the full
+database. `--idempotent` guards every step, so re-running it is safe.
+
+Then execute it as `paymentsapi`:
+
+`psql -h <host> -U paymentsapi -d payments -f schema.sql`
+
+No `GRANT` is needed in dev: the script runs as `paymentsapi`, so that role owns the tables.
 
 ## 4. Seed the minimum rows
 The app needs a current course, an app config row and an admin user to be usable:
@@ -47,8 +57,13 @@ INSERT INTO main.user("Username", "HashedPassword", "Firstname", "Lastname") VAL
 ### Install ef globally
 `dotnet tool update --global dotnet-ef`
 
-### Add this package to the project
-`dotnet add package Microsoft.EntityFrameworkCore.Design`
+Global tools live in `~/.dotnet/tools`, which is not on the PATH by default. If `dotnet ef`
+says "command not found", add it:
+
+`export PATH="$PATH:$HOME/.dotnet/tools"`
+
+### Design package
+`Microsoft.EntityFrameworkCore.Design` is already referenced in the csproj. Nothing to add.
 
 ## Migrate and update
 
