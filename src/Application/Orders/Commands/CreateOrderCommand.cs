@@ -13,12 +13,13 @@ using Domain.Behaviours;
 
 namespace Application.Orders.Commands;
 
+public record RedsysFormVm(string Url, string MerchantParameters, string SignatureVersion, string Signature);
+
 /// <summary>
-/// Si l'ordre és gratuïta (<paramref name="Free"/>) ja s'ha marcat com a pagada i no s'ha d'anar a Redsys:
-/// només s'omple <paramref name="OrderInfo"/>. Si no, s'omplen les dades del formulari de Redsys.
+/// Només un dels dos camps ve informat: <paramref name="Payment"/> amb les dades del formulari de Redsys
+/// si l'ordre s'ha de pagar, o <paramref name="Confirmation"/> amb el resum si era gratuïta i ja s'ha confirmat.
 /// </summary>
-public record CreateOrderCommandVm(bool Free, string? Url, string? MerchantParameters, string? SignatureVersion,
-    string? Signature, OrderInfoVm? OrderInfo);
+public record CreateOrderCommandVm(RedsysFormVm? Payment, OrderInfoVm? Confirmation);
 
 public record SelectedEvent(string Code, uint? Quantity);
 
@@ -163,11 +164,10 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         });
         await _eventPersonOrderRepository.InsertManyAsync(eventPersonOrders, ct);
 
-        // Redsys no accepta imports de 0: si no hi ha res a pagar es marca l'ordre com a pagada directament.
-        // L'import es calcula aquí al servidor, per tant el client no pot forçar una ordre gratuïta.
-        if (order.Amount == 0)
+        // Redsys no accepta imports de 0: si no hi ha res a pagar es confirma l'ordre directament i no es torna info redsys
+        if (order.IsFree)
         {
-            string? error = await _orderBehaviours.PayOrder(order, ct);
+            string? error = (await _orderBehaviours.PayOrder(order, ct)).ErrorMessage();
             if (error != null)
             {
                 return Response<CreateOrderCommandVm?>.Error(ResponseCode.InternalError, error);
@@ -180,13 +180,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
                     "L'inscripció s'ha confirmat però no s'ha pogut carregar el resum.");
             }
 
-            return Response<CreateOrderCommandVm?>.Ok(
-                new CreateOrderCommandVm(true, null, null, null, null, orderInfo.Data));
+            return Response<CreateOrderCommandVm?>.Ok(new CreateOrderCommandVm(null, orderInfo.Data));
         }
 
         RedsysRequest redsysRequest = _redsys.CreateRedsysRequest(order, request.PaymentMethod == PaymentMethod.Bizum);
-        var vm = new CreateOrderCommandVm(false, redsysRequest.Url, redsysRequest.MerchantParamenters,
-            redsysRequest.SignatureVersion, redsysRequest.Signature, null);
-        return Response<CreateOrderCommandVm?>.Ok(vm);
+        var redsysForm = new RedsysFormVm(redsysRequest.Url, redsysRequest.MerchantParamenters,
+            redsysRequest.SignatureVersion, redsysRequest.Signature);
+        return Response<CreateOrderCommandVm?>.Ok(new CreateOrderCommandVm(redsysForm, null));
     }
 }

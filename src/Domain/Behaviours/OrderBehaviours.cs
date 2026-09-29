@@ -5,6 +5,14 @@ using Domain.Services;
 
 namespace Domain.Behaviours;
 
+public enum PayOrderResult
+{
+    Ok = 0,
+    AlreadyPaid = 1,
+    NoEventsForOrder = 2,
+    PersonNotInCourse = 3,
+}
+
 public class OrderBehaviours
 {
     #region IOC
@@ -14,32 +22,36 @@ public class OrderBehaviours
     private readonly IEventPersonOrderRepository _eventPersonOrderRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly EventPersonBehaviours _eventPersonBehaviours;
+    private readonly IUnitOfWork _unitOfWork;
 
     public OrderBehaviours(IEventsPeopleRespository eventsPeopleRepository,
         IPersonGroupCourseRepository personGroupCourseRepository, IEventPersonOrderRepository eventPersonOrderRepository,
-        IOrdersRepository ordersRepository, EventPersonBehaviours eventPersonBehaviours)
+        IOrdersRepository ordersRepository, EventPersonBehaviours eventPersonBehaviours, IUnitOfWork unitOfWork)
     {
         _eventsPeopleRepository = eventsPeopleRepository;
         _personGroupCourseRepository = personGroupCourseRepository;
         _eventPersonOrderRepository = eventPersonOrderRepository;
         _ordersRepository = ordersRepository;
         _eventPersonBehaviours = eventPersonBehaviours;
+        _unitOfWork = unitOfWork;
     }
 
     #endregion
 
     /// <summary>
     /// Marca l'ordre i tots els seus esdeveniments com a pagats.
-    /// Retorna un missatge d'error o null si tot ha anat bé.
+    /// És idempotent: Redsys pot repetir la notificació i el camí gratuït es pot reintentar.
     /// </summary>
-    public async Task<string?> PayOrder(Order order, CancellationToken ct)
+    public async Task<PayOrderResult> PayOrder(Order order, CancellationToken ct)
     {
+        if (order.Status == OrderStatus.Paid) return PayOrderResult.AlreadyPaid;
+
         // Get all PersonEventOrder paid by this order
         IEnumerable<EventPersonOrder> personEventOrders =
             await _eventPersonOrderRepository.GetAllByOrderIdAsync(order.Id, ct);
         if (!personEventOrders.Any())
         {
-            return "Error, cap esdeveniment amb aquest ordre";
+            return PayOrderResult.NoEventsForOrder;
         }
 
         IEnumerable<long> eventPersonIds = personEventOrders.Select(x => x.EventPersonId);
@@ -52,7 +64,7 @@ public class OrderBehaviours
         PersonGroupCourse? pgc = await _personGroupCourseRepository.GetCoursePersonGroupById(p.Id, courseId, ct);
         if (pgc == null)
         {
-            return "Error, la persona no està asociada al curs";
+            return PayOrderResult.PersonNotInCourse;
         }
 
         // Update quantities on person_events based on person_event_order
@@ -72,10 +84,15 @@ public class OrderBehaviours
 
         order.Status = OrderStatus.Paid;
         order.PaidDate = DateTimeOffset.UtcNow;
-        await _ordersRepository.UpdateAsync(order, ct);
 
-        await _eventPersonBehaviours.PayEvents(personEvents, pgc.Amipa, ct);
+        // L'ordre, els esdeveniments i la matrícula/AMIPA s'han de moure junts: si només se'n
+        // desés una part l'ordre quedaria pagada amb esdeveniments sense marcar.
+        await _unitOfWork.ExecuteInTransactionAsync(async token =>
+        {
+            await _ordersRepository.UpdateAsync(order, token);
+            await _eventPersonBehaviours.PayEvents(personEvents, pgc.Amipa, token);
+        }, ct);
 
-        return null;
+        return PayOrderResult.Ok;
     }
 }

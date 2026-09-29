@@ -18,6 +18,9 @@ namespace Infrastructure
             services.AddScoped<Domain.Behaviours.EventPersonBehaviours, Domain.Behaviours.EventPersonBehaviours>();
             services.AddScoped<Domain.Behaviours.OrderBehaviours, Domain.Behaviours.OrderBehaviours>();
 
+            // Application
+            services.AddScoped<Application.Orders.Queries.OrderInfoBuilder>();
+
             // Infrastructure
             services.AddScoped<Domain.Services.IUsersRepository, Repos.UserRepository>();
             services.AddScoped<Domain.Services.IOAuthUsersRepository, Repos.OAuthUserRepository>();
@@ -31,6 +34,7 @@ namespace Infrastructure
             services.AddScoped<Domain.Services.IOrdersRepository, OrdersRepository>();
             services.AddScoped<Domain.Services.IOUGroupRelationsRepository, UoGroupRelationRepository>();
             services.AddScoped<Domain.Services.ITransactionsService, TransactionsService>();
+            services.AddScoped<Domain.Services.IUnitOfWork, UnitOfWork>();
             services.AddScoped<Domain.Services.IJobsRepository, JobsRepository>();
             services.AddScoped<Domain.Services.ILogsInfoRespository, LogsInfoRepository>();
             services.AddScoped<Domain.Services.ILogStore, IntoInfoLogStore>();

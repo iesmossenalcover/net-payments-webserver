@@ -99,7 +99,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<IPasswordHasher<Domain.Entities.Authentication.User>, PasswordHasher<Domain.Entities.Authentication.User>>();
 builder.Services.AddScoped<Domain.Services.ICurrentRequestService, WebServer.Services.CurrentRequestService>();
-builder.Services.AddScoped<Application.Orders.Queries.OrderInfoBuilder>();
 builder.Services.AddHostedService<WebServer.Services.DailyEventsEmailService>();
 
 var app = builder.Build();

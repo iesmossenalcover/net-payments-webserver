@@ -66,7 +66,7 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, R
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, result.ErrorMessage ?? string.Empty);
         }
 
-        string? error = await _orderBehaviours.PayOrder(order, ct);
+        string? error = (await _orderBehaviours.PayOrder(order, ct)).ErrorMessage();
         if (error != null)
         {
             return Response<ConfirmOrderCommandVm?>.Error(ResponseCode.BadRequest, error);

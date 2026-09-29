@@ -55,6 +55,7 @@ public class OrderInfoBuilder
             orderEvents.Select(x => new EventInfo(x.Event.Code, x.Event.Name,
                 x.Quantity,
                 pgc.PriceForEvent(x.Event) * x.Quantity, "€"));
+                
         return Response<OrderInfoVm>.Ok(new OrderInfoVm(
             pgc.Person.FullName, pgc.Person.DocumentId,
             eventsInfo, enrollmentEvent && config.DisplayEnrollment, pgc.SubjectsInfo, pgc.Group.Description));
