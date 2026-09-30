@@ -174,12 +174,16 @@ public static class RegisterRoutes
             .WithName("Get group by id");
 
         app.MapPost("/api/groups", Groups.CreateGroup)
-            .RequireAuthorization(AuthorizationPolicies.ADMIN)
+            .RequireAuthorization(AuthorizationPolicies.SUPER_USER)
             .WithName("Create group");
 
         app.MapPut("/api/groups/{id}", Groups.UpdateGroup)
-            .RequireAuthorization(AuthorizationPolicies.ADMIN)
+            .RequireAuthorization(AuthorizationPolicies.SUPER_USER)
             .WithName("Update group");
+
+        app.MapDelete("/api/groups/{id}", Groups.DeleteGroup)
+            .RequireAuthorization(AuthorizationPolicies.SUPER_USER)
+            .WithName("Delete group");
 
         // Events
         app.MapGet("/api/events", Events.ListCourseEvents)

@@ -111,6 +111,11 @@ public class PeopleGroupCourseRepository : Repository<PersonGroupCourse>, Domain
                     .ToListAsync(ct);
     }
 
+    public Task<bool> AnyByGroupIdAsync(long groupId, CancellationToken ct)
+    {
+        return _dbSet.AnyAsync(x => x.GroupId == groupId, ct);
+    }
+
     public async Task<IEnumerable<PersonGroupCourse>> GetPeopleGroupByPeopleIdsAndCourseIdAsync(long courseId, IEnumerable<long> peopleIds, CancellationToken ct)
     {
         return await _dbContext.PersonGroupCourses

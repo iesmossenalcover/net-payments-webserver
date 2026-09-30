@@ -44,4 +44,9 @@ public class Groups
         return await mediator.Send(cmd);
     }
 
+    public static async Task<Response<long?>> DeleteGroup(IMediator mediator, long id)
+    {
+        return await mediator.Send(new DeleteGroupCommand(id));
+    }
+
 }
