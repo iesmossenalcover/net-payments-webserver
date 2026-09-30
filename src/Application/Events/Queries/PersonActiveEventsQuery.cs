@@ -67,15 +67,15 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         );
     }
 
-    // Warn about missing authorizations while the person has upcoming events (paid or not) that require them.
+    // Warn about missing authorizations while the person has events of the current course (paid or not) that require them.
     private MissingAuthorizationsVm? GetMissingAuthorizations(IEnumerable<EventPerson> personEvents, PersonGroupCourse pgc)
     {
-        IEnumerable<Event> upcomingUnauthorized = personEvents
+        IEnumerable<Event> unauthorized = personEvents
             .Select(x => x.Event)
-            .Where(x => (x.EndDate ?? x.Date) >= DateTimeOffset.UtcNow && !pgc.IsAuthorizedFor(x));
+            .Where(x => !pgc.IsAuthorizedFor(x));
 
-        bool walking = upcomingUnauthorized.Any(x => x.Type == EventType.Walking);
-        bool transport = upcomingUnauthorized.Any(x => x.Type == EventType.Transport);
+        bool walking = unauthorized.Any(x => x.Type == EventType.Walking);
+        bool transport = unauthorized.Any(x => x.Type == EventType.Transport);
 
         if (!walking && !transport) return null;
         return new MissingAuthorizationsVm(walking, transport, contactPhoneNumber);
