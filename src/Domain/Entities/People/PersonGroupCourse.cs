@@ -23,8 +23,35 @@ public class PersonGroupCourse : Entity
     public Event? EnrollmentEvent { get; set; }
     public string? SubjectsInfo { get; set; } = default!;
 
+    public bool WalkingAuthorization { get; set; } = false;
+    public DateTimeOffset? WalkingAuthorizationDate { get; set; }
+    public bool TransportAuthorization { get; set; } = false;
+    public DateTimeOffset? TransportAuthorizationDate { get; set; }
+
     public decimal PriceForEvent(Event e)
     {
         return Amipa ? e.AmipaPrice : e.Price;
+    }
+
+    public bool IsAuthorizedFor(Event e) => e.Type switch
+    {
+        EventType.Walking => WalkingAuthorization,
+        EventType.Transport => TransportAuthorization,
+        _ => true
+    };
+
+    // The date is only set when the authorization is granted, and cleared when revoked.
+    public void SetWalkingAuthorization(bool value)
+    {
+        if (value && !WalkingAuthorization) WalkingAuthorizationDate = DateTimeOffset.UtcNow;
+        if (!value) WalkingAuthorizationDate = null;
+        WalkingAuthorization = value;
+    }
+
+    public void SetTransportAuthorization(bool value)
+    {
+        if (value && !TransportAuthorization) TransportAuthorizationDate = DateTimeOffset.UtcNow;
+        if (!value) TransportAuthorizationDate = null;
+        TransportAuthorization = value;
     }
 }

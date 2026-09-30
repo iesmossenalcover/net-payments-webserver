@@ -2,6 +2,14 @@ using Domain.Entities.People;
 
 namespace Domain.Entities.Events;
 
+public enum EventType
+{
+    Other = 0,
+    Walking = 1,
+    Transport = 2,
+    Trip = 3,
+}
+
 public class Event : Entity
 {
     public string Code { get; set; }  = default!;
@@ -15,6 +23,7 @@ public class Event : Entity
 
     public bool Enrollment { get; set; } = false;
     public bool Amipa { get; set; } = false;
+    public EventType Type { get; set; } = EventType.Other;
 
     public DateTimeOffset Date { get; set; } = default!;
     public DateTimeOffset? EndDate { get; set; } = default!;

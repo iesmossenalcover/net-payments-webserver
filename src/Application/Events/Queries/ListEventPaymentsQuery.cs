@@ -7,8 +7,8 @@ using Application.Common.Helpers;
 
 namespace Application.Events.Queries;
 
-public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid);
-public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group, uint Quantity, DateTimeOffset? DatePaid);
+public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid, int NotAuthorizedCount, int NotAuthorizedPaidCount);
+public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group, uint Quantity, DateTimeOffset? DatePaid, bool Authorized);
 
 public record PaymentsEvent(
     long Id, string Name, string Code,
@@ -21,6 +21,7 @@ public record PaymentsEvent(
     bool IsActive,
     bool IsAmpia,
     bool IsEnrollment,
+    EventType Type,
     bool QuantitySelector, uint? MaxQuantity = null
 );
 
@@ -56,7 +57,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
 
         IEnumerable<EventPerson> eventPeople = await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct);
         IDictionary<long, PersonGroupCourse> pgcs =
-                    (await _personGroupCourseRepository.GetCurrentCourseGroupByPeopleIdsAsync(eventPeople.Select(x => x.PersonId), ct))
+                    (await _personGroupCourseRepository.GetPeopleGroupByPeopleIdsAndCourseIdAsync(e.CourseId, eventPeople.Select(x => x.PersonId), ct))
                     .ToDictionary(x => x.PersonId, x => x);
 
         var quantitySelector = e.MaxQuantity > 1;
@@ -76,7 +77,8 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                 ep.Paid,
                 pgc.Group.Name,
                 quantitySelector && ep.Paid ? ep.Quantity : 1,
-                ep.DatePaid
+                ep.DatePaid,
+                pgc.IsAuthorizedFor(e)
             );
             payments.Add(epVm);
         }
@@ -90,7 +92,9 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             payments.Count(x => !x.Amipa && x.Paid),
             payments.Where(x => x.Paid).Sum(x => x.Price),
             payments.Where(x => x.Amipa && x.Paid).Sum(x => x.Price),
-            payments.Where(x => !x.Amipa && x.Paid).Sum(x => x.Price)
+            payments.Where(x => !x.Amipa && x.Paid).Sum(x => x.Price),
+            payments.Count(x => !x.Authorized),
+            payments.Count(x => !x.Authorized && x.Paid)
         );
 
         var vm = new ListEventPaymentsVm(
@@ -107,6 +111,7 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                 e.IsActive,
                 e.Amipa,
                 e.Enrollment,
+                e.Type,
                 quantitySelector,
                 quantitySelector ? e.MaxQuantity : null
             ),

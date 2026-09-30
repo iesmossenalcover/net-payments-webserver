@@ -10,7 +10,8 @@ namespace Application.Events.Queries;
 # region ViewModels
 public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo, string? GroupDescription);
 public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity);
-public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm Person);
+public record MissingAuthorizationsVm(bool Walking, bool Transport, string ContactPhone);
+public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm Person, MissingAuthorizationsVm? MissingAuthorizations);
 #endregion
 
 #region Query
@@ -55,15 +56,29 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         }
 
         Person person = pgc.Person;
-        IEnumerable<EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
-        personEvents = personEvents.Where(x => x.CanBePaid);
+        IEnumerable<EventPerson> allPersonEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
+        IEnumerable<EventPerson> personEvents = allPersonEvents.Where(x => x.CanBePaid);
 
 
         IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => ToPublicEventVm(x, pgc));
 
         return Response<PersonActiveEventsVm>.Ok(
-            new PersonActiveEventsVm(eventsVm, ToPersonSummaryVm(person, pgc, config))
+            new PersonActiveEventsVm(eventsVm, ToPersonSummaryVm(person, pgc, config), GetMissingAuthorizations(allPersonEvents, pgc))
         );
+    }
+
+    // Warn about missing authorizations while the person has upcoming events (paid or not) that require them.
+    private MissingAuthorizationsVm? GetMissingAuthorizations(IEnumerable<EventPerson> personEvents, PersonGroupCourse pgc)
+    {
+        IEnumerable<Event> upcomingUnauthorized = personEvents
+            .Select(x => x.Event)
+            .Where(x => (x.EndDate ?? x.Date) >= DateTimeOffset.UtcNow && !pgc.IsAuthorizedFor(x));
+
+        bool walking = upcomingUnauthorized.Any(x => x.Type == EventType.Walking);
+        bool transport = upcomingUnauthorized.Any(x => x.Type == EventType.Transport);
+
+        if (!walking && !transport) return null;
+        return new MissingAuthorizationsVm(walking, transport, contactPhoneNumber);
     }
 
     public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)

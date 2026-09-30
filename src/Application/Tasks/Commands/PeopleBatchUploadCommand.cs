@@ -145,6 +145,10 @@ public class
                         pgc.EnrollmentEventId = null;
                         pgc.EnrollmentEvent = null;
                     }
+
+                    // Authorizations are only updated when the field is set.
+                    if (r.WalkingAuthorization.HasValue) pgc.SetWalkingAuthorization(r.WalkingAuthorization.Value);
+                    if (r.TransportAuthorization.HasValue) pgc.SetTransportAuthorization(r.TransportAuthorization.Value);
                 }
                 else
                 {
@@ -159,6 +163,8 @@ public class
                         EnrolledDate = r.Enrolled.HasValue && r.Enrolled.Value ? DateTimeOffset.UtcNow : null,
                         SubjectsInfo = r.Subjects,
                     };
+                    pgc.SetWalkingAuthorization(r.WalkingAuthorization ?? false);
+                    pgc.SetTransportAuthorization(r.TransportAuthorization ?? false);
 
                     personGroupCourse.Add(p.DocumentId, pgc);
                 }

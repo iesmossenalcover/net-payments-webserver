@@ -33,6 +33,10 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
             }).WithMessage("La data de finalització ha de ser posterior a la data d'inici");
             
         RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
+        RuleFor(x => x.Type)
+            .NotNull().WithMessage("S'ha d'indicar el tipus d'esdeveniment")
+            .IsInEnum().WithMessage("Tipus d'esdeveniment no vàlid")
+            .When(x => x.IsOuting);
         RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
@@ -72,6 +76,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.UnpublishDate =  request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
         e.Enrollment = request.Enrollment;
         e.Amipa = request.Amipa;
+        e.Type = request.ResolvedType;
         e.Description = request.Description;
 
         await _eventsRespository.UpdateAsync(e, CancellationToken.None);

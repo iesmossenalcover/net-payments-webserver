@@ -147,6 +147,8 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
                 Amipa = request.Amipa,
                 Enrolled = request.Enrolled,
             };
+            pgc.SetWalkingAuthorization(request.WalkingAuthorization);
+            pgc.SetTransportAuthorization(request.TransportAuthorization);
             await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
         }
         else if (pgc != null && request.GroupId.HasValue) // Update PGC
@@ -159,6 +161,8 @@ public class UpdatePersonCommandHandler : IRequestHandler<UpdatePersonCommand, R
                 pgc.EnrollmentEventId = null;
             }
             pgc.Enrolled = request.Enrolled;
+            pgc.SetWalkingAuthorization(request.WalkingAuthorization);
+            pgc.SetTransportAuthorization(request.TransportAuthorization);
 
 
             pgc.SubjectsInfo = request.SubjectsInfo;

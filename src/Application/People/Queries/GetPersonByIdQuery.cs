@@ -21,7 +21,15 @@ public record PersonVm
     public bool Enrolled { get; set; } = false;
     public string? SubjectsInfo { get; set; }
     public string? SchoolAlert { get; set; }
+    public bool WalkingAuthorization { get; set; }
+    public bool TransportAuthorization { get; set; }
+    public IEnumerable<PersonCourseVm> Courses { get; set; } = new List<PersonCourseVm>();
 }
+
+public record PersonCourseVm(
+    long CourseId, string CourseName, bool Active, string GroupName, bool Amipa, bool Enrolled,
+    bool WalkingAuthorization, DateTimeOffset? WalkingAuthorizationDate,
+    bool TransportAuthorization, DateTimeOffset? TransportAuthorizationDate);
 
 #endregion
 
@@ -72,6 +80,16 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.SubjectsInfo = pgc?.SubjectsInfo ?? "";
         personVm.Enrolled = pgc?.Enrolled ?? false;
         personVm.Amipa = pgc?.Amipa ?? false;
+        personVm.WalkingAuthorization = pgc?.WalkingAuthorization ?? false;
+        personVm.TransportAuthorization = pgc?.TransportAuthorization ?? false;
+
+        personVm.Courses = personGroupCourses
+            .OrderByDescending(x => x.Course.StartDate)
+            .Select(x => new PersonCourseVm(
+                x.CourseId, x.Course.Name, x.Course.Active, x.Group.Name, x.Amipa, x.Enrolled,
+                x.WalkingAuthorization, x.WalkingAuthorizationDate,
+                x.TransportAuthorization, x.TransportAuthorizationDate))
+            .ToList();
 
         return Response<PersonVm>.Ok(personVm);
     }
