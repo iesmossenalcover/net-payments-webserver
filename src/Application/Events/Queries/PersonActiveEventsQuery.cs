@@ -9,7 +9,7 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo, string? GroupDescription);
-public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity);
+public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity, string? MissingAuthorization);
 public record MissingAuthorizationsVm(bool Walking, bool Transport, string ContactPhone);
 public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm Person, MissingAuthorizationsVm? MissingAuthorizations);
 #endregion
@@ -83,7 +83,9 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
 
     public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)
     {
-        return new PublicEventVm(x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true, x.Event.MaxQuantity > 1, x.Event.MaxQuantity);
+        // The event can still be paid, but the family is told which authorization is missing.
+        string? missingAuthorization = pgc.IsAuthorizedFor(x.Event) ? null : PersonGroupCourse.MissingAuthorizationMessage(x.Event);
+        return new PublicEventVm(x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true, x.Event.MaxQuantity > 1, x.Event.MaxQuantity, missingAuthorization);
     }
 
     public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)
