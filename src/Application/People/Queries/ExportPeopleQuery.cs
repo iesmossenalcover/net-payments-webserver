@@ -27,21 +27,25 @@ public class ExportPeopleQueryQuueryHandler : IRequestHandler<ExportPeopleQuery,
     {
         Course course = await _courseRepository.GetCurrentCoursAsync(ct);
         IQueryable<PersonGroupCourse> personGroupCourses = _personGroupCourseRepository.GetPersonGroupCourseByCourseAsync(course.Id, ct);
-        IEnumerable<PersonGroupCourse> respone = personGroupCourses.ToList();
 
-        IEnumerable<PersonRow> rows = personGroupCourses.Select(x => new PersonRow()
+        // Same format as the batch upload, so the exported file can be edited and uploaded again.
+        IEnumerable<BatchUploadRow> rows = personGroupCourses.Select(x => new BatchUploadRow()
         {
             AcademicRecordNumber = x.Person.AcademicRecordNumber,
             DocumentId = x.Person.DocumentId,
-            Enrolled = x.Enrolled,
-            Amipa = x.Amipa,
-            GroupName = x.Group.Name,
-            Name = x.Person.Name,
+            FirstName = x.Person.Name,
             Surname1 = x.Person.Surname1,
             Surname2 = x.Person.Surname2,
+            ContactPhone = x.Person.ContactPhone,
+            GroupName = x.Group.Name,
+            Subjects = x.SubjectsInfo,
             Email = x.Person.ContactMail,
+            Enrolled = x.Enrolled,
+            IsAmipa = x.Amipa,
             SchoolAlert = x.Person.SchoolAlert,
-        });
+            WalkingAuthorization = x.WalkingAuthorization,
+            TransportAuthorization = x.TransportAuthorization,
+        }).ToList();
         
         var memStream = new MemoryStream();
         var streamWriter = new StreamWriter(memStream);

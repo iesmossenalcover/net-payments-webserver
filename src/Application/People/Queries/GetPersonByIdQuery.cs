@@ -21,6 +21,8 @@ public record PersonVm
     public bool Enrolled { get; set; } = false;
     public string? SubjectsInfo { get; set; }
     public string? SchoolAlert { get; set; }
+    public bool WalkingAuthorization { get; set; }
+    public bool TransportAuthorization { get; set; }
 }
 
 #endregion
@@ -72,6 +74,8 @@ public class GetPersonByIdQueryHandler : IRequestHandler<GetPersonByIdQuery, Res
         personVm.SubjectsInfo = pgc?.SubjectsInfo ?? "";
         personVm.Enrolled = pgc?.Enrolled ?? false;
         personVm.Amipa = pgc?.Amipa ?? false;
+        personVm.WalkingAuthorization = pgc?.WalkingAuthorization ?? false;
+        personVm.TransportAuthorization = pgc?.TransportAuthorization ?? false;
 
         return Response<PersonVm>.Ok(personVm);
     }

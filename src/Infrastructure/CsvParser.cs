@@ -9,15 +9,15 @@ namespace Infrastructure;
 
 public class CsvParser : ICsvParser
 {
-    public static string[] TRUE_VALUES = new string[] { "si", "sí", "SI", "Sí", "Sí", "Si", "S", "s" };
-    public static string[] FALSE_VALUES = new string[] { "no", "NO", "No", "nO", "N" };
+    // The first value of each list is the one used when writing csv files.
+    public static string[] TRUE_VALUES = new string[] { "Sí", "si", "sí", "SI", "Sí", "Si", "S", "s" };
+    public static string[] FALSE_VALUES = new string[] { "No", "no", "NO", "nO", "N" };
 
     private static readonly Dictionary<Type, Type> Map = new Dictionary<Type, Type>()
     {
         { typeof(AccountRow), typeof(GoogleUserMap) },
         { typeof(BatchUploadRow), typeof(BatchUploadRowMap) },
         { typeof(WifiAccountRow), typeof(WifiAccountRowMap) },
-        { typeof(PersonRow), typeof(PersonRowMap) },
     };
 
     public CsvParseResult<T> Parse<T>(Stream stream)
@@ -129,6 +129,17 @@ public class BatchUploadRowMap : ClassMap<BatchUploadRow>
         Map(m => m.Enrolled).Name("Matriculat")
             .TypeConverterOption.BooleanValues(true, true, CsvParser.TRUE_VALUES)
             .TypeConverterOption.BooleanValues(false, true, CsvParser.FALSE_VALUES);
+
+        // Optional columns, so files without them can still be uploaded.
+        Map(m => m.SchoolAlert).Name("AlertaEscolar").Optional();
+
+        Map(m => m.WalkingAuthorization).Name("AutoritzacioAPeu").Optional()
+            .TypeConverterOption.BooleanValues(true, true, CsvParser.TRUE_VALUES)
+            .TypeConverterOption.BooleanValues(false, true, CsvParser.FALSE_VALUES);
+
+        Map(m => m.TransportAuthorization).Name("AutoritzacioTransport").Optional()
+            .TypeConverterOption.BooleanValues(true, true, CsvParser.TRUE_VALUES)
+            .TypeConverterOption.BooleanValues(false, true, CsvParser.FALSE_VALUES);
     }
 }
 
@@ -141,22 +152,6 @@ public class WifiAccountRowMap : ClassMap<WifiAccountRow>
     }
 }
 
-public class PersonRowMap : ClassMap<Application.Common.Models.PersonRow>
-{
-    public PersonRowMap()
-    {
-        Map(m => m.Name).Name("Nom");
-        Map(m => m.Surname1).Name("Llinatge1");
-        Map(m => m.Surname2).Name("Llinatge2");
-        Map(m => m.DocumentId).Name("Document Identitat");
-        Map(m => m.AcademicRecordNumber).Name("Expedient academic");
-        Map(m => m.GroupName).Name("Grup");
-        Map(m => m.Email).Name("Correu");
-        Map(m => m.SchoolAlert).Name("Alerta Escolar");
-        Map(m => m.Amipa).Name("Amipa");
-        Map(m => m.Enrolled).Name("Matriculat");
-    }
-}
 
 public class GoogleUserMap : ClassMap<AccountRow>
 {

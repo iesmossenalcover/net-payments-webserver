@@ -21,6 +21,8 @@ public record CreatePersonCommand : IRequest<Response<long?>>
     public string? SubjectsInfo { get; set; }
     public bool Amipa { get; set; } = false;
     public bool Enrolled { get; set; } = false;
+    public bool WalkingAuthorization { get; set; } = false;
+    public bool TransportAuthorization { get; set; } = false;
 }
 
 // Validator
@@ -118,6 +120,8 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             Enrolled = request.Enrolled,
             SubjectsInfo = request.SubjectsInfo,
         };
+        pgc.SetWalkingAuthorization(request.WalkingAuthorization);
+        pgc.SetTransportAuthorization(request.TransportAuthorization);
         await _personGroupCourseRepo.InsertAsync(pgc, CancellationToken.None);
 
         return Response<long?>.Ok(p.Id);

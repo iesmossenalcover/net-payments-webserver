@@ -21,6 +21,11 @@ public record EventData
     public DateTime? EndDate { get; set; } = default!;
     public DateTime PublishDate { get; set; }
     public DateTime? UnpublishDate { get; set; } = default!;
+    public EventType? Type { get; set; }
+
+    // Enrollment and AFA events are not outings, so they never require an authorization.
+    public bool IsOuting => !Enrollment && !Amipa;
+    public EventType ResolvedType => IsOuting ? Type ?? EventType.Other : EventType.Other;
 }
 
 public record CreateEventCommand : EventData, IRequest<Response<string?>>
@@ -45,6 +50,10 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
             }).WithMessage("La data de finalització ha de ser posterior a la data d'inici");
 
         RuleFor(x => x.PublishDate).NotNull().WithMessage("S'ha de seleccionar una data de publicació");
+        RuleFor(x => x.Type)
+            .NotNull().WithMessage("S'ha d'indicar el tipus d'esdeveniment")
+            .IsInEnum().WithMessage("Tipus d'esdeveniment no vàlid")
+            .When(x => x.IsOuting);
         RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
@@ -98,6 +107,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             AmipaPrice = request.AmipaPrice,
             Enrollment = request.Enrollment,
             Amipa = request.Amipa,
+            Type = request.ResolvedType,
             Price = request.Price,
             MaxQuantity = request.MaxQuantity,
             Description = request.Description,

@@ -7,8 +7,8 @@ using MediatR;
 
 namespace Application.Events.Queries;
 
-public record EventSummaryVm(long Id, string FullName, string DocumentId, bool Paid, long GroupId, string GroupName, uint? Quantity, string? SchoolAlert);
-public record ListEventSummaryVm(long Id, string Name, string Description, DateTimeOffset Date, DateTimeOffset PublishDate, DateTimeOffset? UnpublishDate, string Code, IEnumerable<SelectOptionVm> Groups, IEnumerable<EventSummaryVm> Events);
+public record EventSummaryVm(long Id, string FullName, string DocumentId, bool Paid, long GroupId, string GroupName, uint? Quantity, string? SchoolAlert, bool Authorized);
+public record ListEventSummaryVm(long Id, string Name, string Description, DateTimeOffset Date, DateTimeOffset PublishDate, DateTimeOffset? UnpublishDate, string Code, EventType Type, IEnumerable<SelectOptionVm> Groups, IEnumerable<EventSummaryVm> Events);
 
 public record ListEventSummaryQuery(string Code) : IRequest<Response<ListEventSummaryVm>>;
 
@@ -53,13 +53,14 @@ public class ListEventSummarysQueryHandler : IRequestHandler<ListEventSummaryQue
                 pgc.Group.Id,
                 pgc.Group.Name,
                 ep.Event.MaxQuantity > 1 && ep.Paid ? ep.Quantity : null,
-                person.SchoolAlert
+                person.SchoolAlert,
+                pgc.IsAuthorizedFor(e)
             );
             payments.Add(epVm);
         }
 
         var vm = new ListEventSummaryVm(
-            e.Id, e.Name, e.Description, e.Date, e.PublishDate, e.UnpublishDate, e.Code,
+            e.Id, e.Name, e.Description, e.Date, e.PublishDate, e.UnpublishDate, e.Code, e.Type,
             pgcs.Values.DistinctBy(x => x.GroupId).Select(x => new SelectOptionVm(x.Group.Id.ToString(), x.Group.Name)).OrderBy(x => x.Value),
             payments.OrderBy(x => x.GroupName).ThenBy(x => x.FullName)
         );

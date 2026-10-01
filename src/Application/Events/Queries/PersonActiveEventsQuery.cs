@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Helpers;
 using Domain.Services;
 using Domain.Entities.Configuration;
 using Domain.Entities.Events;
@@ -9,8 +10,9 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo, string? GroupDescription);
-public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity);
-public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm Person);
+public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal? Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity, string? MissingAuthorization);
+public record MissingAuthorizationsVm(bool Walking, bool Transport, string ContactPhone);
+public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm Person, MissingAuthorizationsVm? MissingAuthorizations);
 #endregion
 
 #region Query
@@ -55,20 +57,49 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
         }
 
         Person person = pgc.Person;
-        IEnumerable<EventPerson> personEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
-        personEvents = personEvents.Where(x => x.CanBePaid);
+        IEnumerable<EventPerson> allPersonEvents = await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
+        IEnumerable<EventPerson> personEvents = allPersonEvents.Where(x => x.CanBePaid);
 
 
         IEnumerable<PublicEventVm> eventsVm = personEvents.Select(x => ToPublicEventVm(x, pgc));
 
         return Response<PersonActiveEventsVm>.Ok(
-            new PersonActiveEventsVm(eventsVm, ToPersonSummaryVm(person, pgc, config))
+            new PersonActiveEventsVm(eventsVm, ToPersonSummaryVm(person, pgc, config), GetMissingAuthorizations(allPersonEvents, pgc))
         );
+    }
+
+    // Warn about missing authorizations while the person has events of the current course (paid or not) that require them.
+    // És un avís global: el bloqueig de cada esdeveniment es decideix a ToPublicEventVm.
+    private MissingAuthorizationsVm? GetMissingAuthorizations(IEnumerable<EventPerson> personEvents, PersonGroupCourse pgc)
+    {
+        IEnumerable<Event> unauthorized = personEvents
+            .Select(x => x.Event)
+            .Where(x => !pgc.IsAuthorizedFor(x));
+
+        bool walking = unauthorized.Any(x => x.Type == EventType.Walking);
+        bool transport = unauthorized.Any(x => x.Type == EventType.Transport);
+
+        if (!walking && !transport) return null;
+        return new MissingAuthorizationsVm(walking, transport, contactPhoneNumber);
     }
 
     public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)
     {
-        return new PublicEventVm(x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true, x.Event.MaxQuantity > 1, x.Event.MaxQuantity);
+        // Sense l'autorització del curs l'esdeveniment es mostra, però no es pot seleccionar:
+        // s'amaga el preu i el seu lloc l'ocupa el motiu. El servidor ho torna a comprovar
+        // a CreateOrderCommand, perquè l'API es pot cridar sense passar pel front.
+        bool authorized = pgc.IsAuthorizedFor(x.Event);
+        string? missingAuthorization = authorized ? null : AuthorizationMessages.Missing(x.Event);
+        return new PublicEventVm(
+            x.Event.Code,
+            x.Event.Name,
+            x.Event.Date,
+            authorized ? pgc.PriceForEvent(x.Event) : null,
+            "€",
+            authorized,
+            authorized && x.Event.MaxQuantity > 1,
+            x.Event.MaxQuantity,
+            missingAuthorization);
     }
 
     public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)
