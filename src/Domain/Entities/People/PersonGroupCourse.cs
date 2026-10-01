@@ -40,10 +40,6 @@ public class PersonGroupCourse : Entity
         _ => true
     };
 
-    public static string MissingAuthorizationMessage(Event e) => e.Type == EventType.Walking
-        ? "Falta l'autorització de sortides a peu"
-        : "Falta l'autorització de sortides amb transport";
-
     // The date is only set when the authorization is granted, and cleared when revoked.
     public void SetWalkingAuthorization(bool value)
     {

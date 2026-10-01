@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Helpers;
 using Domain.Services;
 using Domain.Entities.Configuration;
 using Domain.Entities.Events;
@@ -9,7 +10,7 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record PersonSummaryVm(string DocumentId, string FullName, bool Enrolled, string? EnrollmentSubjectsInfo, string? GroupDescription);
-public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity, string? MissingAuthorization);
+public record PublicEventVm(string Code, string Name, DateTimeOffset Date, decimal? Price, string CurrencySymbol, bool Selectable, bool DisplayQuantitySelector, uint MaxQuantity, string? MissingAuthorization);
 public record MissingAuthorizationsVm(bool Walking, bool Transport, string ContactPhone);
 public record PersonActiveEventsVm(IEnumerable<PublicEventVm> Events, PersonSummaryVm Person, MissingAuthorizationsVm? MissingAuthorizations);
 #endregion
@@ -68,6 +69,7 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
     }
 
     // Warn about missing authorizations while the person has events of the current course (paid or not) that require them.
+    // És un avís global: el bloqueig de cada esdeveniment es decideix a ToPublicEventVm.
     private MissingAuthorizationsVm? GetMissingAuthorizations(IEnumerable<EventPerson> personEvents, PersonGroupCourse pgc)
     {
         IEnumerable<Event> unauthorized = personEvents
@@ -83,9 +85,21 @@ public class PersonActiveEventsQueryHandler : IRequestHandler<PersonActiveEvents
 
     public static PublicEventVm ToPublicEventVm(EventPerson x, PersonGroupCourse pgc)
     {
-        // The event can still be paid, but the family is told which authorization is missing.
-        string? missingAuthorization = pgc.IsAuthorizedFor(x.Event) ? null : PersonGroupCourse.MissingAuthorizationMessage(x.Event);
-        return new PublicEventVm(x.Event.Code, x.Event.Name, x.Event.Date, pgc.PriceForEvent(x.Event), "€", true, x.Event.MaxQuantity > 1, x.Event.MaxQuantity, missingAuthorization);
+        // Sense l'autorització del curs l'esdeveniment es mostra, però no es pot seleccionar:
+        // s'amaga el preu i el seu lloc l'ocupa el motiu. El servidor ho torna a comprovar
+        // a CreateOrderCommand, perquè l'API es pot cridar sense passar pel front.
+        bool authorized = pgc.IsAuthorizedFor(x.Event);
+        string? missingAuthorization = authorized ? null : AuthorizationMessages.Missing(x.Event);
+        return new PublicEventVm(
+            x.Event.Code,
+            x.Event.Name,
+            x.Event.Date,
+            authorized ? pgc.PriceForEvent(x.Event) : null,
+            "€",
+            authorized,
+            authorized && x.Event.MaxQuantity > 1,
+            x.Event.MaxQuantity,
+            missingAuthorization);
     }
 
     public static PersonSummaryVm ToPersonSummaryVm(Person person, PersonGroupCourse pgc, AppConfig config)

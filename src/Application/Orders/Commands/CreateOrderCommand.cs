@@ -99,6 +99,18 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             await _eventsPeopleRepository.GetAllByPersonAndCourse(person.Id, course.Id, ct);
 
         personEvents = personEvents.Where(x => x.Event.IsActive && !x.Paid);
+
+        // El front no deixa seleccionar els esdeveniments sense l'autorització del curs, però
+        // l'API es pot cridar directament: aquí es rebutgen igualment.
+        Event? unauthorized = personEvents
+            .Select(x => x.Event)
+            .FirstOrDefault(x => request.Events.Any(y => y.Code == x.Code) && !pgc.IsAuthorizedFor(x));
+        if (unauthorized != null)
+        {
+            return Response<CreateOrderCommandVm?>.Error(ResponseCode.BadRequest,
+                $"No es pot pagar {unauthorized.Name}. {AuthorizationMessages.Missing(unauthorized)}.");
+        }
+
         IEnumerable<string> activeEventCodes = personEvents.Select(x => x.Event.Code);
 
         if (!request.Events.All(x => activeEventCodes.Contains(x.Code)))

@@ -234,6 +234,10 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.ADMIN)
             .WithName("Set person event paid/not paid");
 
+        app.MapPost("/api/events/{eventCode}/payments", Events.SetEventPeoplePaid)
+            .RequireAuthorization(AuthorizationPolicies.ADMIN)
+            .WithName("Set all authorized event people as paid");
+
         app.MapGet("/api/events/{eventCode}/summary", Events.ListEventSummary)
             .RequireAuthorization(AuthorizationPolicies.READER)
             .WithName("List event summary");

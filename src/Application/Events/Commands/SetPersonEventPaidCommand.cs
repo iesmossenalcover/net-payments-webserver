@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Helpers;
 using Domain.Services;
 using Domain.Entities.Events;
 using Domain.Entities.People;
@@ -68,6 +69,13 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
         if (pgc == null)
             return Response<bool>.Error(ResponseCode.BadRequest, "Error, la persona no està asociada al curs");
 
+        // Sense l'autorització del curs no es pot marcar com a pagat. Desmarcar sí que es permet,
+        // perquè l'autorització es pot haver revocat després d'un pagament ja fet.
+        if (request.Paid && !pgc.IsAuthorizedFor(eventPerson.Event))
+        {
+            return Response<bool>.Error(ResponseCode.BadRequest,
+                $"No es pot marcar com a pagat. {AuthorizationMessages.Missing(eventPerson.Event)}.");
+        }
 
         // Ensure this because they may be an attempt to pay using tpv, so it is related to an unpaid order.
         eventPerson.PaidOrder = null;
