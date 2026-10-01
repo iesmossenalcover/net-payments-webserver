@@ -63,7 +63,6 @@ public class SetEventPeoplePaidHandler : IRequestHandler<SetEventPeoplePaidComma
                 unpaid.Select(x => x.PersonId), ct))
             .ToDictionary(x => x.PersonId, x => x);
 
-        
         List<EventPerson> toPay = unpaid
             .Where(x => pgcs.ContainsKey(x.PersonId) && pgcs[x.PersonId].IsAuthorizedFor(e))
             .ToList();
@@ -74,21 +73,21 @@ public class SetEventPeoplePaidHandler : IRequestHandler<SetEventPeoplePaidComma
         IEnumerable<EventPerson> eventPeople =
             await _eventsPeopleRepository.GetWithRelationsByIdsAsync(toPay.Select(x => x.Id), ct);
 
-        await _unitOfWork.ExecuteInTransactionAsync(async token =>
+        foreach (var ep in eventPeople)
         {
-            foreach (var ep in eventPeople)
-            {
-                // Com al pagament individual: pot haver-hi un intent de pagament per TPV a mitges,
-                // i aquest pagament manual no té cap ordre associada.
-                ep.PaidOrder = null;
-                ep.PaidOrderId = null;
-                ep.Quantity = 1;
+            // Com al pagament individual: pot haver-hi un intent de pagament per TPV a mitges,
+            // i aquest pagament manual no té cap ordre associada.
+            ep.PaidOrder = null;
+            ep.PaidOrderId = null;
+            ep.Quantity = 1;
+        }
 
-                // PayEvents resol la matrícula i l'AMIPA un sol cop per crida, així que assumeix
-                // que la col·lecció és d'una sola persona: s'ha de cridar un cop per alumne.
-                await _eventPersonBehaviours.PayEvents(new[] { ep }, pgcs[ep.PersonId].Amipa, token);
-            }
-        }, ct);
+        // Dues escriptures com a màxim (event_person i, si és matrícula o AMIPA, person_group_course),
+        // independentment de quants alumnes siguin. La transacció les manté juntes.
+        await _unitOfWork.ExecuteInTransactionAsync(
+            token => _eventPersonBehaviours.PayEventsForPeople(
+                eventPeople.Select(x => (x, pgcs[x.PersonId])), token),
+            ct);
 
         return Response<SetEventPeoplePaidVm>.Ok(new SetEventPeoplePaidVm(eventPeople.Count(), skipped));
     }
