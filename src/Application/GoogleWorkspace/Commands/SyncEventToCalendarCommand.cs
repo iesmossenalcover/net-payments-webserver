@@ -53,6 +53,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
                 calendarId,
                 title,
                 description,
+                e.Location,
                 e.Date,
                 e.EndDate ?? e.Date
             );
@@ -69,6 +70,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
                 e.CalendarEventId,
                 title,
                 description,
+                e.Location,
                 e.Date,
                 e.EndDate ?? e.Date
             );

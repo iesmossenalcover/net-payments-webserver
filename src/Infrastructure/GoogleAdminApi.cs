@@ -751,6 +751,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         string calendarId,
         string summary,
         string description,
+        string? location,
         DateTimeOffset start,
         DateTimeOffset end
         )
@@ -763,6 +764,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             {
                 Summary = summary,
                 Description = description,
+                Location = location,
                 Start = new EventDateTime() { DateTimeDateTimeOffset = start },
                 End = new EventDateTime() { DateTimeDateTimeOffset = end },
                 ColorId = CALENDAR_EVENT_COLOR_ID,
@@ -787,6 +789,7 @@ public class GoogleAdminApi : IGoogleAdminApi
         string eventId,
         string summary,
         string description,
+        string? location,
         DateTimeOffset start,
         DateTimeOffset end
         )
@@ -799,6 +802,7 @@ public class GoogleAdminApi : IGoogleAdminApi
             {
                 Summary = summary,
                 Description = description,
+                Location = location,
                 Start = new EventDateTime() { DateTimeDateTimeOffset = start },
                 End = new EventDateTime() { DateTimeDateTimeOffset = end },
                 ColorId = CALENDAR_EVENT_COLOR_ID,

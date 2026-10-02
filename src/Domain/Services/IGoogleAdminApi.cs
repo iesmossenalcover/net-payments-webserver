@@ -27,6 +27,7 @@ public interface IGoogleAdminApi
         string calendarId,
         string summary,
         string description,
+        string? location,
         DateTimeOffset start,
         DateTimeOffset end
     );
@@ -36,6 +37,7 @@ public interface IGoogleAdminApi
         string eventId,
         string summary,
         string description,
+        string? location,
         DateTimeOffset start,
         DateTimeOffset end
     );

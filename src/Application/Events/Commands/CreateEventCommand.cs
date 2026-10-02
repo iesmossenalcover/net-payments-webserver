@@ -17,6 +17,7 @@ public record EventData
     public bool Amipa { get; set; }
     public uint MaxQuantity { get; set; } = 1;
     public string Description { get; set; } = string.Empty;
+    public string? Location { get; set; }
     public DateTime Date { get; set; }
     public DateTime? EndDate { get; set; } = default!;
     public DateTime PublishDate { get; set; }
@@ -26,6 +27,7 @@ public record EventData
     // Enrollment and AFA events are not outings, so they never require an authorization.
     public bool IsOuting => !Enrollment && !Amipa;
     public EventType ResolvedType => IsOuting ? Type ?? EventType.Other : EventType.Other;
+    public string? ResolvedLocation => string.IsNullOrWhiteSpace(Location) ? null : Location.Trim();
 }
 
 public record CreateEventCommand : EventData, IRequest<Response<string?>>
@@ -54,6 +56,10 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
             .NotNull().WithMessage("S'ha d'indicar el tipus d'esdeveniment")
             .IsInEnum().WithMessage("Tipus d'esdeveniment no vàlid")
             .When(x => x.IsOuting);
+        RuleFor(x => x.Location)
+            .Must(x => Uri.TryCreate(x!.Trim(), UriKind.Absolute, out Uri? uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            .WithMessage("La ubicació ha de ser una URL vàlida")
+            .When(x => !string.IsNullOrWhiteSpace(x.Location));
         RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
@@ -111,6 +117,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Price = request.Price,
             MaxQuantity = request.MaxQuantity,
             Description = request.Description,
+            Location = request.ResolvedLocation,
             Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero),
             EndDate = request.EndDate.HasValue ? new DateTimeOffset(request.EndDate.Value.ToUniversalTime(), TimeSpan.Zero) : null,
             PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero),
