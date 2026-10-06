@@ -59,10 +59,12 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
 {
     #region IOC
     private readonly IEventsRespository _eventsRespository;
+    private readonly IEventsPeopleRespository _eventsPeopleRespository;
 
-    public UpdateEventCommandHandler(IEventsRespository eventsRespository)
+    public UpdateEventCommandHandler(IEventsRespository eventsRespository, IEventsPeopleRespository eventsPeopleRespository)
     {
         _eventsRespository = eventsRespository;
+        _eventsPeopleRespository = eventsPeopleRespository;
     }
     #endregion
 
@@ -70,6 +72,15 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
     {
         Event? e = await _eventsRespository.GetByIdAsync(request.GetId, ct);
         if (e == null) return Response<long?>.Error(ResponseCode.NotFound, "L'esdeveniment que es vol modificar no existeix.");
+
+        // El límit de places no pot quedar per sota de les places ja pagades (cada unitat pagada en compta una).
+        if (request.MaxCapacity.HasValue)
+        {
+            long paidPlaces = await _eventsPeopleRespository.GetPaidPlacesByEventIdAsync(e.Id, ct);
+            if (request.MaxCapacity.Value < paidPlaces)
+                return Response<long?>.Error(ResponseCode.BadRequest, nameof(request.MaxCapacity),
+                    $"Ja hi ha {paidPlaces} places pagades: el nombre de places no pot ser inferior.");
+        }
 
         e.Name = request.Name;
         e.AmipaPrice = request.AmipaPrice;
