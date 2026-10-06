@@ -22,6 +22,10 @@ public class Event : Entity
 
     public required uint MaxQuantity { get; set; } = 1;
 
+    // Places totals (p. ex. seients del bus). Null = sense límit.
+    // Només es comprova en marcar pagat manualment; els pagaments online no es limiten.
+    public uint? MaxCapacity { get; set; }
+
     public bool Enrollment { get; set; } = false;
     public bool Amipa { get; set; } = false;
     public EventType Type { get; set; } = EventType.Other;

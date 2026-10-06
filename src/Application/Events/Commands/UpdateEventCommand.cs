@@ -42,6 +42,7 @@ public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
             .WithMessage("La ubicació ha de ser una URL vàlida")
             .When(x => !string.IsNullOrWhiteSpace(x.Location));
         RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
+        RuleFor(x => x.MaxCapacity).Must(x => !x.HasValue || x.Value > 0).WithMessage("El nombre de places ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
             {
@@ -76,6 +77,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero);
         e.EndDate = request.EndDate.HasValue ? new DateTimeOffset(request.EndDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
         e.MaxQuantity = request.MaxQuantity;
+        e.MaxCapacity = request.MaxCapacity;
         e.PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero);
         e.UnpublishDate =  request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
         e.Enrollment = request.Enrollment;

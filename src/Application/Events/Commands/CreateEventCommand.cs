@@ -16,6 +16,7 @@ public record EventData
     public bool Enrollment { get; set; }
     public bool Amipa { get; set; }
     public uint MaxQuantity { get; set; } = 1;
+    public uint? MaxCapacity { get; set; }
     public string Description { get; set; } = string.Empty;
     public string? Location { get; set; }
     public DateTime Date { get; set; }
@@ -61,6 +62,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
             .WithMessage("La ubicació ha de ser una URL vàlida")
             .When(x => !string.IsNullOrWhiteSpace(x.Location));
         RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
+        RuleFor(x => x.MaxCapacity).Must(x => !x.HasValue || x.Value > 0).WithMessage("El nombre de places ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
             .Must((request, unpublish) =>
             {
@@ -116,6 +118,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             Type = request.ResolvedType,
             Price = request.Price,
             MaxQuantity = request.MaxQuantity,
+            MaxCapacity = request.MaxCapacity,
             Description = request.Description,
             Location = request.ResolvedLocation,
             Date = new DateTimeOffset(request.Date.ToUniversalTime(), TimeSpan.Zero),

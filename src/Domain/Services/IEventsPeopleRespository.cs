@@ -10,6 +10,7 @@ public interface IEventsPeopleRespository : IRepository<EventPerson>
     Task<IEnumerable<EventPerson>> GetAllByCourseId(long courseId, CancellationToken ct);
     Task<IEnumerable<EventPerson>> GetAllByOrderId(long orderId, CancellationToken ct);
     Task<IEnumerable<EventPerson>> GetAllByEventIdAsync(long eventId, CancellationToken ct);
+    Task<long> GetPaidPlacesByEventIdAsync(long eventId, CancellationToken ct);
     Task<IEnumerable<EventPerson>> GetAllByPersonAndCourse(long personId, long courseId, CancellationToken ct);
     Task<IEnumerable<EventPerson>> GetAllByPersonId(long personId, bool onlyPaid, CancellationToken ct);
 }

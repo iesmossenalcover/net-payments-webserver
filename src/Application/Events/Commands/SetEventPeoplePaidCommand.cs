@@ -55,8 +55,8 @@ public class SetEventPeoplePaidHandler : IRequestHandler<SetEventPeoplePaidComma
             return Response<SetEventPeoplePaidVm>.Error(ResponseCode.BadRequest,
                 @"No es pot fer un pagament d'un curs no actiu.");
 
-        IEnumerable<EventPerson> unpaid = (await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct))
-            .Where(x => !x.Paid);
+        IEnumerable<EventPerson> all = await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct);
+        IEnumerable<EventPerson> unpaid = all.Where(x => !x.Paid);
 
         IDictionary<long, PersonGroupCourse> pgcs =
             (await _personGroupCourseRepository.GetPeopleGroupByPeopleIdsAndCourseIdAsync(e.CourseId,
@@ -69,6 +69,19 @@ public class SetEventPeoplePaidHandler : IRequestHandler<SetEventPeoplePaidComma
 
         int skipped = unpaid.Count(x => pgcs.ContainsKey(x.PersonId) && !pgcs[x.PersonId].IsAuthorizedFor(e));
         if (toPay.Count == 0) return Response<SetEventPeoplePaidVm>.Ok(new SetEventPeoplePaidVm(0, skipped));
+
+        // Límit de places: o caben tots o no se'n marca cap, per no triar a l'atzar qui es queda fora.
+        if (e.MaxCapacity.HasValue)
+        {
+            // Cada unitat pagada ocupa una plaça; el pagament massiu marca quantitat 1 per alumne.
+            long paidPlaces = all.Where(x => x.Paid).Sum(x => (long)x.Quantity);
+            long free = Math.Max(0, (long)e.MaxCapacity.Value - paidPlaces);
+            if (toPay.Count > free)
+            {
+                return Response<SetEventPeoplePaidVm>.Error(ResponseCode.BadRequest,
+                    $"No hi ha places per a tots: queden {free} places lliures ({paidPlaces}/{e.MaxCapacity.Value}) i hi ha {toPay.Count} alumnes pendents. Marca'ls un a un o augmenta el nombre de places.");
+            }
+        }
 
         IEnumerable<EventPerson> eventPeople =
             await _eventsPeopleRepository.GetWithRelationsByIdsAsync(toPay.Select(x => x.Id), ct);

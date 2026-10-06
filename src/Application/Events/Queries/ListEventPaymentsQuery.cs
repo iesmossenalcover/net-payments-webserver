@@ -7,7 +7,7 @@ using Application.Common.Helpers;
 
 namespace Application.Events.Queries;
 
-public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid, int NotAuthorizedCount, int NotAuthorizedPaidCount);
+public record PaymentSummaryVm(int TotalCount, int AmipaCount, int NoAmipaCount, int TotalPaidCount, int AmipaPaidCount, int PaidCount, decimal TotalPaid, decimal AmipaPaid, decimal NoAmipaPaid, int NotAuthorizedCount, int NotAuthorizedPaidCount, long PaidPlaces);
 public record EventPaymentVm(long Id, string FullName, string DocumentId, bool Amipa, decimal Price, bool Paid, string Group, uint Quantity, DateTimeOffset? DatePaid, bool Authorized);
 
 public record PaymentsEvent(
@@ -22,7 +22,8 @@ public record PaymentsEvent(
     bool IsAmpia,
     bool IsEnrollment,
     EventType Type,
-    bool QuantitySelector, uint? MaxQuantity = null
+    bool QuantitySelector, uint? MaxQuantity = null,
+    uint? MaxCapacity = null
 );
 
 public record ListEventPaymentsVm(
@@ -94,7 +95,9 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
             payments.Where(x => x.Amipa && x.Paid).Sum(x => x.Price),
             payments.Where(x => !x.Amipa && x.Paid).Sum(x => x.Price),
             payments.Count(x => !x.Authorized),
-            payments.Count(x => !x.Authorized && x.Paid)
+            payments.Count(x => !x.Authorized && x.Paid),
+            // Places ocupades: cada unitat pagada ocupa una plaça (igual que la comprovació en marcar pagat).
+            eventPeople.Where(x => x.Paid).Sum(x => (long)x.Quantity)
         );
 
         var vm = new ListEventPaymentsVm(
@@ -113,7 +116,8 @@ public class ListEventPaymentsQueryHandler : IRequestHandler<ListEventPaymentsQu
                 e.Enrollment,
                 e.Type,
                 quantitySelector,
-                quantitySelector ? e.MaxQuantity : null
+                quantitySelector ? e.MaxQuantity : null,
+                e.MaxCapacity
             ),
             summaryVm,
             payments.Where(x => x.Paid).OrderByDescending(x => x.DatePaid).ThenBy(x => x.Group).ThenBy(x => x.FullName),

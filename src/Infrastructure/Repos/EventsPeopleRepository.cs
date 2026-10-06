@@ -34,6 +34,12 @@ public class EventsPeopleRepository : Repository<EventPerson>, Domain.Services.I
         return await _dbSet.Where(x => x.EventId == eventId).ToListAsync(ct);
     }
 
+    // Places ocupades: cada unitat pagada (Quantity) ocupa una plaça.
+    public async Task<long> GetPaidPlacesByEventIdAsync(long eventId, CancellationToken ct)
+    {
+        return await _dbSet.Where(x => x.EventId == eventId && x.Paid).SumAsync(x => (long)x.Quantity, ct);
+    }
+
     public async Task<IEnumerable<EventPerson>> GetAllByOrderId(long orderId, CancellationToken ct)
     {
         return await _dbSet

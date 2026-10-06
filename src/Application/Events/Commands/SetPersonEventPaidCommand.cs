@@ -77,11 +77,28 @@ public class SetPersonEventPaidHandler : IRequestHandler<SetPersonEventPaidComma
                 $"No es pot marcar com a pagat. {AuthorizationMessages.Missing(eventPerson.Event)}.");
         }
 
+        // Límit de places: només s'aplica als pagaments manuals. Els pagaments online no es limiten
+        // (un pagament de Redsys que arriba tard ja està cobrat). Cada unitat de la quantitat ocupa una plaça,
+        // i si ja estava pagat només compten les unitats noves.
+        uint quantity = Math.Min(request.Quantity ?? 1, eventPerson.Event.MaxQuantity);
+        long extraPlaces = (long)quantity - (eventPerson.Paid ? eventPerson.Quantity : 0);
+        if (request.Paid && extraPlaces > 0 && eventPerson.Event.MaxCapacity.HasValue)
+        {
+            long paidPlaces = await _eventsPeopleRepository.GetPaidPlacesByEventIdAsync(eventPerson.EventId, ct);
+            long maxCapacity = eventPerson.Event.MaxCapacity.Value;
+            if (paidPlaces + extraPlaces > maxCapacity)
+            {
+                long free = Math.Max(0, maxCapacity - paidPlaces);
+                return Response<bool>.Error(ResponseCode.BadRequest,
+                    $"No es pot marcar com a pagat. Queden {free} places lliures ({paidPlaces}/{maxCapacity}) i se'n demanen {extraPlaces}. Si cal, augmenta el nombre de places.");
+            }
+        }
+
         // Ensure this because they may be an attempt to pay using tpv, so it is related to an unpaid order.
         eventPerson.PaidOrder = null;
         eventPerson.PaidOrderId = null;
 
-        eventPerson.Quantity = Math.Min(request.Quantity ?? 1, eventPerson.Event.MaxQuantity);
+        eventPerson.Quantity = quantity;
 
         if (request.Paid)
         {
