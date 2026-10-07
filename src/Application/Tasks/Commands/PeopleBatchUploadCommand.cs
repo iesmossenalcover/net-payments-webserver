@@ -14,7 +14,7 @@ public record PeopleBatchUploadCommand(Stream File) : IRequest<Response<PeopleBa
 // Validator for the model
 
 // Optionally define a view model
-public record PeopleBatchUploadSummary(int GroupsCreated, int PeopleCreated, int PeopleUpdated);
+public record PeopleBatchUploadSummary(int PeopleCreated, int PeopleUpdated);
 
 // Handler
 public class
@@ -65,8 +65,15 @@ public class
             r.DocumentId = r.DocumentId.ToUpper();
         }
 
-        // Process groups
-        IDictionary<string, Group> groups = await ProcessGroups(rows, ct);
+        // Process groups. Groups are not created here, they must already exist.
+        IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.GroupName))
+            .Select(x => x.GroupName ?? "").Distinct();
+        IDictionary<string, Group> groups = await GetExistingGroups(groupNames, ct);
+        IEnumerable<string> missingGroups = groupNames.Where(x => !groups.ContainsKey(x)).ToList();
+        if (missingGroups.Any())
+            return Response<PeopleBatchUploadSummary>.Error(ResponseCode.BadRequest,
+                $"Els següents grups no existeixen: {string.Join(", ", missingGroups)}");
+
         // Process people
         IDictionary<string, Person> people = await ProcessPeople(rows, ct);
         // Process PersonGroupCourse
@@ -79,7 +86,7 @@ public class
             PersonGroupCourses = presonGroupCourses.Values,
             PersonGroupCoursesToDelete = personGroupCoursesToDelete
         };
-        var summary = new PeopleBatchUploadSummary(m.NewGroups.Count(), m.NewPeople.Count(), m.ExistingPeople.Count());
+        var summary = new PeopleBatchUploadSummary(m.NewPeople.Count(), m.ExistingPeople.Count());
 
         TransactionResult<string> transactionResult = await _transactionsService.InsertAndUpdateTransactionAsync(m);
         if (transactionResult.Ok)
@@ -128,7 +135,7 @@ public class
                 {
                     pgc = personGroupCourse[p.DocumentId];
                     pgc.Group = g;
-                    pgc.SubjectsInfo = r.Subjects;
+                    if (!string.IsNullOrEmpty(r.Subjects)) pgc.SubjectsInfo = r.Subjects;
 
                     // If amipa field is set, then update.
                     if (r.IsAmipa.HasValue)
@@ -174,26 +181,10 @@ public class
         return (personGroupCourse, personGroupCourseToDelete);
     }
 
-    private async Task<IDictionary<string, Group>> ProcessGroups(IEnumerable<BatchUploadRow> rows, CancellationToken ct)
+    private async Task<IDictionary<string, Group>> GetExistingGroups(IEnumerable<string> groupNames, CancellationToken ct)
     {
-        IEnumerable<string> groupNames = rows.Where(x => !string.IsNullOrEmpty(x.GroupName))
-            .Select(x => x.GroupName ?? "").Distinct();
         IEnumerable<Group> existingGroups = await _groupsRepo.GetGroupsByNameAsync(groupNames, ct);
-        IDictionary<string, Group> groups = existingGroups.ToDictionary(x => x.Name, x => x);
-
-        foreach (var name in groupNames)
-        {
-            if (groups.ContainsKey(name)) continue;
-
-            var g = new Group()
-            {
-                Name = name,
-                Created = DateTimeOffset.UtcNow,
-            };
-            groups[name] = g;
-        }
-
-        return groups;
+        return existingGroups.ToDictionary(x => x.Name, x => x);
     }
 
     private async Task<IDictionary<string, Person>> ProcessPeople(IEnumerable<BatchUploadRow> rows,
@@ -208,12 +199,13 @@ public class
             if (people.ContainsKey(documentId))
             {
                 Person p = people[documentId];
-                p.AcademicRecordNumber = r.AcademicRecordNumber;
-                p.ContactPhone = r.ContactPhone;
+                // Empty optional fields keep the current value.
+                p.AcademicRecordNumber = r.AcademicRecordNumber ?? p.AcademicRecordNumber;
+                p.ContactPhone = string.IsNullOrEmpty(r.ContactPhone) ? p.ContactPhone : r.ContactPhone;
                 p.DocumentId = documentId;
                 p.Name = r.FirstName.Trim();
                 p.Surname1 = r.Surname1.Trim();
-                p.Surname2 = r.Surname2 != null ? r.Surname2.Trim() : null;
+                p.Surname2 = string.IsNullOrEmpty(r.Surname2) ? p.Surname2 : r.Surname2.Trim();
                 p.SchoolAlert = string.IsNullOrEmpty(r.SchoolAlert) ? p.SchoolAlert : r.SchoolAlert.Trim();
                 p.ContactMail = string.IsNullOrEmpty(r.Email) ? p.ContactMail : r.Email.ToLower().Trim();
             }
