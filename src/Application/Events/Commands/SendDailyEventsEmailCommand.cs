@@ -90,7 +90,7 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
             summaries.Add(new EventSummary(e, groups));
         }
 
-        string subject = $"[Coordinació Complementàries] Activitats d'avui {FormatDate(day)}";
+        string subject = $"[EXTRAESCOLARS] Activitats d'avui {FormatDate(day)}";
         string body = BuildBody(day, summaries);
 
         var result = await _googleAdminApi.SendHtmlEmail(recipient, subject, body, ct);
