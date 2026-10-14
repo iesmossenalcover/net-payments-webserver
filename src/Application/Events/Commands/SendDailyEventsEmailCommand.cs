@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using Application.Common;
+using Application.Common.Helpers;
 using Domain.Entities.Events;
 using Domain.Entities.People;
 using Domain.Services;
@@ -119,7 +120,7 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
             string url = frontEventSummaryUrl.Replace("{code}", Uri.EscapeDataString(s.Event.Code));
 
             html.Append("<div style=\"margin: 0 0 24px 0; padding: 12px 16px; border-left: 4px solid #d81b60;\">");
-            html.Append($"<h3 style=\"margin: 0 0 8px 0;\">{Escape(s.Event.Name)}</h3>");
+            html.Append($"<h3 style=\"margin: 0 0 8px 0;\">{EventIcons.For(s.Event.Type)} {Escape(s.Event.Name)}</h3>");
             html.Append($"<p style=\"margin: 0 0 8px 0; color: #555;\">{Escape(TimeRange(s.Event))}</p>");
 
             if (!string.IsNullOrWhiteSpace(s.Event.Description))
@@ -155,15 +156,15 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
     private string TimeRange(Event e)
     {
         DateTimeOffset start = TimeZoneInfo.ConvertTime(e.Date, timeZone);
-        if (!e.EndDate.HasValue) return $"A partir de les {Format(start, "HH:mm")}";
+        if (!e.EndDate.HasValue) return $"A partir de les {Format(start, "HH:mm")}h";
 
         DateTimeOffset end = TimeZoneInfo.ConvertTime(e.EndDate.Value, timeZone);
         if (DateOnly.FromDateTime(end.DateTime) != DateOnly.FromDateTime(start.DateTime))
         {
-            return $"Del {Format(start, "dd/MM/yyyy HH:mm")} al {Format(end, "dd/MM/yyyy HH:mm")}";
+            return $"Del {Format(start, "dd/MM/yyyy HH:mm")}h al {Format(end, "dd/MM/yyyy HH:mm")}h";
         }
 
-        return $"De les {Format(start, "HH:mm")} a les {Format(end, "HH:mm")}";
+        return $"De les {Format(start, "HH:mm")}h a les {Format(end, "HH:mm")}h";
     }
 
     private static string FormatDate(DateOnly day) => day.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);

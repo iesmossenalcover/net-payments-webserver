@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Helpers;
 using Application.Common.Models;
 using Domain.Services;
 using Domain.Entities.GoogleApi;
@@ -41,7 +42,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
         Event? e = await _eventsRepository.GetByIdAsync(request.Id, ct);
         if (e == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.NotFound, "No s'ha trobat l'esdeveniment");
 
-        string title = $"[EXTRAESCOLARS] {e.Name}";
+        string title = $"{EventIcons.For(e.Type)} [EXTRAESCOLARS] {e.Name}";
         string summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
         string description = string.IsNullOrWhiteSpace(e.Description)
             ? summaryUrl
