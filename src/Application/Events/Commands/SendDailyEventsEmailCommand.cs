@@ -120,7 +120,7 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
             string url = frontEventSummaryUrl.Replace("{code}", Uri.EscapeDataString(s.Event.Code));
 
             html.Append("<div style=\"margin: 0 0 24px 0; padding: 12px 16px; border-left: 4px solid #d81b60;\">");
-            html.Append($"<h3 style=\"margin: 0 0 8px 0;\">{EventIcons.For(s.Event.Type)} {Escape(s.Event.Name)}</h3>");
+            html.Append($"<h3 style=\"margin: 0 0 8px 0;\">{Escape(s.Event.Name)}</h3>");
             html.Append($"<p style=\"margin: 0 0 8px 0; color: #555;\">{Escape(TimeRange(s.Event))}</p>");
 
             if (!string.IsNullOrWhiteSpace(s.Event.Description))

@@ -42,7 +42,7 @@ public class SyncEventToCalendarCommandHandler : IRequestHandler<SyncEventToCale
         Event? e = await _eventsRepository.GetByIdAsync(request.Id, ct);
         if (e == null) return Response<SyncEventToCalendarCommandVm>.Error(ResponseCode.NotFound, "No s'ha trobat l'esdeveniment");
 
-        string title = $"{EventIcons.For(e.Type)} {e.Name} [EXTRAESCOLARS]";
+        string title = $"{e.Name} [EXTRAESCOLARS]";
         string summaryUrl = frontEventSummaryUrl.Replace("{code}", e.Code);
         string description = string.IsNullOrWhiteSpace(e.Description)
             ? summaryUrl
