@@ -9,7 +9,7 @@ public class EventIcons
 {
     public static string For(EventType type) => type switch
     {
-        EventType.Trip => "🧳",
+        EventType.Trip => "✈️",
         EventType.Transport => "🚌",
         EventType.Walking => "👣",
         _ => "🏫",
