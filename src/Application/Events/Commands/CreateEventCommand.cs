@@ -57,10 +57,6 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
             .NotNull().WithMessage("S'ha d'indicar el tipus d'esdeveniment")
             .IsInEnum().WithMessage("Tipus d'esdeveniment no vàlid")
             .When(x => x.IsOuting);
-        RuleFor(x => x.Location)
-            .Must(x => Uri.TryCreate(x!.Trim(), UriKind.Absolute, out Uri? uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
-            .WithMessage("La ubicació ha de ser una URL vàlida")
-            .When(x => !string.IsNullOrWhiteSpace(x.Location));
         RuleFor(x => x.MaxQuantity).Must(x => x > 0).WithMessage("La quanitat màxima ha de ser major o igual a 1.");
         RuleFor(x => x.MaxCapacity).Must(x => !x.HasValue || x.Value > 0).WithMessage("El nombre de places ha de ser major o igual a 1.");
         RuleFor(x => x.UnpublishDate)
