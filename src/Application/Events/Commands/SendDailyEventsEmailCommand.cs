@@ -23,9 +23,6 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
     #region props
     private readonly IGoogleAdminApi _googleAdminApi;
     private readonly IEventsRespository _eventsRepository;
-    private readonly IEventsPeopleRespository _eventsPeopleRepository;
-    private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
-    private readonly ICoursesRepository _coursesRepository;
     private readonly ILogger<SendDailyEventsEmailCommandHandler> _logger;
     private readonly string recipient;
     private readonly string frontEventSummaryUrl;
@@ -34,17 +31,11 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
     public SendDailyEventsEmailCommandHandler(
         IGoogleAdminApi googleAdminApi,
         IEventsRespository eventsRepository,
-        IEventsPeopleRespository eventsPeopleRepository,
-        IPersonGroupCourseRepository personGroupCourseRepository,
-        ICoursesRepository coursesRepository,
         IConfiguration configuration,
         ILogger<SendDailyEventsEmailCommandHandler> logger)
     {
         _googleAdminApi = googleAdminApi;
         _eventsRepository = eventsRepository;
-        _eventsPeopleRepository = eventsPeopleRepository;
-        _personGroupCourseRepository = personGroupCourseRepository;
-        _coursesRepository = coursesRepository;
         _logger = logger;
         recipient = configuration.GetValue<string>("DailyEventsEmailRecipient") ?? throw new Exception("DailyEventsEmailRecipient");
         frontEventSummaryUrl = configuration.GetValue<string>("FrontEventSummaryUrl") ?? throw new Exception("FrontEventSummaryUrl");
@@ -70,29 +61,8 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
             return Response<SendDailyEventsEmailCommandVm>.Ok(new SendDailyEventsEmailCommandVm(false, 0, null));
         }
 
-        Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
-
-        List<EventSummary> summaries = new List<EventSummary>();
-        foreach (Event e in excursions)
-        {
-            IEnumerable<EventPerson> eventPeople = await _eventsPeopleRepository.GetAllByEventIdAsync(e.Id, ct);
-            long[] peopleIds = eventPeople.Select(x => x.PersonId).Distinct().ToArray();
-
-            IEnumerable<PersonGroupCourse> peopleGroups = peopleIds.Length == 0
-                ? Array.Empty<PersonGroupCourse>()
-                : await _personGroupCourseRepository.GetPeopleGroupByPeopleIdsAndCourseIdAsync(course.Id, peopleIds, ct);
-
-            List<string> groups = peopleGroups
-                .Select(x => x.Group.Name)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
-
-            summaries.Add(new EventSummary(e, groups));
-        }
-
         string subject = $"[EXTRAESCOLARS] Activitats d'avui {FormatDate(day)}";
-        string body = BuildBody(day, summaries);
+        string body = BuildBody(day, excursions);
 
         var result = await _googleAdminApi.SendHtmlEmail(recipient, subject, body, ct);
         if (!result.Success)
@@ -100,7 +70,7 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
             return Response<SendDailyEventsEmailCommandVm>.Error(ResponseCode.InternalError, result.ErrorMessage ?? "Error enviant el resum diari d'events");
         }
 
-        return Response<SendDailyEventsEmailCommandVm>.Ok(new SendDailyEventsEmailCommandVm(true, summaries.Count, result.Data));
+        return Response<SendDailyEventsEmailCommandVm>.Ok(new SendDailyEventsEmailCommandVm(true, excursions.Count, result.Data));
     }
 
     private DateTimeOffset DayStart(DateOnly day)
@@ -109,38 +79,24 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
         return new DateTimeOffset(local, timeZone.GetUtcOffset(local));
     }
 
-    private string BuildBody(DateOnly day, IEnumerable<EventSummary> summaries)
+    private string BuildBody(DateOnly day, IEnumerable<Event> events)
     {
         StringBuilder html = new StringBuilder();
         html.Append("<html><body style=\"font-family: Arial, Helvetica, sans-serif; color: #222;\">");
         html.Append($"<p>Activitats previstes per a avui, {Escape(FormatDate(day))}:</p>");
 
-        foreach (EventSummary s in summaries)
+        foreach (Event e in events)
         {
-            string url = frontEventSummaryUrl.Replace("{code}", Uri.EscapeDataString(s.Event.Code));
+            string url = frontEventSummaryUrl.Replace("{code}", Uri.EscapeDataString(e.Code));
+            string when = string.IsNullOrWhiteSpace(e.Location) ? TimeRange(e) : $"{TimeRange(e)} ({e.Location.Trim()})";
 
             html.Append("<div style=\"margin: 0 0 24px 0; padding: 12px 16px; border-left: 4px solid #d81b60;\">");
-            html.Append($"<h3 style=\"margin: 0 0 8px 0;\">{Escape(s.Event.Name)}</h3>");
-            html.Append($"<p style=\"margin: 0 0 8px 0; color: #555;\">{Escape(TimeRange(s.Event))}</p>");
+            html.Append($"<h3 style=\"margin: 0 0 8px 0;\">{Escape(e.Name)}</h3>");
+            html.Append($"<p style=\"margin: 0 0 8px 0; color: #555;\">{Escape(when)}</p>");
 
-            if (!string.IsNullOrWhiteSpace(s.Event.Description))
+            if (!string.IsNullOrWhiteSpace(e.Description))
             {
-                html.Append($"<p style=\"margin: 0 0 8px 0;\">{Escape(s.Event.Description).Replace("\n", "<br>")}</p>");
-            }
-
-            if (s.Groups.Count == 0)
-            {
-                html.Append("<p style=\"margin: 0 0 8px 0;\"><strong>Grups afectats:</strong> cap alumne apuntat.</p>");
-            }
-            else
-            {
-                html.Append("<p style=\"margin: 0 0 4px 0;\"><strong>Grups afectats:</strong></p>");
-                html.Append("<ul style=\"margin: 0 0 8px 0;\">");
-                foreach (string g in s.Groups)
-                {
-                    html.Append($"<li>{Escape(g)}</li>");
-                }
-                html.Append("</ul>");
+                html.Append($"<p style=\"margin: 0 0 8px 0;\">{Escape(e.Description).Replace("\n", "<br>")}</p>");
             }
 
             html.Append($"<p style=\"margin: 0;\"><a href=\"{Escape(url)}\">Veure l'esdeveniment</a></p>");
@@ -172,6 +128,4 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
     private static string Format(DateTimeOffset value, string format) => value.ToString(format, CultureInfo.InvariantCulture);
 
     private static string Escape(string value) => WebUtility.HtmlEncode(value);
-
-    private record EventSummary(Event Event, List<string> Groups);
 }
