@@ -100,7 +100,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.Type = request.ResolvedType;
         e.Description = request.Description;
         e.Location = request.ResolvedLocation;
-        e.NotifyExtracurricular = request.NotifyExtracurricular;
+        e.NotifyExtracurricular = request.NotifyExtracurricular ?? e.NotifyExtracurricular;
 
         await _eventsRespository.UpdateAsync(e, CancellationToken.None);
 
