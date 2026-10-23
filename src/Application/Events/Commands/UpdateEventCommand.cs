@@ -85,13 +85,22 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Res
         e.EndDate = request.EndDate.HasValue ? new DateTimeOffset(request.EndDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
         e.MaxQuantity = request.MaxQuantity;
         e.MaxCapacity = request.MaxCapacity;
-        e.PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero);
-        e.UnpublishDate =  request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
+        DateTimeOffset publishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero);
+        DateTimeOffset? unpublishDate = request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null;
+
+        // Si l'obertura o el tancament es mouen al futur s'ha de tornar a avisar quan arribin.
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        if (publishDate != e.PublishDate && publishDate > now) e.PublishNotifiedAt = null;
+        if (unpublishDate != e.UnpublishDate && (!unpublishDate.HasValue || unpublishDate.Value > now)) e.UnpublishNotifiedAt = null;
+
+        e.PublishDate = publishDate;
+        e.UnpublishDate = unpublishDate;
         e.Enrollment = request.Enrollment;
         e.Amipa = request.Amipa;
         e.Type = request.ResolvedType;
         e.Description = request.Description;
         e.Location = request.ResolvedLocation;
+        e.NotifyExtracurricular = request.NotifyExtracurricular;
 
         await _eventsRespository.UpdateAsync(e, CancellationToken.None);
 

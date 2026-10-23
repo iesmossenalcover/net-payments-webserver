@@ -24,6 +24,7 @@ public record EventData
     public DateTime PublishDate { get; set; }
     public DateTime? UnpublishDate { get; set; } = default!;
     public EventType? Type { get; set; }
+    public bool NotifyExtracurricular { get; set; } = true;
 
     // Enrollment and AFA events are not outings, so they never require an authorization.
     public bool IsOuting => !Enrollment && !Amipa;
@@ -121,6 +122,7 @@ public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Res
             EndDate = request.EndDate.HasValue ? new DateTimeOffset(request.EndDate.Value.ToUniversalTime(), TimeSpan.Zero) : null,
             PublishDate = new DateTimeOffset(request.PublishDate.ToUniversalTime(), TimeSpan.Zero),
             UnpublishDate = request.UnpublishDate.HasValue ? new DateTimeOffset(request.UnpublishDate.Value.ToUniversalTime(), TimeSpan.Zero) : null,
+            NotifyExtracurricular = request.NotifyExtracurricular,
             Course = course
         };
 

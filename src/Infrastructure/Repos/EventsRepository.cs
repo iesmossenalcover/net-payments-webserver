@@ -48,6 +48,19 @@ public class EventsRepository : Repository<Event>, Domain.Services.IEventsRespos
             .ToListAsync(ct);
     }
 
+    // Events amb l'obertura o el tancament del pagament ja passats i encara sense processar.
+    public async Task<IEnumerable<Event>> GetEventsPendingPublicationNoticeAsync(DateTimeOffset now, CancellationToken ct)
+    {
+        DateTimeOffset nowUtc = now.ToUniversalTime();
+
+        return await _dbSet
+            .Where(x =>
+                (!x.PublishNotifiedAt.HasValue && x.PublishDate <= nowUtc) ||
+                (!x.UnpublishNotifiedAt.HasValue && x.UnpublishDate.HasValue && x.UnpublishDate.Value <= nowUtc))
+            .OrderBy(x => x.PublishDate)
+            .ToListAsync(ct);
+    }
+
     public async Task<Event?> GetEventByCodeAsync(string code, CancellationToken ct)
     {
         return await _dbSet.FirstOrDefaultAsync(x => x.Code == code, ct);

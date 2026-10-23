@@ -37,6 +37,12 @@ public class Event : Entity
     public DateTimeOffset PublishDate { get; set; } = default!;
     public DateTimeOffset? UnpublishDate { get; set; } = default!;
 
+    // Envia un correu a extraescolars quan s'obre (PublishDate) i quan es tanca (UnpublishDate) el pagament.
+    public bool NotifyExtracurricular { get; set; } = true;
+    // Quan s'ha processat cada avís (enviat o, si NotifyExtracurricular és fals, descartat). Null = pendent.
+    public DateTimeOffset? PublishNotifiedAt { get; set; }
+    public DateTimeOffset? UnpublishNotifiedAt { get; set; }
+
     public long CourseId { get; set; }
     public Course Course { get; set; } = default!;
 

@@ -182,16 +182,25 @@ namespace netpaymentswebserver.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("NotifyExtracurricular")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
                     b.Property<DateTimeOffset>("PublishDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("PublishNotifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("UnpublishDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("UnpublishNotifiedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
