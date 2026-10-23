@@ -8,6 +8,7 @@ public enum EventType
     Walking = 1,
     Transport = 2,
     Trip = 3,
+    Workshop = 4,
 }
 
 public class Event : Entity
