@@ -8,7 +8,7 @@ namespace Application.Events.Queries;
 
 # region ViewModels
 public record EventPersonVm(long Id, string DocumentId, string FullName, long? AcademicRecordNumber, bool inEvent);
-public record EventPeopleGroupVm(long Id, string Name, int Order, IList<EventPersonVm> People);
+public record EventPeopleGroupVm(long Id, string Name, string? Description, int Order, IList<EventPersonVm> People);
 public record EventPeopleVm(long Id, string Code, string Name, DateTimeOffset Date, IEnumerable<EventPeopleGroupVm> PeopleGroups);
 #endregion
 
@@ -54,7 +54,7 @@ public class EventPeopleQueryHandler : IRequestHandler<EventPeopleQuery, Respons
             EventPeopleGroupVm group = default!;
             if (!groups.ContainsKey(pgc.GroupId))
             {
-                group = new EventPeopleGroupVm(pgc.GroupId, pgc.Group.Name, pgc.Group.Order, new List<EventPersonVm>());
+                group = new EventPeopleGroupVm(pgc.GroupId, pgc.Group.Name, pgc.Group.Description, pgc.Group.Order, new List<EventPersonVm>());
                 groups.Add(pgc.GroupId, group);
             }
             else
