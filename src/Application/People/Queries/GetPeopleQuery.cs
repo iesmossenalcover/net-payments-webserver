@@ -30,7 +30,7 @@ public class GetPeopleQueryHandler : IRequestHandler<GetPeopleQuery, IEnumerable
         return ppgc.GroupBy(x => x.Person).Select(x =>
         {
             PersonGroupCourse pgc = x.OrderByDescending(x => x.Course.StartDate).First();
-            return new PersonRowVm(x.Key.Id, x.Key.DocumentId, x.Key.Name, x.Key.LastName, pgc.Course.Active ? pgc.GroupId : null, pgc.Course.Active ? pgc.Group.Name : null, pgc.Course.Active ? pgc.Amipa : null, x.Key.AcademicRecordNumber);
+            return new PersonRowVm(x.Key.Id, x.Key.DocumentId, x.Key.Name, x.Key.LastName, pgc.Course.Active ? pgc.GroupId : null, pgc.Course.Active ? pgc.Group.Name : null, pgc.Course.Active ? pgc.Amipa : null, x.Key.AcademicRecordNumber, pgc.Course.Active ? pgc.WalkingAuthorization : null, pgc.Course.Active ? pgc.TransportAuthorization : null);
         });
     }
 }

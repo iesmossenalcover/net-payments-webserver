@@ -6,7 +6,7 @@ namespace Application.People.Queries;
 
 # region ViewModels
 public record CourseVm(long Id, string Name);
-public record PersonRowVm(long Id, string DocumentId, string FirstName, string LastName, long? GroupId, string? GroupName, bool? Amipa, long? AcademicRecordNumber);
+public record PersonRowVm(long Id, string DocumentId, string FirstName, string LastName, long? GroupId, string? GroupName, bool? Amipa, long? AcademicRecordNumber, bool? WalkingAuthorization, bool? TransportAuthorization);
 public record ListPeopleByCourseVm(IEnumerable<PersonRowVm> People);
 #endregion
 
@@ -48,7 +48,9 @@ public class ListPeopleByCourseQuueryHandler : IRequestHandler<ListPeopleByCours
             pgc.Group.Id,
             pgc.Group.Name,
             pgc.Amipa,
-            p.AcademicRecordNumber
+            p.AcademicRecordNumber,
+            pgc.WalkingAuthorization,
+            pgc.TransportAuthorization
         );
     }
 
