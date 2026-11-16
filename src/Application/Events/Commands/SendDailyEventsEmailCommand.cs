@@ -61,7 +61,7 @@ public class SendDailyEventsEmailCommandHandler : IRequestHandler<SendDailyEvent
             return Response<SendDailyEventsEmailCommandVm>.Ok(new SendDailyEventsEmailCommandVm(false, 0, null));
         }
 
-        string subject = $"[EXTRAESCOLARS] Activitats d'avui {FormatDate(day)}";
+        string subject = $"🎒 Activitats d'avui {FormatDate(day)}";
         string body = BuildBody(day, excursions);
 
         var result = await _googleAdminApi.SendHtmlEmail(recipient, subject, body, ct);
