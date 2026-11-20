@@ -90,13 +90,75 @@ public class GoogleAdminApi : IGoogleAdminApi
         _gmailService = new Lazy<GmailService>(CreateGmailService);
     }
 
-    public async Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct)
+    /// <summary>
+    /// Retorna el rol de l'usuari segons els grups de Google als quals pertany (buit si no en té cap).
+    /// Si Google no respon (p. ex. un 502 temporal del endpoint de batch) es reintenta i, si continua
+    /// fallant, es retorna Fail: NO s'ha de confondre "no s'ha pogut consultar" amb "no té grups".
+    /// </summary>
+    public async Task<GoogleApiResult<IEnumerable<string>>> GetUserClaims(string email, CancellationToken ct)
     {
         DirectoryService service = _directoryService.Value;
 
-        // Totes les comprovacions van en una sola petició HTTP (batch). Es fa servir HasMember
-        // (i no Groups.List) perquè també té en compte la pertinença indirecta a través de subgrups.
+        for (int attempt = 1; ; attempt++)
+        {
+            string failure;
+            Exception? failureException = null;
+            try
+            {
+                (bool[] isMember, string? transientItemError) = await QueryRoleGroupsMembership(service, email, ct);
+                if (transientItemError == null)
+                {
+                    for (int i = 0; i < RoleGroups.Length; i++)
+                    {
+                        if (isMember[i])
+                        {
+                            return GoogleApiResult<IEnumerable<string>>.Ok([RoleGroups[i].Role]);
+                        }
+                    }
+                    return GoogleApiResult<IEnumerable<string>>.Ok([]);
+                }
+
+                // Si una sola comprovació falla no podem saber el rol: un superusuari podria
+                // acabar com a lector si només ens arriba la resposta del grup de lectors.
+                failure = transientItemError;
+            }
+            catch (Exception e) when (!ct.IsCancellationRequested && IsTransientBatchError(e))
+            {
+                failure = e.Message;
+                failureException = e;
+            }
+            catch (Exception e) when (!ct.IsCancellationRequested)
+            {
+                _logger.LogError(e, "GetUserClaims: error consultant els grups de {Email}", email);
+                return GoogleApiResult<IEnumerable<string>>.Fail(e.Message);
+            }
+
+            if (attempt >= MAX_ATTEMPTS)
+            {
+                _logger.LogError(failureException,
+                    "GetUserClaims: error consultant els grups de {Email} després de {MaxAttempts} intents: {Error}",
+                    email, MAX_ATTEMPTS, failure);
+                return GoogleApiResult<IEnumerable<string>>.Fail(failure);
+            }
+
+            TimeSpan delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1));
+            _logger.LogWarning(failureException,
+                "GetUserClaims: error temporal consultant els grups de {Email}: {Error}. Reintent {Attempt}/{MaxAttempts} d'aquí a {Delay}s",
+                email, failure, attempt, MAX_ATTEMPTS, delay.TotalSeconds);
+            await Task.Delay(delay, ct);
+        }
+    }
+
+    /// <summary>
+    /// Comprova en una sola petició HTTP (batch) si l'usuari pertany a cada grup de rol. Es fa servir
+    /// HasMember (i no Groups.List) perquè també té en compte la pertinença indirecta a través de subgrups.
+    /// Retorna el missatge d'error si alguna de les comprovacions ha fallat per un error temporal.
+    /// </summary>
+    private async Task<(bool[] IsMember, string? TransientItemError)> QueryRoleGroupsMembership(
+        DirectoryService service, string email, CancellationToken ct)
+    {
         var isMember = new bool[RoleGroups.Length];
+        string? transientItemError = null;
         var batch = new BatchRequest(service);
         for (int i = 0; i < RoleGroups.Length; i++)
         {
@@ -107,32 +169,46 @@ public class GoogleAdminApi : IGoogleAdminApi
                 {
                     if (error != null)
                     {
-                        _logger.LogWarning("GetUserClaims: error comprovant si {Email} pertany a {Group}: {Error}", email, groupEmail, error.Message);
+                        if (IsTransientError(error.Code, error.Errors))
+                        {
+                            transientItemError ??= $"{groupEmail}: {error.Message}";
+                        }
+                        else
+                        {
+                            // Errors no temporals (p. ex. usuari de fora del domini): es tracta com a "no membre".
+                            _logger.LogWarning("GetUserClaims: error comprovant si {Email} pertany a {Group}: {Error}", email, groupEmail, error.Message);
+                        }
                         return;
                     }
                     isMember[index] = content?.IsMember ?? false;
                 });
         }
 
-        try
-        {
-            await batch.ExecuteAsync(ct);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "GetUserClaims: error consultant els grups de {Email}", email);
-            return Array.Empty<string>();
-        }
+        await batch.ExecuteAsync(ct);
+        return (isMember, transientItemError);
+    }
 
-        for (int i = 0; i < RoleGroups.Length; i++)
+    /// <summary>
+    /// BatchRequest llança HttpRequestException (amb una GoogleApiException a dins) quan la petició
+    /// de batch sencera falla, p. ex. amb el 502 "Please try again in 30 seconds" del frontal de Google.
+    /// </summary>
+    private static bool IsTransientBatchError(Exception e)
+    {
+        for (Exception? current = e; current != null; current = current.InnerException)
         {
-            if (isMember[i])
+            switch (current)
             {
-                return [RoleGroups[i].Role];
+                case GoogleApiException apiEx when IsTransientError(apiEx):
+                    return true;
+                case HttpRequestException httpEx when httpEx.StatusCode == null || (int)httpEx.StatusCode >= 500:
+                    // Sense codi = error de xarxa (connexió tallada, DNS...); 5xx = error de servidor.
+                    return true;
+                case TaskCanceledException:
+                    // Timeout de HttpClient (la cancel·lació de l'usuari ja s'ha filtrat abans).
+                    return true;
             }
         }
-
-        return [];
+        return false;
     }
 
     public async Task<GoogleApiResult<int>> SetSuspendByOU(
@@ -306,14 +382,20 @@ public class GoogleAdminApi : IGoogleAdminApi
 
     private static bool IsTransientError(GoogleApiException e)
     {
-        int? code = e.Error?.Code;
+        // Quan Google respon amb HTML (p. ex. un 502 del frontal) no hi ha Error deserialitzat,
+        // però sí el codi HTTP.
+        int code = e.Error?.Code is int errorCode && errorCode != 0 ? errorCode : (int)e.HttpStatusCode;
+        return IsTransientError(code, e.Error?.Errors);
+    }
 
+    private static bool IsTransientError(int? code, IList<SingleError>? errors)
+    {
         if (code == 429) return true;
         if (code >= 500 && code < 600) return true;
 
         // La quota superada arriba com un 403 amb un d'aquests motius.
         return code == 403
-            && (e.Error?.Errors?.Any(x =>
+            && (errors?.Any(x =>
                 x.Reason == "rateLimitExceeded"
                 || x.Reason == "userRateLimitExceeded"
                 || x.Reason == "quotaExceeded") ?? false);

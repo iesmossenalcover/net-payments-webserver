@@ -4,7 +4,7 @@ namespace Domain.Services;
 
 public interface IGoogleAdminApi
 {
-    public Task<IEnumerable<string>> GetUserClaims(string email, CancellationToken ct);
+    public Task<GoogleApiResult<IEnumerable<string>>> GetUserClaims(string email, CancellationToken ct);
     public Task<GoogleApiResult<int>> SetSuspendByOU(string ouPath, bool suspend, bool exactOu);
     public Task<GoogleApiResult<bool>> UserExists(string email);
     public Task<GoogleApiResult<bool>> SetPassword(string email, string password, bool changePasswordNexLogin = true);

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Domain.Services;
+using Application.Common.Models;
 
 namespace WebServer.Handlers.Authentication;
 
@@ -40,6 +41,8 @@ public record OAuthSignIn(string Token);
 
 public class Auth
 {
+    private const string GOOGLE_UNAVAILABLE_MESSAGE = "No s'han pogut comprovar els permisos a Google. Torna-ho a provar d'aquí a uns segons.";
+
     public static async Task SigninPost(
         [FromBody] SigninRequest model,
         HttpContext ctx,
@@ -172,7 +175,15 @@ public class Auth
         User? user = null;
         if (oAuthUser == null)
         {
-            IEnumerable<string> claims = await adminApi.GetUserClaims(email, ct);
+            GoogleApiResult<IEnumerable<string>> claimsResult = await adminApi.GetUserClaims(email, ct);
+            if (!claimsResult.Success)
+            {
+                var result = new SigninResponse(SigninStatus.Error, GOOGLE_UNAVAILABLE_MESSAGE);
+                await ctx.Response.WriteAsJsonAsync(result, ct);
+                return;
+            }
+
+            IEnumerable<string> claims = claimsResult.Data ?? [];
             if (!claims.Any())
             {
                 var result = new SigninResponse(SigninStatus.Unauthorized, "L'usuari no està autoritzat");
@@ -219,11 +230,22 @@ public class Auth
         {
             user = oAuthUser.User;
 
+            GoogleApiResult<IEnumerable<string>> claimsResult = await adminApi.GetUserClaims(email, ct);
+            if (!claimsResult.Success)
+            {
+                // Abans, un error temporal de Google es tractava com "sense grups": s'esborraven
+                // els rols de la bbdd i l'usuari entrava sense permisos. Ara no es toca res i es
+                // demana tornar-ho a provar.
+                var result = new SigninResponse(SigninStatus.Error, GOOGLE_UNAVAILABLE_MESSAGE);
+                await ctx.Response.WriteAsJsonAsync(result, ct);
+                return;
+            }
+
             // TODO: Clean
             // This updates the claims into db based on current google groups.
             var currentClaims = user.UserClaims.Where(x => x.Type == "role").ToList();
             currentClaims.RemoveAll(x => x.Type == "role");
-            IEnumerable<string> claims = await adminApi.GetUserClaims(email, ct);
+            IEnumerable<string> claims = claimsResult.Data ?? [];
             foreach (var claim in claims)
             {
                 currentClaims.Add(new UserClaim()
@@ -236,6 +258,15 @@ public class Auth
             }
             oAuthUser.User.UserClaims = currentClaims;
             await oAuthUsersRepository.UpdateAsync(oAuthUser, CancellationToken.None);
+
+            // Google ha confirmat que ja no és a cap grup de rol: s'han esborrat els rols de la
+            // bbdd (just a dalt) i no se li obre sessió, igual que amb un usuari nou sense grups.
+            if (!claims.Any())
+            {
+                var result = new SigninResponse(SigninStatus.Unauthorized, "L'usuari no està autoritzat");
+                await ctx.Response.WriteAsJsonAsync(result, ct);
+                return;
+            }
         }
 
         await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user.ToClaimPrincipal());
