@@ -127,6 +127,10 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
             .WithName("Delete event request");
 
+        app.MapPost("/api/event-requests/{id:long}/create-event", EventRequests.CreateEvent)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("Create event from request");
+
         // People
         app.MapGet("/api/people/export", People.ExportPeople)
             .RequireAuthorization(AuthorizationPolicies.ADMIN)

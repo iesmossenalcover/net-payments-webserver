@@ -2,6 +2,7 @@ using Application.Common;
 using Application.EventRequests;
 using Application.EventRequests.Commands;
 using Application.EventRequests.Queries;
+using Application.Events.Commands;
 using Domain.Entities.EventRequests;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +72,11 @@ public class EventRequests
     public static async Task<Response<long?>> Delete(IMediator mediator, long id)
     {
         return await mediator.Send(new DeleteEventRequestCommand(id));
+    }
+
+    public static async Task<Response<string?>> CreateEvent(IMediator mediator, long id, [FromBody] CreateEventCommand cmd)
+    {
+        return await mediator.Send(new CreateEventFromRequestCommand(id, cmd));
     }
 
     #endregion
