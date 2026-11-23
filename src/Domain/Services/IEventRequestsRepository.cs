@@ -11,6 +11,8 @@ public interface IEventRequestsRepository : IRepository<EventRequest>
     /// <summary>Totes les sol·licituds (opcionalment d'un estat), sense les eliminades.</summary>
     Task<IEnumerable<EventRequest>> GetAllAsync(EventRequestStatus? status, CancellationToken ct);
     Task<EventRequest?> GetByEventIdAsync(long eventId, CancellationToken ct);
+    /// <summary>Sol·licituds en curs (ni eliminades ni ja creades) que ocupen algun moment de [from, to].</summary>
+    Task<IEnumerable<EventRequest>> GetOpenOverlappingAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct);
     /// <summary>
     /// Desa els canvis fets a les sol·licituds carregades. Retorna false si l'estat d'alguna ha canviat
     /// mentrestant (una altra acció ha arribat abans).

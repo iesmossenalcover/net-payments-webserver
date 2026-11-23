@@ -86,6 +86,10 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.READER)
             .WithName("List my event requests");
 
+        app.MapGet("/api/event-requests/calendar", EventRequests.Calendar)
+            .RequireAuthorization(AuthorizationPolicies.READER)
+            .WithName("Event requests calendar");
+
         app.MapGet("/api/event-requests/mine/{id:long}", EventRequests.GetMine)
             .RequireAuthorization(AuthorizationPolicies.READER)
             .WithName("Get my event request");

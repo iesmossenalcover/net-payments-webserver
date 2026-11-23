@@ -33,6 +33,18 @@ public class EventsRepository : Repository<Event>, Domain.Services.IEventsRespos
             .ToListAsync(ct);
     }
 
+    public async Task<IEnumerable<Event>> GetEventsOverlappingAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    {
+        // Npgsql només accepta offset 0 als paràmetres 'timestamp with time zone'.
+        DateTimeOffset fromUtc = from.ToUniversalTime();
+        DateTimeOffset toUtc = to.ToUniversalTime();
+
+        return await _dbSet
+            .Where(x => x.Date <= toUtc && (x.EndDate ?? x.Date) >= fromUtc)
+            .OrderBy(x => x.Date)
+            .ToListAsync(ct);
+    }
+
     // [from, to) sobre la data d'inici de l'esdeveniment.
     public async Task<IEnumerable<Event>> GetEventsStartingBetweenAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {

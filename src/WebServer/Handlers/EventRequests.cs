@@ -28,6 +28,11 @@ public class EventRequests
         return await mediator.Send(cmd);
     }
 
+    public static async Task<IEnumerable<CalendarItemVm>> Calendar(IMediator mediator, [FromQuery] DateTime from, [FromQuery] DateTime to)
+    {
+        return await mediator.Send(new GetEventCalendarQuery(from, to));
+    }
+
     public static async Task<Response<long?>> EditMine(IMediator mediator, long id, [FromBody] EditMyEventRequestCommand cmd)
     {
         cmd.SetId(id);
