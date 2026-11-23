@@ -1,0 +1,19 @@
+using Domain.Entities.EventRequests;
+
+namespace Domain.Services;
+
+public interface IEventRequestsRepository : IRepository<EventRequest>
+{
+    /// <summary>Amb sol·licitant, destinataris i historial. No retorna les eliminades.</summary>
+    Task<EventRequest?> GetWithDetailsAsync(long id, CancellationToken ct);
+    /// <summary>Sol·licituds d'un usuari, sense les eliminades.</summary>
+    Task<IEnumerable<EventRequest>> GetAllByRequesterAsync(long userId, CancellationToken ct);
+    /// <summary>Totes les sol·licituds (opcionalment d'un estat), sense les eliminades.</summary>
+    Task<IEnumerable<EventRequest>> GetAllAsync(EventRequestStatus? status, CancellationToken ct);
+    Task<EventRequest?> GetByEventIdAsync(long eventId, CancellationToken ct);
+    /// <summary>
+    /// Desa els canvis fets a les sol·licituds carregades. Retorna false si l'estat d'alguna ha canviat
+    /// mentrestant (una altra acció ha arribat abans).
+    /// </summary>
+    Task<bool> SaveAsync(CancellationToken ct);
+}

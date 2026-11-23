@@ -32,6 +32,7 @@ namespace Infrastructure
             services.AddScoped<Domain.Services.IEventsRespository, Repos.EventsRepository>();
             services.AddScoped<Domain.Services.IEventsPeopleRespository, EventsPeopleRepository>();
             services.AddScoped<Domain.Services.IEventPersonOrderRepository, Repos.EventPersonOrderRepository>();
+            services.AddScoped<Domain.Services.IEventRequestsRepository, Repos.EventRequestsRepository>();
             services.AddScoped<Domain.Services.IOrdersRepository, OrdersRepository>();
             services.AddScoped<Domain.Services.IOUGroupRelationsRepository, UoGroupRelationRepository>();
             services.AddScoped<Domain.Services.ITransactionsService, TransactionsService>();

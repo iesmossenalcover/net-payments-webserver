@@ -126,6 +126,136 @@ namespace netpaymentswebserver.Migrations
                     b.ToTable("app_config", "main");
                 });
 
+            modelBuilder.Entity("Domain.Entities.EventRequests.EventRequest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("CourseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("EventId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset?>("PaymentDeadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<long>("RequesterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("EventId")
+                        .IsUnique();
+
+                    b.HasIndex("RequesterUserId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("event_request", "main");
+                });
+
+            modelBuilder.Entity("Domain.Entities.EventRequests.EventRequestRecipient", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("EventRequestId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ReferenceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventRequestId");
+
+                    b.ToTable("event_request_recipient", "main");
+                });
+
+            modelBuilder.Entity("Domain.Entities.EventRequests.EventRequestTransition", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Action")
+                        .HasColumnType("integer");
+
+                    b.Property<long?>("ActorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("Automatic")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("EventRequestId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("From")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<int>("To")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("EventRequestId");
+
+                    b.ToTable("event_request_transition", "main");
+                });
+
             modelBuilder.Entity("Domain.Entities.Events.Event", b =>
                 {
                     b.Property<long>("Id")
@@ -641,6 +771,57 @@ namespace netpaymentswebserver.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Entities.EventRequests.EventRequest", b =>
+                {
+                    b.HasOne("Domain.Entities.People.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Events.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.Entities.Authentication.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Requester");
+                });
+
+            modelBuilder.Entity("Domain.Entities.EventRequests.EventRequestRecipient", b =>
+                {
+                    b.HasOne("Domain.Entities.EventRequests.EventRequest", null)
+                        .WithMany("Recipients")
+                        .HasForeignKey("EventRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.EventRequests.EventRequestTransition", b =>
+                {
+                    b.HasOne("Domain.Entities.Authentication.User", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.Entities.EventRequests.EventRequest", null)
+                        .WithMany("Transitions")
+                        .HasForeignKey("EventRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Actor");
+                });
+
             modelBuilder.Entity("Domain.Entities.Events.Event", b =>
                 {
                     b.HasOne("Domain.Entities.People.Course", "Course")
@@ -772,6 +953,13 @@ namespace netpaymentswebserver.Migrations
             modelBuilder.Entity("Domain.Entities.Authentication.User", b =>
                 {
                     b.Navigation("UserClaims");
+                });
+
+            modelBuilder.Entity("Domain.Entities.EventRequests.EventRequest", b =>
+                {
+                    b.Navigation("Recipients");
+
+                    b.Navigation("Transitions");
                 });
 #pragma warning restore 612, 618
         }

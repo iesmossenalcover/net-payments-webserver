@@ -30,6 +30,8 @@ namespace Infrastructure
         public DbSet<Domain.Entities.Events.EventPerson> EventPersons { get; set; } = default!;
         public DbSet<Domain.Entities.Events.EventPersonOrder> EventPersonOrders { get; set; } = default!;
 
+        public DbSet<Domain.Entities.EventRequests.EventRequest> EventRequests { get; set; } = default!;
+
         public DbSet<Domain.Entities.Orders.Order> Orders { get; set; } = default!;
 
         public DbSet<Domain.Entities.GoogleApi.OuGroupRelation> UoGroupRelations { get; set; } = default!;
@@ -187,6 +189,39 @@ namespace Infrastructure
                 .HasIndex(x => x.OrderId);
             modelBuilder.Entity<Domain.Entities.Events.EventPersonOrder>()
                 .Property(x => x.Quantity).HasDefaultValue(1);
+
+            // Event requests
+            modelBuilder.Entity<Domain.Entities.EventRequests.EventRequest>(b =>
+            {
+                b.ToTable("event_request", "main");
+                b.Property(x => x.Id).ValueGeneratedOnAdd();
+                b.Property(x => x.Title).HasMaxLength(200);
+                // UPDATE ... WHERE "Status" = <estat llegit>: si una altra acció ha canviat l'estat abans,
+                // no s'actualitza cap fila i EF llança DbUpdateConcurrencyException.
+                b.Property(x => x.Status).IsConcurrencyToken();
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.RequesterUserId);
+                // Un esdeveniment només pot venir d'una sol·licitud (també evita crear-ne dos per la mateixa).
+                b.HasIndex(x => x.EventId).IsUnique();
+                b.HasOne(x => x.Requester).WithMany().HasForeignKey(x => x.RequesterUserId).OnDelete(DeleteBehavior.Restrict);
+                b.HasOne(x => x.Course).WithMany().HasForeignKey(x => x.CourseId).OnDelete(DeleteBehavior.Restrict);
+                b.HasOne(x => x.Event).WithMany().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.SetNull);
+                b.HasMany(x => x.Recipients).WithOne().HasForeignKey(x => x.EventRequestId).OnDelete(DeleteBehavior.Cascade);
+                b.HasMany(x => x.Transitions).WithOne().HasForeignKey(x => x.EventRequestId).OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<Domain.Entities.EventRequests.EventRequestRecipient>(b =>
+            {
+                b.ToTable("event_request_recipient", "main");
+                b.Property(x => x.Id).ValueGeneratedOnAdd();
+                b.HasIndex(x => x.EventRequestId);
+            });
+            modelBuilder.Entity<Domain.Entities.EventRequests.EventRequestTransition>(b =>
+            {
+                b.ToTable("event_request_transition", "main");
+                b.Property(x => x.Id).ValueGeneratedOnAdd();
+                b.HasIndex(x => x.EventRequestId);
+                b.HasOne(x => x.Actor).WithMany().HasForeignKey(x => x.ActorUserId).OnDelete(DeleteBehavior.SetNull);
+            });
 
             // Orders
             modelBuilder.Entity<Domain.Entities.Orders.Order>()
