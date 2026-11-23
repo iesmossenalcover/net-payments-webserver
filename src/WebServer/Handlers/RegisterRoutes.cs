@@ -211,8 +211,9 @@ public static class RegisterRoutes
             .WithName("Delete ou relation");
 
         // Groups
+        // Obert als professors (reader) perquè puguin proposar grups a les sol·licituds d'esdeveniments.
         app.MapGet("/api/groups/selector", Groups.GetGroupsSelector)
-            .RequireAuthorization(AuthorizationPolicies.ADMIN)
+            .RequireAuthorization(AuthorizationPolicies.READER)
             .WithName("Get groups selector");
 
         app.MapGet("/api/groups", Groups.ListGroups)
