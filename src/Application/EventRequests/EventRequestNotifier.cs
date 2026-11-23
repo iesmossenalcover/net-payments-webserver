@@ -23,6 +23,7 @@ public class EventRequestNotifier
     private readonly string? adminRecipient;
     private readonly string? frontRequestUrl;
     private readonly string? frontAdminRequestUrl;
+    private readonly TimeZoneInfo timeZone;
 
     public EventRequestNotifier(IGoogleAdminApi googleAdminApi, IConfiguration configuration, ILogger<EventRequestNotifier> logger)
     {
@@ -33,6 +34,8 @@ public class EventRequestNotifier
         adminRecipient = recipients.Length > 0 ? string.Join(", ", recipients) : null;
         frontRequestUrl = configuration.GetValue<string>("FrontEventRequestUrl");
         frontAdminRequestUrl = configuration.GetValue<string>("FrontAdminEventRequestUrl");
+        // Les dates del correu es mostren en hora local de l'escola.
+        timeZone = TimeZoneInfo.FindSystemTimeZoneById(configuration.GetValue<string>("DailyEventsEmailTimeZone") ?? "Europe/Madrid");
     }
     #endregion
 
@@ -44,9 +47,22 @@ public class EventRequestNotifier
     public Task NotifyResubmittedAsync(EventRequest r, CancellationToken ct) =>
         SendToAdminAsync(r, "Sol·licitud corregida", "El professor ha corregit la sol·licitud i torna a estar pendent de revisar.", ct);
 
+    public Task NotifyEditedAfterApprovalAsync(EventRequest r, CancellationToken ct) =>
+        SendToAdminAsync(r, "Sol·licitud aprovada modificada", "El professor ha fet canvis a una sol·licitud aprovada i torna a estar pendent de revisar.", ct);
+
     #endregion
 
     #region Professor
+
+    public Task NotifyApprovedAsync(EventRequest r, CancellationToken ct)
+    {
+        string deadline = r.ChangesDeadline.HasValue
+            ? TimeZoneInfo.ConvertTime(r.ChangesDeadline.Value, timeZone).ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)
+            : "-";
+        return SendToRequesterAsync(r, "Sol·licitud aprovada",
+            $"La sol·licitud s'ha aprovat i l'administració crearà l'esdeveniment. Tens fins al {deadline} per fer-hi canvis; si en fas, tornarà a estar pendent de revisió.",
+            null, true, ct);
+    }
 
     public Task NotifyCorrectionRequestedAsync(EventRequest r, string reason, CancellationToken ct) =>
         SendToRequesterAsync(r, "Cal corregir la sol·licitud", "L'administració demana que corregeixis la sol·licitud.", reason, true, ct);

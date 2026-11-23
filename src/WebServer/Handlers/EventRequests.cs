@@ -28,7 +28,7 @@ public class EventRequests
         return await mediator.Send(cmd);
     }
 
-    public static async Task<Response<long?>> Resubmit(IMediator mediator, long id, [FromBody] ResubmitEventRequestCommand cmd)
+    public static async Task<Response<long?>> EditMine(IMediator mediator, long id, [FromBody] EditMyEventRequestCommand cmd)
     {
         cmd.SetId(id);
         return await mediator.Send(cmd);
@@ -54,9 +54,9 @@ public class EventRequests
         return await mediator.Send(cmd);
     }
 
-    public static async Task<Response<long?>> Approve(IMediator mediator, long id)
+    public static async Task<Response<long?>> Approve(IMediator mediator, long id, [FromBody] ApproveBody body)
     {
-        return await mediator.Send(new ApproveEventRequestCommand(id));
+        return await mediator.Send(new ApproveEventRequestCommand(id, body.ChangesDeadline));
     }
 
     public static async Task<Response<long?>> RequestCorrection(IMediator mediator, long id, [FromBody] ReasonBody body)

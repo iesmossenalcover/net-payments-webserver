@@ -49,6 +49,7 @@ public abstract class EventRequestDataValidator<T> : AbstractValidator<T> where 
 }
 
 public record ReasonBody(string Reason);
+public record ApproveBody(DateTime ChangesDeadline);
 
 #endregion
 
@@ -57,7 +58,8 @@ public record ReasonBody(string Reason);
 public record EventRequestSummaryVm(
     long Id, string Title, EventRequestStatus Status,
     long RequesterUserId, string RequesterName, string RequesterEmail,
-    DateTimeOffset StartDate, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long? EventId);
+    DateTimeOffset StartDate, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long? EventId,
+    DateTimeOffset? ChangesDeadline);
 
 public record EventRequestRecipientVm(EventRequestRecipientType Type, long ReferenceId, string? Name);
 
@@ -70,6 +72,7 @@ public record EventRequestVm(
     DateTimeOffset StartDate, DateTimeOffset? EndDate, decimal Price, DateTimeOffset? PaymentDeadline,
     EventRequestStatus Status,
     long RequesterUserId, string RequesterName, string RequesterEmail,
+    DateTimeOffset? ChangesDeadline, bool CanRequesterEdit,
     long? EventId, string? EventCode,
     DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt,
     IEnumerable<EventRequestRecipientVm> Recipients,
@@ -82,7 +85,8 @@ public static class EventRequestMapper
     public static EventRequestSummaryVm ToSummaryVm(EventRequest r) => new(
         r.Id, r.Title, r.Status,
         r.RequesterUserId, $"{r.Requester.Firstname} {r.Requester.Lastname}".Trim(), r.Requester.Username,
-        r.StartDate, r.CreatedAt, r.UpdatedAt, r.EventId);
+        r.StartDate, r.CreatedAt, r.UpdatedAt, r.EventId,
+        r.ChangesDeadline);
 
     /// <summary>Requereix la sol·licitud carregada amb GetWithDetailsAsync. Resol el nom dels destinataris.</summary>
     public static async Task<EventRequestVm> ToVmAsync(EventRequest r, IPeopleRepository peopleRepository, IGroupsRepository groupsRepository, CancellationToken ct)
@@ -102,6 +106,8 @@ public static class EventRequestMapper
             r.StartDate, r.EndDate, r.Price, r.PaymentDeadline,
             r.Status,
             r.RequesterUserId, $"{r.Requester.Firstname} {r.Requester.Lastname}".Trim(), r.Requester.Username,
+            r.ChangesDeadline,
+            r.Status == EventRequestStatus.PendingCorrection || r.CanRequesterEditApproved(DateTimeOffset.UtcNow),
             r.EventId, r.Event?.Code,
             r.CreatedAt, r.UpdatedAt,
             r.Recipients.Select(x => new EventRequestRecipientVm(x.Type, x.ReferenceId,

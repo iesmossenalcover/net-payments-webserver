@@ -33,11 +33,12 @@ Estados: `PendingReview`, `PendingCorrection`, `PendingCreation`, `Created`, `De
 | Origen | Acción | Actor | Destino |
 |---|---|---|---|
 | — | Enviar | Profesor | PendingReview |
-| PendingReview | Aprobar | Admin | PendingCreation |
+| PendingReview | Aprobar (fija `ChangesDeadline` + email al profesor) | Admin | PendingCreation |
 | PendingReview | Pedir cambios (motivo) | Admin | PendingCorrection |
 | PendingReview | Editar | Admin | PendingReview |
 | PendingCorrection | Corregir y reenviar | Profesor propietario | PendingReview |
 | PendingCreation | Editar | Admin | PendingReview |
+| PendingCreation | Editar, solo hasta `ChangesDeadline` (email al admin) | Profesor propietario | PendingReview |
 | PendingCreation | Pedir corrección (motivo) | Admin | PendingCorrection |
 | PendingCreation | Crear evento | Admin | Created (si falla, no cambia) |
 | Created | Se borra el evento | Sistema | PendingReview (`EventId = null`) |
@@ -45,13 +46,18 @@ Estados: `PendingReview`, `PendingCorrection`, `PendingCreation`, `Created`, `De
 | Review/Correction/Creation | Eliminar (email) | Admin | Deleted |
 
 Reglas: `Created` es inmutable y no se elimina; el admin no edita en `PendingCorrection`;
-el profesor solo edita en `PendingCorrection`; `Deleted` no se ve para nadie; cada cambio
+el profesor edita en `PendingCorrection` y en `PendingCreation` mientras no haya pasado `ChangesDeadline`
+(**cambio sobre el diseño original**, decidido el 2026-11-23); `Deleted` no se ve para nadie; cada cambio
 de estado se registra en `EventRequestTransition` (origen, destino, actor, motivo, fecha).
+
+Plazo de cambios: al aprobar, el admin elige `ChangesDeadline` y el profesor recibe un email con la fecha.
+Solo limita al profesor: el admin puede crear el evento en cualquier momento, incluso antes del plazo.
+El plazo se borra si la solicitud vuelve a revisión o corrección; al reaprobar se fija uno nuevo.
 
 ## Modelo
 
 - `EventRequest`: `Id`, `RequesterUserId`, `CourseId`, `Status`, `Title`, `Description`,
-  `StartDate`, `EndDate?`, `Price`, `PaymentDeadline?`, `EventId?` (único, FK a `Event` con `SET NULL`), `CreatedAt`, `UpdatedAt`, `DeletedAt?`.
+  `StartDate`, `EndDate?`, `Price`, `PaymentDeadline?`, `ChangesDeadline?`, `EventId?` (único, FK a `Event` con `SET NULL`), `CreatedAt`, `UpdatedAt`, `DeletedAt?`.
 - `EventRequestRecipient`: `EventRequestId`, `Type` (Person/Group), `ReferenceId`.
 - `EventRequestTransition`: `EventRequestId`, `From?`, `To`, `ActorUserId?`, `Reason?`, `Date`.
 - `EventRequestComment`: `EventRequestId`, `AuthorUserId`, `Text`, `Date` (flujo aún sin definir).
@@ -61,12 +67,12 @@ de estado se registra en `EventRequestTransition` (origen, destino, actor, motiv
 Profesor (policy `READER`, siempre filtrado por propietario):
 - `GET /api/event-requests/mine`, `GET /api/event-requests/mine/{id}`
 - `POST /api/event-requests` (enviar)
-- `PUT /api/event-requests/mine/{id}` (corregir y reenviar)
+- `PUT /api/event-requests/mine/{id}` (corregir y reenviar, o editar aprobada dentro del plazo)
 
 Admin (policy `ADVANCED_ADMIN`):
 - `GET /api/event-requests?status=`, `GET /api/event-requests/{id}`
 - `PUT /api/event-requests/{id}` (editar)
-- `POST /api/event-requests/{id}/approve`
+- `POST /api/event-requests/{id}/approve` (`changesDeadline`)
 - `POST /api/event-requests/{id}/request-correction` (`reason`)
 - `POST /api/event-requests/{id}/reject` (`reason`)
 - `POST /api/event-requests/{id}/delete`

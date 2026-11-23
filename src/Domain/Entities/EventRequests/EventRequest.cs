@@ -63,6 +63,10 @@ public class EventRequest : Entity
     public decimal Price { get; private set; }
     public DateTimeOffset? PaymentDeadline { get; private set; }
 
+    // Fins quan el professor pot fer canvis a una sol·licitud aprovada. La tria l'admin en aprovar.
+    // Només té sentit en PendingCreation: es buida quan la sol·licitud torna enrere.
+    public DateTimeOffset? ChangesDeadline { get; private set; }
+
     public long? EventId { get; private set; }
     public Event? Event { get; private set; }
 
@@ -91,11 +95,21 @@ public class EventRequest : Entity
 
     public bool IsOwnedBy(long userId) => RequesterUserId == userId;
 
-    public void Approve(long adminUserId, DateTimeOffset now)
+    /// <summary>
+    /// L'admin aprova i fixa fins quan el professor pot fer canvis. L'admin pot crear l'esdeveniment
+    /// en qualsevol moment, també abans d'aquesta data.
+    /// </summary>
+    public void Approve(long adminUserId, DateTimeOffset changesDeadline, DateTimeOffset now)
     {
         EnsureStatus(EventRequestStatus.PendingReview);
+        if (changesDeadline <= now) throw new EventRequestException("La data límit per fer canvis ha de ser posterior a ara.");
+        ChangesDeadline = changesDeadline;
         ChangeStatus(EventRequestStatus.PendingCreation, EventRequestAction.Approve, adminUserId, false, null, now);
     }
+
+    /// <summary>El professor encara pot fer canvis a la sol·licitud aprovada.</summary>
+    public bool CanRequesterEditApproved(DateTimeOffset now) =>
+        Status == EventRequestStatus.PendingCreation && ChangesDeadline.HasValue && now <= ChangesDeadline.Value;
 
     public void RequestCorrection(long adminUserId, string reason, DateTimeOffset now)
     {
@@ -115,13 +129,27 @@ public class EventRequest : Entity
         ChangeStatus(EventRequestStatus.PendingReview, EventRequestAction.Edit, adminUserId, Status == EventRequestStatus.PendingCreation, null, now);
     }
 
-    /// <summary>El professor propietari corregeix i torna a enviar. Només pot editar en correcció.</summary>
-    public void Resubmit(long userId, EventRequestData data, DateTimeOffset now)
+    /// <summary>
+    /// El professor propietari edita la sol·licitud:
+    ///  - en correcció: la corregeix i la torna a enviar a revisió;
+    ///  - aprovada (pendent de creació) i dins del termini de canvis: torna a revisió automàticament.
+    /// En revisió no pot editar.
+    /// </summary>
+    public void EditByRequester(long userId, EventRequestData data, DateTimeOffset now)
     {
         if (!IsOwnedBy(userId)) throw new EventRequestException("Aquesta sol·licitud no és teva.");
-        EnsureStatus(EventRequestStatus.PendingCorrection);
+        EnsureStatus(EventRequestStatus.PendingCorrection, EventRequestStatus.PendingCreation);
+
+        if (Status == EventRequestStatus.PendingCorrection)
+        {
+            SetData(data, now);
+            ChangeStatus(EventRequestStatus.PendingReview, EventRequestAction.Resubmit, userId, false, null, now);
+            return;
+        }
+
+        if (!CanRequesterEditApproved(now)) throw new EventRequestException("Ha passat el termini per fer canvis a la sol·licitud.");
         SetData(data, now);
-        ChangeStatus(EventRequestStatus.PendingReview, EventRequestAction.Resubmit, userId, false, null, now);
+        ChangeStatus(EventRequestStatus.PendingReview, EventRequestAction.Edit, userId, true, null, now);
     }
 
     public void MarkCreated(long adminUserId, long eventId, DateTimeOffset now)
@@ -194,6 +222,8 @@ public class EventRequest : Entity
     {
         EventRequestStatus from = Status;
         Status = to;
+        // El termini de canvis només val mentre està aprovada; si torna enrere, en tornar-la a aprovar se'n fixa un de nou.
+        if (to == EventRequestStatus.PendingReview || to == EventRequestStatus.PendingCorrection) ChangesDeadline = null;
         UpdatedAt = now;
         AddTransition(from, to, action, actorUserId, automatic, reason, now);
     }

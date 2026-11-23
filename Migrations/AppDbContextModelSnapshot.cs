@@ -134,6 +134,9 @@ namespace netpaymentswebserver.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<DateTimeOffset?>("ChangesDeadline")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<long>("CourseId")
                         .HasColumnType("bigint");
 

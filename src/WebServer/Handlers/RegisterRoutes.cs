@@ -94,9 +94,9 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.READER)
             .WithName("Submit event request");
 
-        app.MapPut("/api/event-requests/mine/{id:long}", EventRequests.Resubmit)
+        app.MapPut("/api/event-requests/mine/{id:long}", EventRequests.EditMine)
             .RequireAuthorization(AuthorizationPolicies.READER)
-            .WithName("Resubmit my event request");
+            .WithName("Edit my event request");
 
         // Event requests: admin (advancedadmin o superuser)
         app.MapGet("/api/event-requests", EventRequests.List)
