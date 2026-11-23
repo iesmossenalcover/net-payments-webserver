@@ -83,9 +83,16 @@ Rama: `feature/event-requests`. Commits a nombre del usuario, sin coautor.
 - [x] 5. Crear evento desde solicitud (`CreateEventFromRequestCommand`: transacción + asignar destinatarios).
 - [x] 6. Borrado de evento → solicitud a revisión (`DeleteEventCommand`).
 - [x] 7. Emails (`EventRequestNotifier`). Configuración: `EventRequestAdminEmailRecipient`, `FrontEventRequestUrl`, `FrontAdminEventRequestUrl` ({id}). **Hay que añadirlas en producción**; si faltan, no se envía y queda aviso en el log.
-- [ ] 8. Front (`../next-payments-app`): pantallas profesor y admin.
+- [x] 8. Front (`../next-payments-app`, rama `feature/event-requests`):
+  - Profesor: `/admin/event-requests` (las mías), `/create`, `/[id]` (corregir si está en corrección).
+  - Admin: `/admin/event-requests/review` (por defecto, lo que le toca: revisión + creación), `/review/[id]` (acciones según estado; «Crear esdeveniment» precarga `EventFields` con la solicitud).
+  - Menú lateral y `next-routes.conf` actualizados.
+- [ ] 9. Probar el flujo completo en local (migración aplicada) y desplegar.
 
 ## Pendiente de definir
 
 - Campos concretos del formulario (de momento solo los mínimos; se descartó guardarlo como JSON).
 - Flujo de comentarios (quién, cuándo, si notifica).
+- Alumnos individuales como destinatarios: el back los admite, pero el profesor (reader) no puede buscar
+  personas (`/api/people/filter` es ADMIN). De momento el formulario solo propone grupos
+  (`/api/groups/selector` se abrió a READER). Decidir si se abre la búsqueda de alumnos al profesorado.
