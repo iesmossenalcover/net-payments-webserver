@@ -79,7 +79,7 @@ Rama: `feature/event-requests`. Commits a nombre del usuario, sin coautor.
 - [x] 1. Bloquear borrado de eventos con pagos (`DeleteEventCommand`) — cambio independiente.
 - [x] 2. Dominio: entidades + máquina de estados (`src/Domain/Entities/EventRequests`).
 - [x] 3. Infraestructura: `AppDbContext`, `EventRequestsRepository`, migración `EventRequests`.
-- [ ] 4. Comandos/queries (MediatR) + endpoints + policies.
+- [x] 4. Comandos/queries (`src/Application/EventRequests`) + endpoints (`src/WebServer/Handlers/EventRequests.cs`, `RegisterRoutes.cs`).
 - [ ] 5. Crear evento desde solicitud (transacción + asignar destinatarios).
 - [ ] 6. Borrado de evento → solicitud a revisión.
 - [ ] 7. Emails.

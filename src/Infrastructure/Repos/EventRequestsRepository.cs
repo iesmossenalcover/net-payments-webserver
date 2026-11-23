@@ -14,6 +14,7 @@ public class EventRequestsRepository : Repository<EventRequest>, Domain.Services
         return await _dbSet
             .Where(x => x.Id == id && x.Status != EventRequestStatus.Deleted)
             .Include(x => x.Requester)
+            .Include(x => x.Event)
             .Include(x => x.Recipients)
             .Include(x => x.Transitions.OrderBy(t => t.Date)).ThenInclude(t => t.Actor)
             .AsSplitQuery()

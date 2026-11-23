@@ -81,6 +81,52 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.SUPER_USER);
 
 
+        // Event requests: professor (rol reader o superior), només les seves
+        app.MapGet("/api/event-requests/mine", EventRequests.ListMine)
+            .RequireAuthorization(AuthorizationPolicies.READER)
+            .WithName("List my event requests");
+
+        app.MapGet("/api/event-requests/mine/{id:long}", EventRequests.GetMine)
+            .RequireAuthorization(AuthorizationPolicies.READER)
+            .WithName("Get my event request");
+
+        app.MapPost("/api/event-requests", EventRequests.Submit)
+            .RequireAuthorization(AuthorizationPolicies.READER)
+            .WithName("Submit event request");
+
+        app.MapPut("/api/event-requests/mine/{id:long}", EventRequests.Resubmit)
+            .RequireAuthorization(AuthorizationPolicies.READER)
+            .WithName("Resubmit my event request");
+
+        // Event requests: admin (advancedadmin o superuser)
+        app.MapGet("/api/event-requests", EventRequests.List)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("List event requests");
+
+        app.MapGet("/api/event-requests/{id:long}", EventRequests.Get)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("Get event request");
+
+        app.MapPut("/api/event-requests/{id:long}", EventRequests.Edit)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("Edit event request");
+
+        app.MapPost("/api/event-requests/{id:long}/approve", EventRequests.Approve)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("Approve event request");
+
+        app.MapPost("/api/event-requests/{id:long}/request-correction", EventRequests.RequestCorrection)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("Request event request correction");
+
+        app.MapPost("/api/event-requests/{id:long}/reject", EventRequests.Reject)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("Reject event request");
+
+        app.MapPost("/api/event-requests/{id:long}/delete", EventRequests.Delete)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
+            .WithName("Delete event request");
+
         // People
         app.MapGet("/api/people/export", People.ExportPeople)
             .RequireAuthorization(AuthorizationPolicies.ADMIN)
