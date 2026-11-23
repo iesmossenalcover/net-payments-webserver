@@ -12,11 +12,13 @@ public class RequestEventRequestCorrectionCommandHandler : IRequestHandler<Reque
     #region IOC
     private readonly IEventRequestsRepository _eventRequestsRepository;
     private readonly ICurrentRequestService _currentRequestService;
+    private readonly EventRequestNotifier _notifier;
 
-    public RequestEventRequestCorrectionCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService)
+    public RequestEventRequestCorrectionCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService, EventRequestNotifier notifier)
     {
         _eventRequestsRepository = eventRequestsRepository;
         _currentRequestService = currentRequestService;
+        _notifier = notifier;
     }
     #endregion
 
@@ -29,6 +31,6 @@ public class RequestEventRequestCorrectionCommandHandler : IRequestHandler<Reque
 
         return await EventRequestActions.RunAsync(_eventRequestsRepository, request.Id, null,
             (r, now) => r.RequestCorrection(userId, request.Reason, now),
-            null, ct);
+            r => _notifier.NotifyCorrectionRequestedAsync(r, request.Reason, CancellationToken.None), ct);
     }
 }

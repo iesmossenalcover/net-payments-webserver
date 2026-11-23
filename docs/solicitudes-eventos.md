@@ -82,7 +82,7 @@ Rama: `feature/event-requests`. Commits a nombre del usuario, sin coautor.
 - [x] 4. Comandos/queries (`src/Application/EventRequests`) + endpoints (`src/WebServer/Handlers/EventRequests.cs`, `RegisterRoutes.cs`).
 - [x] 5. Crear evento desde solicitud (`CreateEventFromRequestCommand`: transacción + asignar destinatarios).
 - [x] 6. Borrado de evento → solicitud a revisión (`DeleteEventCommand`).
-- [ ] 7. Emails.
+- [x] 7. Emails (`EventRequestNotifier`). Configuración: `EventRequestAdminEmailRecipient`, `FrontEventRequestUrl`, `FrontAdminEventRequestUrl` ({id}). **Hay que añadirlas en producción**; si faltan, no se envía y queda aviso en el log.
 - [ ] 8. Front (`../next-payments-app`): pantallas profesor y admin.
 
 ## Pendiente de definir

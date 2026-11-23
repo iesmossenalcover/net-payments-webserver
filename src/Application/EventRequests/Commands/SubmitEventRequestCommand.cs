@@ -17,12 +17,14 @@ public class SubmitEventRequestCommandHandler : IRequestHandler<SubmitEventReque
     private readonly IEventRequestsRepository _eventRequestsRepository;
     private readonly ICoursesRepository _coursesRepository;
     private readonly ICurrentRequestService _currentRequestService;
+    private readonly EventRequestNotifier _notifier;
 
-    public SubmitEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICoursesRepository coursesRepository, ICurrentRequestService currentRequestService)
+    public SubmitEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICoursesRepository coursesRepository, ICurrentRequestService currentRequestService, EventRequestNotifier notifier)
     {
         _eventRequestsRepository = eventRequestsRepository;
         _coursesRepository = coursesRepository;
         _currentRequestService = currentRequestService;
+        _notifier = notifier;
     }
     #endregion
 
@@ -36,6 +38,10 @@ public class SubmitEventRequestCommandHandler : IRequestHandler<SubmitEventReque
         Course course = await _coursesRepository.GetCurrentCoursAsync(ct);
         var eventRequest = EventRequest.Submit(userId, course.Id, request.ToDomain(), DateTimeOffset.UtcNow);
         await _eventRequestsRepository.InsertAsync(eventRequest, CancellationToken.None);
+
+        // Es recarrega per tenir el sol·licitant (nom i correu) per al correu.
+        EventRequest? saved = await _eventRequestsRepository.GetWithDetailsAsync(eventRequest.Id, CancellationToken.None);
+        if (saved != null) await _notifier.NotifySubmittedAsync(saved, CancellationToken.None);
 
         return Response<long?>.Ok(eventRequest.Id);
     }

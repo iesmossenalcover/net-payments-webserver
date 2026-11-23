@@ -20,11 +20,13 @@ public class ResubmitEventRequestCommandHandler : IRequestHandler<ResubmitEventR
     #region IOC
     private readonly IEventRequestsRepository _eventRequestsRepository;
     private readonly ICurrentRequestService _currentRequestService;
+    private readonly EventRequestNotifier _notifier;
 
-    public ResubmitEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService)
+    public ResubmitEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService, EventRequestNotifier notifier)
     {
         _eventRequestsRepository = eventRequestsRepository;
         _currentRequestService = currentRequestService;
+        _notifier = notifier;
     }
     #endregion
 
@@ -37,6 +39,6 @@ public class ResubmitEventRequestCommandHandler : IRequestHandler<ResubmitEventR
 
         return await EventRequestActions.RunAsync(_eventRequestsRepository, request.Id, userId,
             (r, now) => r.Resubmit(userId, request.ToDomain(), now),
-            null, ct);
+            r => _notifier.NotifyResubmittedAsync(r, CancellationToken.None), ct);
     }
 }

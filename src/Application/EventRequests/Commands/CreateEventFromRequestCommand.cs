@@ -27,6 +27,7 @@ public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventF
     private readonly ICurrentRequestService _currentRequestService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISender _sender;
+    private readonly EventRequestNotifier _notifier;
 
     public CreateEventFromRequestCommandHandler(
         IEventRequestsRepository eventRequestsRepository,
@@ -36,7 +37,8 @@ public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventF
         IPeopleRepository peopleRepository,
         ICurrentRequestService currentRequestService,
         IUnitOfWork unitOfWork,
-        ISender sender)
+        ISender sender,
+        EventRequestNotifier notifier)
     {
         _eventRequestsRepository = eventRequestsRepository;
         _eventsRepository = eventsRepository;
@@ -46,6 +48,7 @@ public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventF
         _currentRequestService = currentRequestService;
         _unitOfWork = unitOfWork;
         _sender = sender;
+        _notifier = notifier;
     }
     #endregion
 
@@ -103,7 +106,12 @@ public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventF
             result = Response<string?>.Error(ResponseCode.BadRequest, ex.Message);
         }
 
-        return result!;
+        if (result!.Code == ResponseCode.Success && result.Data != null)
+        {
+            await _notifier.NotifyEventCreatedAsync(eventRequest, result.Data, CancellationToken.None);
+        }
+
+        return result;
     }
 
     /// <summary>Assigna a l'esdeveniment els alumnes proposats: els indicats un a un i els dels grups (curs de l'esdeveniment).</summary>

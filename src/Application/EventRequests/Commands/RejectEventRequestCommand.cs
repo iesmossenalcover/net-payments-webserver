@@ -12,11 +12,13 @@ public class RejectEventRequestCommandHandler : IRequestHandler<RejectEventReque
     #region IOC
     private readonly IEventRequestsRepository _eventRequestsRepository;
     private readonly ICurrentRequestService _currentRequestService;
+    private readonly EventRequestNotifier _notifier;
 
-    public RejectEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService)
+    public RejectEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService, EventRequestNotifier notifier)
     {
         _eventRequestsRepository = eventRequestsRepository;
         _currentRequestService = currentRequestService;
+        _notifier = notifier;
     }
     #endregion
 
@@ -29,6 +31,6 @@ public class RejectEventRequestCommandHandler : IRequestHandler<RejectEventReque
 
         return await EventRequestActions.RunAsync(_eventRequestsRepository, request.Id, null,
             (r, now) => r.Reject(userId, request.Reason, now),
-            null, ct);
+            r => _notifier.NotifyRejectedAsync(r, request.Reason, CancellationToken.None), ct);
     }
 }

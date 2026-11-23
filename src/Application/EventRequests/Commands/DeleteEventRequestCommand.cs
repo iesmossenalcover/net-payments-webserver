@@ -12,11 +12,13 @@ public class DeleteEventRequestCommandHandler : IRequestHandler<DeleteEventReque
     #region IOC
     private readonly IEventRequestsRepository _eventRequestsRepository;
     private readonly ICurrentRequestService _currentRequestService;
+    private readonly EventRequestNotifier _notifier;
 
-    public DeleteEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService)
+    public DeleteEventRequestCommandHandler(IEventRequestsRepository eventRequestsRepository, ICurrentRequestService currentRequestService, EventRequestNotifier notifier)
     {
         _eventRequestsRepository = eventRequestsRepository;
         _currentRequestService = currentRequestService;
+        _notifier = notifier;
     }
     #endregion
 
@@ -29,6 +31,6 @@ public class DeleteEventRequestCommandHandler : IRequestHandler<DeleteEventReque
 
         return await EventRequestActions.RunAsync(_eventRequestsRepository, request.Id, null,
             (r, now) => r.Delete(userId, now),
-            null, ct);
+            r => _notifier.NotifyDeletedAsync(r, CancellationToken.None), ct);
     }
 }
