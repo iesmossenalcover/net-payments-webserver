@@ -80,8 +80,8 @@ Rama: `feature/event-requests`. Commits a nombre del usuario, sin coautor.
 - [x] 2. Dominio: entidades + máquina de estados (`src/Domain/Entities/EventRequests`).
 - [x] 3. Infraestructura: `AppDbContext`, `EventRequestsRepository`, migración `EventRequests`.
 - [x] 4. Comandos/queries (`src/Application/EventRequests`) + endpoints (`src/WebServer/Handlers/EventRequests.cs`, `RegisterRoutes.cs`).
-- [ ] 5. Crear evento desde solicitud (transacción + asignar destinatarios).
-- [ ] 6. Borrado de evento → solicitud a revisión.
+- [x] 5. Crear evento desde solicitud (`CreateEventFromRequestCommand`: transacción + asignar destinatarios).
+- [x] 6. Borrado de evento → solicitud a revisión (`DeleteEventCommand`).
 - [ ] 7. Emails.
 - [ ] 8. Front (`../next-payments-app`): pantallas profesor y admin.
 
