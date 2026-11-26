@@ -52,7 +52,7 @@ de estado se registra en `EventRequestTransition` (origen, destino, actor, motiv
 
 Plazo de cambios: al aprobar, el admin elige `ChangesDeadline` y el profesor recibe un email con la fecha.
 Solo limita al profesor: el admin puede crear el evento en cualquier momento, incluso antes del plazo.
-El plazo se borra si la solicitud vuelve a revisión o corrección; al reaprobar se fija uno nuevo.
+El plazo y la elección de Google Calendar (`SyncToCalendar`) se borran si la solicitud vuelve a revisión o corrección; al reaprobar se eligen de nuevo.
 
 ## Modelo
 
@@ -65,13 +65,13 @@ El plazo se borra si la solicitud vuelve a revisión o corrección; al reaprobar
 ## Endpoints
 
 Profesor (policy `READER`, siempre filtrado por propietario):
-- `GET /api/event-requests/mine`, `GET /api/event-requests/mine/{id}`
+- `GET /api/event-requests/mine` (solo del curso actual), `GET /api/event-requests/mine/{id}`
 - `POST /api/event-requests` (enviar)
 - `PUT /api/event-requests/mine/{id}` (corregir y reenviar, o editar aprobada dentro del plazo)
 - `GET /api/event-requests/groups/{groupId}/people` (alumnos de un grupo en el curso actual, solo id y nombre)
 
 Admin (policy `ADVANCED_ADMIN`):
-- `GET /api/event-requests?status=`, `GET /api/event-requests/{id}`
+- `GET /api/event-requests?status=&courseId=` (sin `courseId`, el curso actual; `/api/courses/selector` se abrió a ADVANCED_ADMIN para el filtro), `GET /api/event-requests/{id}`
 - `PUT /api/event-requests/{id}` (editar)
 - `POST /api/event-requests/{id}/approve` (`changesDeadline`, `syncToCalendar`)
 - `POST /api/event-requests/{id}/request-correction` (`reason`)

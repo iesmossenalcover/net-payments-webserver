@@ -229,8 +229,13 @@ public class EventRequest : Entity
     {
         EventRequestStatus from = Status;
         Status = to;
-        // El termini de canvis només val mentre està aprovada; si torna enrere, en tornar-la a aprovar se'n fixa un de nou.
-        if (to == EventRequestStatus.PendingReview || to == EventRequestStatus.PendingCorrection) ChangesDeadline = null;
+        // El termini de canvis i la tria de Google Calendar només valen mentre està aprovada; si torna enrere,
+        // en tornar-la a aprovar es tornen a triar.
+        if (to == EventRequestStatus.PendingReview || to == EventRequestStatus.PendingCorrection)
+        {
+            ChangesDeadline = null;
+            SyncToCalendar = false;
+        }
         UpdatedAt = now;
         AddTransition(from, to, action, actorUserId, automatic, reason, now);
     }

@@ -21,19 +21,19 @@ public class EventRequestsRepository : Repository<EventRequest>, Domain.Services
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IEnumerable<EventRequest>> GetAllByRequesterAsync(long userId, CancellationToken ct)
+    public async Task<IEnumerable<EventRequest>> GetAllByRequesterAsync(long userId, long courseId, CancellationToken ct)
     {
         return await _dbSet
-            .Where(x => x.RequesterUserId == userId && x.Status != EventRequestStatus.Deleted)
+            .Where(x => x.RequesterUserId == userId && x.CourseId == courseId && x.Status != EventRequestStatus.Deleted)
             .Include(x => x.Requester)
             .OrderByDescending(x => x.UpdatedAt)
             .ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<EventRequest>> GetAllAsync(EventRequestStatus? status, CancellationToken ct)
+    public async Task<IEnumerable<EventRequest>> GetAllAsync(EventRequestStatus? status, long courseId, CancellationToken ct)
     {
         return await _dbSet
-            .Where(x => x.Status != EventRequestStatus.Deleted && (!status.HasValue || x.Status == status.Value))
+            .Where(x => x.CourseId == courseId && x.Status != EventRequestStatus.Deleted && (!status.HasValue || x.Status == status.Value))
             .Include(x => x.Requester)
             .OrderByDescending(x => x.UpdatedAt)
             .ToListAsync(ct);

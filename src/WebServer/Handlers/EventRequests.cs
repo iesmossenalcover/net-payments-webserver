@@ -48,9 +48,9 @@ public class EventRequests
 
     #region Admin
 
-    public static async Task<IEnumerable<EventRequestSummaryVm>> List(IMediator mediator, [FromQuery] EventRequestStatus? status = null)
+    public static async Task<IEnumerable<EventRequestSummaryVm>> List(IMediator mediator, [FromQuery] EventRequestStatus? status = null, [FromQuery] long? courseId = null)
     {
-        return await mediator.Send(new ListEventRequestsQuery(status));
+        return await mediator.Send(new ListEventRequestsQuery(status, courseId));
     }
 
     public static async Task<Response<EventRequestVm>> Get(IMediator mediator, long id)

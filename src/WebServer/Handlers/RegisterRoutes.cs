@@ -181,8 +181,9 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.SUPER_USER)
             .WithName("Get all courses");
 
+        // També advancedadmin: per filtrar les sol·licituds per curs a la revisió.
         app.MapGet("/api/courses/selector", Courses.GetCoursesSelector)
-            .RequireAuthorization(AuthorizationPolicies.SUPER_USER)
+            .RequireAuthorization(AuthorizationPolicies.ADVANCED_ADMIN)
             .WithName("Get courses selector");
 
         app.MapPost("/api/courses", Courses.CreateCourse)
