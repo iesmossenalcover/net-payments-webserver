@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Events.Commands;
+using Application.GoogleWorkspace.Commands;
 using Domain.Entities.EventRequests;
 using Domain.Entities.Events;
 using Domain.Services;
@@ -13,10 +14,16 @@ namespace Application.EventRequests.Commands;
 /// Tot va en una transacció: crear l'esdeveniment, assignar-hi els destinataris proposats i passar la
 /// sol·licitud a Created. Si qualsevol pas falla, no queda res fet i la sol·licitud continua pendent de creació.
 /// Un doble clic no en crea dos: el canvi d'estat és condicional i l'EventId de la sol·licitud és únic.
+/// Si en aprovar es va triar sincronitzar (SyncToCalendar), un cop creat (fora de la transacció) es crea també
+/// a Google Calendar: si això falla, l'esdeveniment queda creat igualment i es retorna l'error perquè l'admin
+/// ho pugui tornar a provar.
 /// </summary>
-public record CreateEventFromRequestCommand(long Id, CreateEventCommand Event) : IRequest<Response<string?>>;
+public record CreateEventFromRequestCommand(long Id, CreateEventCommand Event) : IRequest<Response<CreateEventFromRequestVm?>>;
 
-public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventFromRequestCommand, Response<string?>>
+/// <param name="CalendarSynced">null si la sol·licitud no s'havia de sincronitzar; si no, si ha anat bé.</param>
+public record CreateEventFromRequestVm(long EventId, string Code, bool? CalendarSynced, string? CalendarError);
+
+public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventFromRequestCommand, Response<CreateEventFromRequestVm?>>
 {
     #region IOC
     private readonly IEventRequestsRepository _eventRequestsRepository;
@@ -52,21 +59,21 @@ public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventF
     }
     #endregion
 
-    public async Task<Response<string?>> Handle(CreateEventFromRequestCommand request, CancellationToken ct)
+    public async Task<Response<CreateEventFromRequestVm?>> Handle(CreateEventFromRequestCommand request, CancellationToken ct)
     {
         if (_currentRequestService.UserId is not long userId)
         {
-            return Response<string?>.Error(ResponseCode.BadRequest, EventRequestActions.NO_USER_MESSAGE);
+            return Response<CreateEventFromRequestVm?>.Error(ResponseCode.BadRequest, EventRequestActions.NO_USER_MESSAGE);
         }
 
         EventRequest? eventRequest = await _eventRequestsRepository.GetWithDetailsAsync(request.Id, ct);
         if (eventRequest == null)
         {
-            return Response<string?>.Error(ResponseCode.NotFound, EventRequestActions.NOT_FOUND_MESSAGE);
+            return Response<CreateEventFromRequestVm?>.Error(ResponseCode.NotFound, EventRequestActions.NOT_FOUND_MESSAGE);
         }
         if (eventRequest.Status != EventRequestStatus.PendingCreation)
         {
-            return Response<string?>.Error(ResponseCode.BadRequest, "Només es pot crear l'esdeveniment d'una sol·licitud aprovada.");
+            return Response<CreateEventFromRequestVm?>.Error(ResponseCode.BadRequest, "Només es pot crear l'esdeveniment d'una sol·licitud aprovada.");
         }
 
         Response<string?>? result = null;
@@ -106,12 +113,36 @@ public class CreateEventFromRequestCommandHandler : IRequestHandler<CreateEventF
             result = Response<string?>.Error(ResponseCode.BadRequest, ex.Message);
         }
 
-        if (result!.Code == ResponseCode.Success && result.Data != null)
+        if (result!.Code != ResponseCode.Success || result.Data == null)
         {
-            await _notifier.NotifyEventCreatedAsync(eventRequest, result.Data, CancellationToken.None);
+            return new Response<CreateEventFromRequestVm?> { Code = result.Code, Errors = result.Errors };
         }
 
-        return result;
+        await _notifier.NotifyEventCreatedAsync(eventRequest, result.Data, CancellationToken.None);
+
+        long eventId = eventRequest.EventId!.Value;
+        if (!eventRequest.SyncToCalendar)
+        {
+            return Response<CreateEventFromRequestVm?>.Ok(new CreateEventFromRequestVm(eventId, result.Data, null, null));
+        }
+
+        var (synced, error) = await SyncToCalendarAsync(eventId);
+        return Response<CreateEventFromRequestVm?>.Ok(new CreateEventFromRequestVm(eventId, result.Data, synced, error));
+    }
+
+    private async Task<(bool, string?)> SyncToCalendarAsync(long eventId)
+    {
+        try
+        {
+            var sync = await _sender.Send(new SyncEventToCalendarCommand(eventId), CancellationToken.None);
+            if (sync.Code == ResponseCode.Success) return (true, null);
+            return (false, sync.Errors?.SelectMany(x => x.Value).FirstOrDefault() ?? "No s'ha pogut sincronitzar amb Google Calendar.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sincronitzant l'esdeveniment {eventId} amb Google Calendar: {ex.Message}");
+            return (false, "No s'ha pogut sincronitzar amb Google Calendar.");
+        }
     }
 
     /// <summary>Assigna a l'esdeveniment els alumnes proposats: els indicats un a un i els dels grups (curs de l'esdeveniment).</summary>

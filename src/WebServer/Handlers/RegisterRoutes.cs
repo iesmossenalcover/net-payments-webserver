@@ -90,6 +90,10 @@ public static class RegisterRoutes
             .RequireAuthorization(AuthorizationPolicies.READER)
             .WithName("Event requests calendar");
 
+        app.MapGet("/api/event-requests/groups/{groupId:long}/people", EventRequests.GroupPeople)
+            .RequireAuthorization(AuthorizationPolicies.READER)
+            .WithName("Event requests group people");
+
         app.MapGet("/api/event-requests/mine/{id:long}", EventRequests.GetMine)
             .RequireAuthorization(AuthorizationPolicies.READER)
             .WithName("Get my event request");

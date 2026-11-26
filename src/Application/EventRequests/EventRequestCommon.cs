@@ -1,5 +1,6 @@
 using Application.Common;
 using Domain.Entities.EventRequests;
+using Domain.Entities.People;
 using Domain.Services;
 using FluentValidation;
 
@@ -49,7 +50,7 @@ public abstract class EventRequestDataValidator<T> : AbstractValidator<T> where 
 }
 
 public record ReasonBody(string Reason);
-public record ApproveBody(DateTime ChangesDeadline);
+public record ApproveBody(DateTime ChangesDeadline, bool SyncToCalendar = false);
 
 #endregion
 
@@ -61,7 +62,8 @@ public record EventRequestSummaryVm(
     DateTimeOffset StartDate, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long? EventId,
     DateTimeOffset? ChangesDeadline);
 
-public record EventRequestRecipientVm(EventRequestRecipientType Type, long ReferenceId, string? Name);
+/// <param name="GroupId">Per als alumnes, el seu grup al curs de la sol·licitud (per agrupar-los al formulari i al detall).</param>
+public record EventRequestRecipientVm(EventRequestRecipientType Type, long ReferenceId, string? Name, long? GroupId, string? GroupName);
 
 public record EventRequestTransitionVm(
     EventRequestStatus? From, EventRequestStatus To, EventRequestAction Action,
@@ -72,7 +74,7 @@ public record EventRequestVm(
     DateTimeOffset StartDate, DateTimeOffset? EndDate, decimal Price, DateTimeOffset? PaymentDeadline,
     EventRequestStatus Status,
     long RequesterUserId, string RequesterName, string RequesterEmail,
-    DateTimeOffset? ChangesDeadline, bool CanRequesterEdit,
+    DateTimeOffset? ChangesDeadline, bool CanRequesterEdit, bool SyncToCalendar,
     long? EventId, string? EventCode,
     DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt,
     IEnumerable<EventRequestRecipientVm> Recipients,
@@ -89,7 +91,7 @@ public static class EventRequestMapper
         r.ChangesDeadline);
 
     /// <summary>Requereix la sol·licitud carregada amb GetWithDetailsAsync. Resol el nom dels destinataris.</summary>
-    public static async Task<EventRequestVm> ToVmAsync(EventRequest r, IPeopleRepository peopleRepository, IGroupsRepository groupsRepository, CancellationToken ct)
+    public static async Task<EventRequestVm> ToVmAsync(EventRequest r, IPeopleRepository peopleRepository, IGroupsRepository groupsRepository, IPersonGroupCourseRepository personGroupCourseRepository, CancellationToken ct)
     {
         var personIds = r.Recipients.Where(x => x.Type == EventRequestRecipientType.Person).Select(x => x.ReferenceId).ToList();
         var groupIds = r.Recipients.Where(x => x.Type == EventRequestRecipientType.Group).Select(x => x.ReferenceId).ToList();
@@ -100,6 +102,10 @@ public static class EventRequestMapper
         var groupNames = groupIds.Any()
             ? (await groupsRepository.GetByIdAsync(groupIds, ct)).ToDictionary(x => x.Id, x => x.Name)
             : new Dictionary<long, string>();
+        var peopleGroups = personIds.Any()
+            ? (await personGroupCourseRepository.GetPeopleGroupByPeopleIdsAndCourseIdAsync(r.CourseId, personIds, ct))
+                .GroupBy(x => x.PersonId).ToDictionary(x => x.Key, x => x.First().Group)
+            : new Dictionary<long, Group>();
 
         return new EventRequestVm(
             r.Id, r.Title, r.Description,
@@ -108,12 +114,18 @@ public static class EventRequestMapper
             r.RequesterUserId, $"{r.Requester.Firstname} {r.Requester.Lastname}".Trim(), r.Requester.Username,
             r.ChangesDeadline,
             r.Status == EventRequestStatus.PendingCorrection || r.CanRequesterEditApproved(DateTimeOffset.UtcNow),
+            r.SyncToCalendar,
             r.EventId, r.Event?.Code,
             r.CreatedAt, r.UpdatedAt,
-            r.Recipients.Select(x => new EventRequestRecipientVm(x.Type, x.ReferenceId,
-                x.Type == EventRequestRecipientType.Person
-                    ? peopleNames.GetValueOrDefault(x.ReferenceId)
-                    : groupNames.GetValueOrDefault(x.ReferenceId))),
+            r.Recipients.Select(x =>
+            {
+                if (x.Type == EventRequestRecipientType.Group)
+                {
+                    return new EventRequestRecipientVm(x.Type, x.ReferenceId, groupNames.GetValueOrDefault(x.ReferenceId), null, null);
+                }
+                var group = peopleGroups.GetValueOrDefault(x.ReferenceId);
+                return new EventRequestRecipientVm(x.Type, x.ReferenceId, peopleNames.GetValueOrDefault(x.ReferenceId), group?.Id, group?.Name);
+            }),
             r.Transitions.OrderBy(x => x.Date).Select(x => new EventRequestTransitionVm(
                 x.From, x.To, x.Action,
                 x.ActorUserId, x.Actor != null ? $"{x.Actor.Firstname} {x.Actor.Lastname}".Trim() : null,

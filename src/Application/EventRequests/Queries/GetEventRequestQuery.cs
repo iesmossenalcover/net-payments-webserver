@@ -17,10 +17,12 @@ public class GetEventRequestQueryHandler : IRequestHandler<GetEventRequestQuery,
     private readonly IEventRequestsRepository _eventRequestsRepository;
     private readonly IPeopleRepository _peopleRepository;
     private readonly IGroupsRepository _groupsRepository;
+    private readonly IPersonGroupCourseRepository _personGroupCourseRepository;
     private readonly ICurrentRequestService _currentRequestService;
 
-    public GetEventRequestQueryHandler(IEventRequestsRepository eventRequestsRepository, IPeopleRepository peopleRepository, IGroupsRepository groupsRepository, ICurrentRequestService currentRequestService)
+    public GetEventRequestQueryHandler(IEventRequestsRepository eventRequestsRepository, IPeopleRepository peopleRepository, IGroupsRepository groupsRepository, IPersonGroupCourseRepository personGroupCourseRepository, ICurrentRequestService currentRequestService)
     {
+        _personGroupCourseRepository = personGroupCourseRepository;
         _eventRequestsRepository = eventRequestsRepository;
         _peopleRepository = peopleRepository;
         _groupsRepository = groupsRepository;
@@ -36,6 +38,6 @@ public class GetEventRequestQueryHandler : IRequestHandler<GetEventRequestQuery,
             return Response<EventRequestVm>.Error(ResponseCode.NotFound, EventRequestActions.NOT_FOUND_MESSAGE);
         }
 
-        return Response<EventRequestVm>.Ok(await EventRequestMapper.ToVmAsync(r, _peopleRepository, _groupsRepository, ct));
+        return Response<EventRequestVm>.Ok(await EventRequestMapper.ToVmAsync(r, _peopleRepository, _groupsRepository, _personGroupCourseRepository, ct));
     }
 }

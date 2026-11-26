@@ -33,6 +33,11 @@ public class EventRequests
         return await mediator.Send(new GetEventCalendarQuery(from, to));
     }
 
+    public static async Task<IEnumerable<GroupPersonVm>> GroupPeople(IMediator mediator, long groupId)
+    {
+        return await mediator.Send(new GetGroupPeopleQuery(groupId));
+    }
+
     public static async Task<Response<long?>> EditMine(IMediator mediator, long id, [FromBody] EditMyEventRequestCommand cmd)
     {
         cmd.SetId(id);
@@ -61,7 +66,7 @@ public class EventRequests
 
     public static async Task<Response<long?>> Approve(IMediator mediator, long id, [FromBody] ApproveBody body)
     {
-        return await mediator.Send(new ApproveEventRequestCommand(id, body.ChangesDeadline));
+        return await mediator.Send(new ApproveEventRequestCommand(id, body.ChangesDeadline, body.SyncToCalendar));
     }
 
     public static async Task<Response<long?>> RequestCorrection(IMediator mediator, long id, [FromBody] ReasonBody body)
@@ -79,7 +84,7 @@ public class EventRequests
         return await mediator.Send(new DeleteEventRequestCommand(id));
     }
 
-    public static async Task<Response<string?>> CreateEvent(IMediator mediator, long id, [FromBody] CreateEventCommand cmd)
+    public static async Task<Response<CreateEventFromRequestVm?>> CreateEvent(IMediator mediator, long id, [FromBody] CreateEventCommand cmd)
     {
         return await mediator.Send(new CreateEventFromRequestCommand(id, cmd));
     }

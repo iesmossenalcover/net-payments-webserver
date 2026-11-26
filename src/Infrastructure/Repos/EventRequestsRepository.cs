@@ -46,12 +46,12 @@ public class EventRequestsRepository : Repository<EventRequest>, Domain.Services
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IEnumerable<EventRequest>> GetOpenOverlappingAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    public async Task<IEnumerable<EventRequest>> GetCalendarOverlappingAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
         DateTimeOffset fromUtc = from.ToUniversalTime();
         DateTimeOffset toUtc = to.ToUniversalTime();
 
-        // Les creades no hi surten: ja hi és el seu esdeveniment.
+        // Totes menys les eliminades i les creades (d'aquestes ja hi surt el seu esdeveniment).
         return await _dbSet
             .Where(x => x.Status != EventRequestStatus.Deleted && x.Status != EventRequestStatus.Created)
             .Where(x => x.StartDate <= toUtc && (x.EndDate ?? x.StartDate) >= fromUtc)

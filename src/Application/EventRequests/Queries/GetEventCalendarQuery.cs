@@ -10,7 +10,7 @@ public enum CalendarItemKind
     Request = 1,
 }
 
-/// <summary>Un element del calendari: un esdeveniment o una sol·licitud en curs.</summary>
+/// <summary>Un element del calendari: un esdeveniment o una sol·licitud (no eliminada ni creada).</summary>
 public record CalendarItemVm(
     CalendarItemKind Kind, long Id, string Title,
     DateTimeOffset Start, DateTimeOffset? End,
@@ -46,7 +46,7 @@ public class GetEventCalendarQueryHandler : IRequestHandler<GetEventCalendarQuer
         if (to - from > MAX_RANGE) to = from + MAX_RANGE;
 
         var events = await _eventsRepository.GetEventsOverlappingAsync(from, to, ct);
-        var requests = await _eventRequestsRepository.GetOpenOverlappingAsync(from, to, ct);
+        var requests = await _eventRequestsRepository.GetCalendarOverlappingAsync(from, to, ct);
 
         return events
             .Select(e => new CalendarItemVm(CalendarItemKind.Event, e.Id, e.Name, e.Date, e.EndDate, null, e.Code))

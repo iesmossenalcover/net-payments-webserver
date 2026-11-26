@@ -28,7 +28,7 @@ y del front actual (`../next-payments-app`).
 
 ## Estados y transiciones
 
-Estados: `PendingReview`, `PendingCorrection`, `PendingCreation`, `Created`, `Deleted` (borrado lógico, `DeletedAt`).
+Estados: `PendingReview`, `PendingCorrection`, `PendingCreation`, `Created`, `Rejected` (final, se conserva con el motivo para el historial), `Deleted` (borrado lógico, `DeletedAt`).
 
 | Origen | Acción | Actor | Destino |
 |---|---|---|---|
@@ -42,10 +42,10 @@ Estados: `PendingReview`, `PendingCorrection`, `PendingCreation`, `Created`, `De
 | PendingCreation | Pedir corrección (motivo) | Admin | PendingCorrection |
 | PendingCreation | Crear evento | Admin | Created (si falla, no cambia) |
 | Created | Se borra el evento | Sistema | PendingReview (`EventId = null`) |
-| Review/Correction/Creation | Rechazar (motivo + email) | Admin | Deleted |
-| Review/Correction/Creation | Eliminar (email) | Admin | Deleted |
+| Review/Correction/Creation | Rechazar (motivo + email) | Admin | Rejected |
+| Review/Correction/Creation/Rejected | Eliminar (email) | Admin | Deleted |
 
-Reglas: `Created` es inmutable y no se elimina; el admin no edita en `PendingCorrection`;
+Reglas: `Created` es inmutable y no se elimina; `Rejected` es inmutable pero sí se puede eliminar (decidido el 2026-11-26: rechazar ya no borra, para mantener el historial); el admin no edita en `PendingCorrection`;
 el profesor edita en `PendingCorrection` y en `PendingCreation` mientras no haya pasado `ChangesDeadline`
 (**cambio sobre el diseño original**, decidido el 2026-11-23); `Deleted` no se ve para nadie; cada cambio
 de estado se registra en `EventRequestTransition` (origen, destino, actor, motivo, fecha).
@@ -57,7 +57,7 @@ El plazo se borra si la solicitud vuelve a revisión o corrección; al reaprobar
 ## Modelo
 
 - `EventRequest`: `Id`, `RequesterUserId`, `CourseId`, `Status`, `Title`, `Description`,
-  `StartDate`, `EndDate?`, `Price`, `PaymentDeadline?`, `ChangesDeadline?`, `EventId?` (único, FK a `Event` con `SET NULL`), `CreatedAt`, `UpdatedAt`, `DeletedAt?`.
+  `StartDate`, `EndDate?`, `Price`, `PaymentDeadline?`, `ChangesDeadline?`, `SyncToCalendar` (migración `EventRequestSyncToCalendar`), `EventId?` (único, FK a `Event` con `SET NULL`), `CreatedAt`, `UpdatedAt`, `DeletedAt?`.
 - `EventRequestRecipient`: `EventRequestId`, `Type` (Person/Group), `ReferenceId`.
 - `EventRequestTransition`: `EventRequestId`, `From?`, `To`, `ActorUserId?`, `Reason?`, `Date`.
 - `EventRequestComment`: `EventRequestId`, `AuthorUserId`, `Text`, `Date` (flujo aún sin definir).
@@ -68,15 +68,16 @@ Profesor (policy `READER`, siempre filtrado por propietario):
 - `GET /api/event-requests/mine`, `GET /api/event-requests/mine/{id}`
 - `POST /api/event-requests` (enviar)
 - `PUT /api/event-requests/mine/{id}` (corregir y reenviar, o editar aprobada dentro del plazo)
+- `GET /api/event-requests/groups/{groupId}/people` (alumnos de un grupo en el curso actual, solo id y nombre)
 
 Admin (policy `ADVANCED_ADMIN`):
 - `GET /api/event-requests?status=`, `GET /api/event-requests/{id}`
 - `PUT /api/event-requests/{id}` (editar)
-- `POST /api/event-requests/{id}/approve` (`changesDeadline`)
+- `POST /api/event-requests/{id}/approve` (`changesDeadline`, `syncToCalendar`)
 - `POST /api/event-requests/{id}/request-correction` (`reason`)
 - `POST /api/event-requests/{id}/reject` (`reason`)
 - `POST /api/event-requests/{id}/delete`
-- `POST /api/event-requests/{id}/create-event` (body `EventData`)
+- `POST /api/event-requests/{id}/create-event` (body `EventData`). Si la solicitud tiene `SyncToCalendar` (lo elige el admin al aprobar, sin valor por defecto en el front), tras crear el evento (fuera de la transacción) lo crea en Google Calendar; si falla, el evento queda creado y se devuelve `CalendarSynced = false` + `CalendarError`.
 
 ## Progreso
 
@@ -93,12 +94,13 @@ Rama: `feature/event-requests`. Commits a nombre del usuario, sin coautor.
   - Profesor: `/admin/event-requests` (las mías), `/create`, `/[id]` (corregir si está en corrección).
   - Admin: `/admin/event-requests/review` (por defecto, lo que le toca: revisión + creación), `/review/[id]` (acciones según estado; «Crear esdeveniment» precarga `EventFields` con la solicitud).
   - Menú lateral y `next-routes.conf` actualizados.
+  - `/admin/calendar` (READER): calendario a pantalla completa con eventos y solicitudes, el mismo que el selector de fechas (`components/calendar/EventCalendar.tsx`).
 - [ ] 9. Probar el flujo completo en local (migración aplicada) y desplegar.
 
 ## Pendiente de definir
 
 - Campos concretos del formulario (de momento solo los mínimos; se descartó guardarlo como JSON).
 - Flujo de comentarios (quién, cuándo, si notifica).
-- Alumnos individuales como destinatarios: el back los admite, pero el profesor (reader) no puede buscar
-  personas (`/api/people/filter` es ADMIN). De momento el formulario solo propone grupos
-  (`/api/groups/selector` se abrió a READER). Decidir si se abre la búsqueda de alumnos al profesorado.
+- Destinatarios (2026-11-26): el formulario lista los grupos y cada uno se despliega para elegir alumnos.
+  Grupo entero → destinatario `Group` (incluye altas posteriores); solo algunos → un destinatario `Person`
+  por alumno. El detalle devuelve el grupo de cada alumno (`GroupId`/`GroupName`) para agruparlos.

@@ -9,7 +9,8 @@ namespace Application.EventRequests.Commands;
 /// L'admin aprova la sol·licitud: queda pendent de crear l'esdeveniment. Indica fins quan el professor
 /// hi pot fer canvis (si en fa, torna a revisió) i el professor en rep un correu.
 /// </summary>
-public record ApproveEventRequestCommand(long Id, DateTime ChangesDeadline) : IRequest<Response<long?>>;
+/// <param name="SyncToCalendar">Si en crear l'esdeveniment s'ha d'afegir automàticament a Google Calendar.</param>
+public record ApproveEventRequestCommand(long Id, DateTime ChangesDeadline, bool SyncToCalendar) : IRequest<Response<long?>>;
 
 public class ApproveEventRequestCommandValidator : AbstractValidator<ApproveEventRequestCommand>
 {
@@ -43,7 +44,7 @@ public class ApproveEventRequestCommandHandler : IRequestHandler<ApproveEventReq
 
         var deadline = new DateTimeOffset(request.ChangesDeadline.ToUniversalTime(), TimeSpan.Zero);
         return await EventRequestActions.RunAsync(_eventRequestsRepository, request.Id, null,
-            (r, now) => r.Approve(userId, deadline, now),
+            (r, now) => r.Approve(userId, deadline, request.SyncToCalendar, now),
             r => _notifier.NotifyApprovedAsync(r, CancellationToken.None), ct);
     }
 }

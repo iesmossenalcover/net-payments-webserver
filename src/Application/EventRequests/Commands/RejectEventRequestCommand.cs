@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.EventRequests.Commands;
 
-/// <summary>L'admin rebutja la sol·licitud (motiu obligatori). És un esborrat lògic.</summary>
+/// <summary>L'admin rebutja la sol·licitud (motiu obligatori). No s'esborra: queda rebutjada amb el motiu a l'historial.</summary>
 public record RejectEventRequestCommand(long Id, string Reason) : IRequest<Response<long?>>;
 
 public class RejectEventRequestCommandHandler : IRequestHandler<RejectEventRequestCommand, Response<long?>>

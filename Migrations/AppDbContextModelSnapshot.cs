@@ -172,6 +172,9 @@ namespace netpaymentswebserver.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("integer");
 
+                    b.Property<bool>("SyncToCalendar")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
